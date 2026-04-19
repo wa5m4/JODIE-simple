@@ -31,6 +31,7 @@ class EventGraphOperator(nn.Module):
         embedding_dim: int,
         event_agg: str = "mean",
         agg_activation: str = "none",
+        hidden_dim: int = None,
         attn_type: str = "dot",
         time_decay: str = "none",
     ):
@@ -40,14 +41,15 @@ class EventGraphOperator(nn.Module):
         self.agg_activation = agg_activation # 聚合后激活函数
         self.attn_type = attn_type # 注意力类型
         self.time_decay = time_decay # 时间衰减方式
+        self.hidden_dim = hidden_dim if hidden_dim is not None else embedding_dim
 
         self.msg_linear = nn.Linear(embedding_dim, embedding_dim)
         #对邻居节点的嵌入向量进行线性变换，维度不变
         self.attn_mlp = nn.Sequential(
-            nn.Linear(embedding_dim * 3, embedding_dim),
+            nn.Linear(embedding_dim * 3, self.hidden_dim),
             #将中心节点嵌入、邻居节点嵌入和它们的差的绝对值拼接起来，输入维度是 embedding_dim * 3，输出维度是 embedding_dim
             nn.ReLU(),
-            nn.Linear(embedding_dim, 1),
+            nn.Linear(self.hidden_dim, 1),
             #将输出维度从 embedding_dim 变为 1，用于计算注意力权重
         )
         #也就是这部分定义了一个函数

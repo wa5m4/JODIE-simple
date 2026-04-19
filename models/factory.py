@@ -26,6 +26,7 @@ def build_model(config: Dict):
         attn_type=config.get("attn_type", "dot"), # 注意力类型, 默认dot
         time_decay=config.get("time_decay", "none"), # 时间衰减方式, 默认none
         max_neighbors=config.get("max_neighbors", 20), # 最大邻居数, 默认20
+        hidden_dim=config.get("hidden_dim", 128), # 隐藏层维度, 默认128
         memory_cell=config.get("memory_cell", "gru"), # 记忆单元类型, 默认gru
         time_proj=config.get("time_proj", "linear"), # 时间投影方式, 默认linear
         memory_gate=config.get("memory_gate", "on"), # 记忆门类型, 默认on

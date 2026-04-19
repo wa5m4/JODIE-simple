@@ -1,131 +1,92 @@
-# Temporal Event-GNN JODIE + GraphNAS（RL搜索）
+# JODIE + GraphNAS
 
-本项目实现的是**事件驱动**的时序图神经网络 JODIE：
+这个项目用于搜索并训练事件级时序图模型（Temporal Event GNN + JODIE memory），支持以下数据源：
 
-- 每条交互事件到来时，立即执行图操作（邻域聚合/注意力/时间衰减）
-- 每条事件后，立即更新用户与物品记忆，以及动态图状态（邻接、边时间、边权）
-- 基于该事件级时序GNN模型，用 GraphNAS 搜索图模块与时序模块
-- 支持 **强化学习（REINFORCE）** 控制器进行架构搜索
+- `synthetic`：合成交互数据（快速验证）
+- `wikipedia`：JODIE 原论文公开数据集
+- `reddit`：JODIE 原论文公开数据集
+- `public_csv`：本地 JODIE 格式 CSV
 
----
-
-## 1. 项目结构
+## 项目结构
 
 ```text
 jodie-simple/
-├── search.py                 # GraphNAS入口（支持 random / rl）
+├── search.py
 ├── README.md
+├── USAGE.md
 ├── data/
-│   └── synthetic.py          ## 交互数据 + 动态图状态初始化
+│   ├── synthetic.py
+│   └── public_dataset.py
 ├── models/
-│   ├── factory.py            # 构建 TemporalEventGNNJODIE
-│   ├── hybrid_jodie.py       # 事件级时序GNN-JODIE主模型
-│   ├── gnn_encoder.py        # 事件级图操作器（mean/sum/attn）
-│   ├── jodie_rnn.py          # 保留的JODIE子模块（兼容）
-│   └── training.py           # 流式训练/评估 + BPRLoss
+│   ├── factory.py
+│   ├── gnn_encoder.py
+│   ├── hybrid_jodie.py
+│   ├── jodie_rnn.py
+│   └── training.py
 └── nas/
-    ├── search_space.py       # 可搜索模块定义
-    ├── controller.py         # Random + RL(REINFORCE) 控制器
-    └── trainer.py            # 架构评估与训练调度
+    ├── controller.py
+    ├── search_space.py
+    └── trainer.py
 ```
 
----
+## 快速开始
 
-## 2. 核心算法：每事件图操作 + 时序记忆更新
-
-主模型文件：[models/hybrid_jodie.py](models/hybrid_jodie.py)
-
-对每条事件 `(u, i, t, f)`：
-
-1. 读取事件前记忆 `memory[u], memory[i]`
-2. 计算时间差并做时间投影（`off/linear/mlp`）
-3. 用当前动态图邻居做**事件级聚合**：
-   - `event_agg`: `mean/sum/attn`
-   - `attn_type`: `dot/mlp`
-   - `time_decay`: `none/exp/inverse`
-4. 将图消息 + 事件特征输入记忆更新单元：
-   - `memory_cell`: `rnn/gru/add`
-5. 可选记忆门控：`memory_gate`=`on/off`
-6. 写回记忆与最近时间
-7. 更新动态图状态：新增边、更新边权、边最近时间、邻域裁剪
-
-> 这里没有静态整图编码；图操作在事件循环中发生。
-
----
-
-## 3. 可搜索模块（GraphNAS）
-
-定义文件：[nas/search_space.py](nas/search_space.py)
-
-小搜索空间包含：
-
-- `embedding_dim`: `[32, 64]`
-- `event_agg`: `[mean, sum, attn]`
-- `attn_type`: `[dot, mlp]`
-- `time_decay`: `[none, exp, inverse]`
-- `max_neighbors`: `[10, 20, 40]`
-- `memory_cell`: `[rnn, gru, add]`
-- `time_proj`: `[off, linear, mlp]`
-- `memory_gate`: `[on, off]`
-
-模型名固定：`temporal_event_gnn_jodie`
-
----
-
-## 4. 强化学习搜索（REINFORCE）
-
-控制器文件：[nas/controller.py](nas/controller.py)
-
-- 每个可搜索维度维护可学习 logits
-- 每轮按策略分布采样一个架构
-- 奖励使用验证 Recall@K
-- 用基线减法（moving baseline）做 advantage，执行 REINFORCE 更新
-
-可通过参数切换：
-- `--search-mode rl`（默认）
-- `--search-mode random`
-
----
-
-## 5. 运行方式
-
-### 5.1 强化学习搜索（推荐）
+### 1) 合成数据快速验证
 
 ```bash
-python search.py --search-mode rl --trials 6 --epochs-per-trial 1
+python search.py --dataset synthetic --search-mode random --trials 1 --epochs-per-trial 1 --num-users 20 --num-items 30 --num-interactions 80 --output-dir outputs_test
 ```
 
-### 5.2 随机搜索（对照）
+### 2) Wikipedia 训练（JODIE）
 
 ```bash
-python search.py --search-mode random --trials 6 --epochs-per-trial 1
+python search.py --dataset wikipedia --search-mode rl --trials 6 --epochs-per-trial 1 --output-dir outputs_wikipedia
 ```
 
-常用参数：
+### 3) Reddit 训练（JODIE）
 
-- `--controller-lr`（RL控制器学习率）
-- `--num-users`
-- `--num-items`
-- `--num-interactions`
-- `--feature-dim`
-- `--lr`
-- `--k`
-- `--seed`
-- `--output-dir`
+```bash
+python search.py --dataset reddit --search-mode rl --trials 6 --epochs-per-trial 1 --output-dir outputs_reddit
+```
 
----
+### 4) 本地 CSV 训练
 
-## 6. 输出文件
+```bash
+python search.py --dataset public_csv --local-data-path data/public/wikipedia.csv --search-mode rl --trials 6 --epochs-per-trial 1 --output-dir outputs_csv
+```
 
-默认输出到 `outputs/`：
+## 数据格式说明（public_csv）
 
-- `best_arch.json`：最佳架构与分数
-- `leaderboard.csv`：所有候选排序
+`public_csv` 需要 JODIE 风格 CSV，每行至少 5 列：
 
-其中 `config_json` 会包含事件级可搜索字段（`event_agg/memory_cell/time_proj/...`）。
+```text
+user_id,item_id,timestamp,label,f1[,f2,...]
+```
 
----
+说明：
+- `user_id` / `item_id` 会自动重映射为连续整数 ID。
+- 数据会按 `timestamp` 升序处理。
+- 特征列会按 `--feature-dim` 自动对齐：
+  - 原始维度大于 `feature_dim`：截断
+  - 原始维度小于 `feature_dim`：0 填充
 
-## 7. 一句话说明
+## 自动下载与本地优先
 
-这是一个“**每事件图操作 + 时序记忆更新**”的 Temporal Event-GNN JODIE，并在该模型上做了可切换 Random/RL 的 GraphNAS 搜索。
+- 对 `wikipedia` / `reddit`：若 `--local-data-path` 为空，程序会先检查 `--dataset-dir`（默认 `data/public`）下是否已有同名 CSV。
+- 如果本地不存在，会自动尝试下载官方公开 CSV。
+- 若网络不可用，建议手动下载后使用 `--local-data-path`。
+
+## 输出文件
+
+每次 `search.py` 运行会输出到 `--output-dir`：
+
+- `best_arch.json`：最佳架构
+- `leaderboard.csv`：全部候选架构排名
+
+## 常见问题
+
+- `ModuleNotFoundError: data.public_dataset`：确认项目目录下存在 `data/public_dataset.py`。
+- `dataset=public_csv requires --local-data-path`：`public_csv` 模式必须提供本地 CSV 路径。
+- `expected at least 5 columns`：CSV 列数不足，需符合 JODIE 格式。
+
+更多参数和完整示例见 `USAGE.md`。

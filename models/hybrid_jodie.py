@@ -21,9 +21,11 @@ class TemporalEventGNNJODIE(nn.Module):
         embedding_dim: int,           # 嵌入维度
         feature_dim: int,             # 特征维度
         event_agg: str = "mean",       # 事件聚合方式
+        agg_activation: str = "none",  # 聚合后激活函数
         attn_type: str = "dot",       # 注意力方式
         time_decay: str = "none",     # 时间衰减方式
         max_neighbors: int = 20,       # 最大邻域数量
+        hidden_dim: int = 128,         # 隐藏层维度
         memory_cell: str = "gru",       # 内存单元类型
         time_proj: str = "linear",     # 时间投影方式
         memory_gate: str = "on",       # 内存门类型
@@ -35,6 +37,7 @@ class TemporalEventGNNJODIE(nn.Module):
         self.embedding_dim = embedding_dim
         self.feature_dim = feature_dim
         self.max_neighbors = max_neighbors
+        self.hidden_dim = hidden_dim
         self.memory_cell = memory_cell
         self.time_proj_mode = time_proj
         self.memory_gate = memory_gate
@@ -47,6 +50,8 @@ class TemporalEventGNNJODIE(nn.Module):
         self.event_operator = EventGraphOperator(
             embedding_dim=embedding_dim,
             event_agg=event_agg,
+            agg_activation=agg_activation,
+            hidden_dim=hidden_dim,
             attn_type=attn_type,
             time_decay=time_decay,
         )
@@ -62,6 +67,9 @@ class TemporalEventGNNJODIE(nn.Module):
         elif memory_cell == "gru":
             self.user_cell = nn.GRUCell(msg_in_dim, embedding_dim)
             self.item_cell = nn.GRUCell(msg_in_dim, embedding_dim)
+        elif memory_cell == "lstm":
+            self.user_cell = nn.LSTMCell(msg_in_dim, embedding_dim)
+            self.item_cell = nn.LSTMCell(msg_in_dim, embedding_dim)
         else:
             self.user_cell = None
             self.item_cell = None
@@ -89,6 +97,7 @@ class TemporalEventGNNJODIE(nn.Module):
         self.last_time.zero_()
 
     def _project_time(self, emb: torch.Tensor, delta_t: torch.Tensor) -> torch.Tensor:
+        # 时间投影层，将时间差映射到嵌入维度
         if self.time_proj is None or self.time_proj_mode == "off":
             return emb
         factor = self.time_proj(delta_t)
@@ -102,14 +111,18 @@ class TemporalEventGNNJODIE(nn.Module):
         return user_nodes, item_nodes
 
     def _neighbors(self, graph_state: Dict, node_id: int) -> List[int]:
+        # 获取节点的邻居列表，返回一个包含邻居节点ID的列表
         return graph_state["adj"].get(node_id, [])
 
     def _trim_neighbors(self, graph_state: Dict, node_id: int):
+        # 修剪邻居列表，确保不超过最大邻居数量
         neigh = graph_state["adj"].get(node_id, [])
         if len(neigh) > self.max_neighbors:
             graph_state["adj"][node_id] = neigh[-self.max_neighbors :]
 
     def _update_graph_state(self, graph_state: Dict, user_node: int, item_node: int, ts: float):
+        #输入当前事件的用户节点ID、物品节点ID和时间戳，更新图状态，包括邻接表、边的最后时间和权重等信息
+        # 更新图状态，包括邻接表、边的最后时间和权重等信息
         graph_state["adj"].setdefault(user_node, []).append(item_node)
         graph_state["adj"].setdefault(item_node, []).append(user_node)
         self._trim_neighbors(graph_state, user_node)
@@ -124,6 +137,16 @@ class TemporalEventGNNJODIE(nn.Module):
             if cell_type == "user":
                 return old_state + torch.tanh(self.add_linear_user(update_input))
             return old_state + torch.tanh(self.add_linear_item(update_input))
+
+        if self.memory_cell == "lstm":
+            # 使用旧状态作为 (h, c) 的初始化，保证与 memory 张量维度兼容
+            h0 = old_state
+            c0 = old_state
+            if cell_type == "user":
+                h1, _ = self.user_cell(update_input, (h0, c0))
+                return h1
+            h1, _ = self.item_cell(update_input, (h0, c0))
+            return h1
 
         if cell_type == "user":
             return self.user_cell(update_input, old_state)
@@ -161,12 +184,15 @@ class TemporalEventGNNJODIE(nn.Module):
 
         old_user = self.memory[user_nodes]
         old_item = self.memory[item_nodes]
+        # 获取用户和物品的旧嵌入
 
         du = (timestamps - self.last_time[user_nodes]).unsqueeze(-1)
         di = (timestamps - self.last_time[item_nodes]).unsqueeze(-1)
+        # 计算时间差
 
         proj_user = self._project_time(old_user, du)
         proj_item = self._project_time(old_item, di)
+        # 时间投影层，将时间差映射到嵌入维度
 
         # 查询阶段可使用 query_time 外推用户状态，训练时 query_time=timestamp
         d_query = (torch.tensor([query_time], dtype=timestamps.dtype, device=timestamps.device) - self.last_time[user_nodes]).unsqueeze(-1)
@@ -174,8 +200,10 @@ class TemporalEventGNNJODIE(nn.Module):
 
         user_neighbors = self._neighbors(graph_state, uid)
         item_neighbors = self._neighbors(graph_state, iid)
+        # 获取用户和物品的邻居列表
 
         user_msg = self.event_operator.event_aggregate(
+            # 计算用户邻居的消息聚合
             center_idx=uid,
             center_emb=proj_user.squeeze(0),
             memory=self.memory,
@@ -185,6 +213,7 @@ class TemporalEventGNNJODIE(nn.Module):
         ).unsqueeze(0)
 
         item_msg = self.event_operator.event_aggregate(
+            # 聚合物品邻居的消息
             center_idx=iid,
             center_emb=proj_item.squeeze(0),
             memory=self.memory,
@@ -195,12 +224,15 @@ class TemporalEventGNNJODIE(nn.Module):
 
         user_input = torch.cat([proj_user, item_msg, features], dim=-1)
         item_input = torch.cat([proj_item, user_msg, features], dim=-1)
+        # 计算用户和物品的输入向量
 
         new_user = self._memory_update("user", user_input, old_user)
         new_item = self._memory_update("item", item_input, old_item)
+        # 更新用户和物品的状态，得到新的嵌入向量
 
         new_user = self._apply_gate(old_user, new_user)
         new_item = self._apply_gate(old_item, new_item)
+        # 应用门控机制，更新用户和物品的状态
 
         pred_item_emb = self._predict_item_embedding(query_user)
 

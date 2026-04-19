@@ -14,20 +14,35 @@ from nas.trainer import GraphNASTrainer
 
 def parse_args():
     parser = argparse.ArgumentParser(description="GraphNAS search for event-level temporal GNN JODIE")
-    parser.add_argument("--space", choices=["small"], default="small")
-    parser.add_argument("--search-mode", choices=["random", "rl"], default="rl")
-    parser.add_argument("--controller-lr", type=float, default=1e-2)
-    parser.add_argument("--trials", type=int, default=6)
-    parser.add_argument("--epochs-per-trial", type=int, default=1)
-    parser.add_argument("--num-users", type=int, default=500)
-    parser.add_argument("--num-items", type=int, default=1000)
-    parser.add_argument("--num-interactions", type=int, default=3000)
-    parser.add_argument("--feature-dim", type=int, default=8)
-    parser.add_argument("--lr", type=float, default=1e-3)
-    parser.add_argument("--neg-sample-size", type=int, default=5)
-    parser.add_argument("--k", type=int, default=10)
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--output-dir", type=str, default="outputs")
+    parser.add_argument("--space", choices=["small"], default="small", help="Search space name.")
+    parser.add_argument("--search-mode", choices=["random", "rl"], default="rl", help="Architecture search mode.")
+    parser.add_argument("--controller-lr", type=float, default=1e-2, help="Learning rate for RL controller.")
+    parser.add_argument(
+        "--dataset",
+        choices=["synthetic", "wikipedia", "reddit", "public_csv"],
+        default="synthetic",
+        help="Dataset source.",
+    )
+    parser.add_argument("--dataset-dir", type=str, default="data/public", help="Directory for public dataset files.")
+    parser.add_argument(
+        "--local-data-path",
+        type=str,
+        default="",
+        help="Local CSV path. Overrides dataset-dir and auto-download when provided.",
+    )
+    parser.add_argument("--train-ratio", type=float, default=0.8, help="Train/test split ratio.")
+    parser.add_argument("--max-events", type=int, default=0, help="Use first N events. 0 means all events.")
+    parser.add_argument("--trials", type=int, default=6, help="Number of sampled architectures.")
+    parser.add_argument("--epochs-per-trial", type=int, default=1, help="Training epochs per sampled architecture.")
+    parser.add_argument("--num-users", type=int, default=500, help="Synthetic-only: number of users.")
+    parser.add_argument("--num-items", type=int, default=1000, help="Synthetic-only: number of items.")
+    parser.add_argument("--num-interactions", type=int, default=3000, help="Synthetic-only: number of interactions.")
+    parser.add_argument("--feature-dim", type=int, default=8, help="Input feature dimension.")
+    parser.add_argument("--lr", type=float, default=1e-3, help="Model training learning rate.")
+    parser.add_argument("--neg-sample-size", type=int, default=5, help="Negative sample size for BPR training.")
+    parser.add_argument("--k", type=int, default=10, help="Recall@K metric K.")
+    parser.add_argument("--seed", type=int, default=42, help="Random seed.")
+    parser.add_argument("--output-dir", type=str, default="outputs", help="Directory for search outputs.")
     return parser.parse_args()
 
 
@@ -72,6 +87,11 @@ def main():
         controller = RandomGraphNASController(search_space, seed=args.seed)
 
     base_config = {
+        "dataset": args.dataset,
+        "dataset_dir": args.dataset_dir,
+        "local_data_path": args.local_data_path,
+        "train_ratio": args.train_ratio,
+        "max_events": args.max_events,
         "num_users": args.num_users,
         "num_items": args.num_items,
         "num_interactions": args.num_interactions,

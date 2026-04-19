@@ -12,6 +12,7 @@ def get_small_search_space() -> Dict[str, List]:
     return {
         "model": [MODEL_NAME],
         "embedding_dim": [32, 64, 128],
+        "hidden_dim": [64, 128, 256],
         "event_agg": ["mean", "sum", "attn"],
         "agg_activation": ["none", "relu", "tanh", "gelu"],
         "attn_type": ["dot", "mlp"],

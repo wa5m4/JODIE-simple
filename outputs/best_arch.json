@@ -9,16 +9,18 @@
     "k": 10,
     "seed": 42,
     "model": "temporal_event_gnn_jodie",
-    "embedding_dim": 32,
-    "event_agg": "mean",
+    "embedding_dim": 128,
+    "hidden_dim": 128,
+    "event_agg": "sum",
+    "agg_activation": "none",
     "attn_type": "dot",
     "time_decay": "none",
-    "max_neighbors": 10,
-    "memory_cell": "add",
-    "time_proj": "mlp",
+    "max_neighbors": 20,
+    "memory_cell": "lstm",
+    "time_proj": "linear",
     "memory_gate": "on"
   },
-  "score": 0.9483333333333334,
-  "params": 13121,
-  "time_sec": 2.534
+  "score": 0.9116666666666666,
+  "params": 518913,
+  "time_sec": 4.3806
 }
