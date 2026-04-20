@@ -4,6 +4,92 @@
 
 ---
 
+
+
+***************************************************************
+
+# 快速架构搜索模型
+
+你的Python解释器路径 search.py   
+--dataset 你的数据集名称(wikipedia/reddit/public_csv/synthetic)
+--dataset-dir 你的公开数据目录路径   
+--local-data-path 你的本地CSV路径(仅public_csv时需要)
+--max-events 你的最大事件数(如20000)   
+--train-ratio 你的训练集比例(如0.7)
+--val-ratio 你的验证集比例(如0.1)   
+--search-mode 你的搜索模式(random/rl)
+--coarse-trials 你的粗搜候选数(如24)   
+--coarse-epochs 你的粗搜训练轮数(如2)
+--rerank-top-k 你的重排候选数(如6)   
+--rerank-epochs 你的重排训练轮数(如6)
+--selection-metric 你的选择指标(mrr/recall_at_k)   
+--k 你的Recall@K(如10)
+--lr 你的学习率(如3e-4)   
+--seed 你的随机种子(如42)
+--output-dir 你的输出目录路径
+
+
+例如：
+
+c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe search.py `
+  --dataset wikipedia `
+  --dataset-dir data/public `
+  --max-events 20000 `
+  --train-ratio 0.7 `
+  --val-ratio 0.1 `
+  --search-mode rl `
+  --coarse-trials 24 `
+  --coarse-epochs 2 `
+  --rerank-top-k 6 `
+  --rerank-epochs 6 `
+  --selection-metric mrr `
+  --k 10 `
+  --lr 3e-4 `
+  --seed 42 `
+  --output-dir outputs_wikipedia_midbudget_v3
+
+
+
+# 快速与简单模型jodie_rnn作为基准对比
+
+
+你的Python解释器路径 compare_public_dataset.py   
+--dataset 你的数据集名称(wikipedia/reddit/public_csv)
+--dataset-dir 你的公开数据目录路径   
+--local-data-path 你的本地CSV路径(仅public_csv时需要)
+--best-arch-path 你的best_arch.json路径   
+--max-events 你的最大事件数(如20000)
+--train-ratio 你的训练集比例(如0.7)   
+--val-ratio 你的验证集比例(如0.1)
+--epochs 你的训练轮数(如6)   
+--lr 你的学习率(如3e-4)
+--k 你的Recall@K(如10)   
+--seeds 你的多随机种子列表(如42,43,44,45,46)
+--strict-meta-check `
+--output-dir 你的对比结果输出目录路径
+
+如：
+
+c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe compare_public_dataset.py `
+  --dataset wikipedia `
+  --dataset-dir data/public `
+  --best-arch-path outputs_wikipedia_midbudget_v2/best_arch.json `
+  --max-events 20000 `
+  --train-ratio 0.7 `
+  --val-ratio 0.1 `
+  --epochs 6 `
+  --lr 3e-4 `
+  --k 10 `
+  --seeds 42,43,44,45,46 `
+  --strict-meta-check `
+  --output-dir outputs/public_compare_wikipedia_midbudget_v3
+
+
+
+
+***************************************************************
+
+
 ## 前置要求
 
 ```powershell
@@ -130,16 +216,60 @@ user_id,item_id,timestamp,label,f1[,f2,...]
 
 ---
 
-## 7. 输出文件
+## 7. 公开数据集：最优架构 vs jodie_rnn 对比
+
+先完成一次搜索拿到 `best_arch.json`，再运行：
+
+```powershell
+c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe compare_public_dataset.py `
+  --dataset wikipedia `
+  --best-arch-path outputs_wikipedia/best_arch.json `
+  --epochs 3 `
+  --lr 1e-3 `
+  --train-ratio 0.8 `
+  --seed 42 `
+  --output-dir outputs/public_compare_wikipedia
+```
+
+本地 CSV 对比：
+
+```powershell
+c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe compare_public_dataset.py `
+  --dataset public_csv `
+  --local-data-path data/public/wikipedia.csv `
+  --best-arch-path outputs/best_arch.json `
+  --epochs 3 `
+  --lr 1e-3 `
+  --train-ratio 0.8 `
+  --seed 42 `
+  --output-dir outputs/public_compare_csv
+```
+
+`comparison_result.json` 关键字段：
+
+- `searched_model.mrr`
+- `searched_model.recall_at_10`
+- `jodie_rnn.mrr`
+- `jodie_rnn.recall_at_10`
+- `delta_mrr`
+- `delta_recall_at_10`
+
+---
+
+## 8. 输出文件
 
 每次运行在 `--output-dir` 下生成：
 
 - `best_arch.json`
 - `leaderboard.csv`
 
+公开数据集对比会额外生成：
+
+- `comparison_result.json`
+
 ---
 
-## 8. 故障排查
+## 9. 故障排查
 
 - `dataset=public_csv requires --local-data-path`
   - 解决：给 `public_csv` 模式提供本地 CSV 路径。

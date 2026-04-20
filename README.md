@@ -40,19 +40,19 @@ python search.py --dataset synthetic --search-mode random --trials 1 --epochs-pe
 ### 2) Wikipedia 训练（JODIE）
 
 ```bash
-python search.py --dataset wikipedia --search-mode rl --trials 6 --epochs-per-trial 1 --output-dir outputs_wikipedia
+python search.py --dataset wikipedia --search-mode rl --trials 24 --epochs-per-trial 3 --k 10 --selection-metric mrr --output-dir outputs_wikipedia
 ```
 
 ### 3) Reddit 训练（JODIE）
 
 ```bash
-python search.py --dataset reddit --search-mode rl --trials 6 --epochs-per-trial 1 --output-dir outputs_reddit
+python search.py --dataset reddit --search-mode rl --trials 24 --epochs-per-trial 3 --k 10 --selection-metric mrr --output-dir outputs_reddit
 ```
 
 ### 4) 本地 CSV 训练
 
 ```bash
-python search.py --dataset public_csv --local-data-path data/public/wikipedia.csv --search-mode rl --trials 6 --epochs-per-trial 1 --output-dir outputs_csv
+python search.py --dataset public_csv --local-data-path data/public/wikipedia.csv --search-mode rl --trials 24 --epochs-per-trial 3 --k 10 --selection-metric mrr --output-dir outputs_csv
 ```
 
 ## 数据格式说明（public_csv）
@@ -82,6 +82,30 @@ user_id,item_id,timestamp,label,f1[,f2,...]
 
 - `best_arch.json`：最佳架构
 - `leaderboard.csv`：全部候选架构排名
+
+## 与 jodie_rnn 基线对比
+
+当前对齐协议：
+- 训练目标：下一物品分类 Cross-Entropy（CE）
+- 评估指标：MRR + Recall@10
+- 对比约束：同一数据集、同一时间切分、同一训练轮数与学习率、同一特征处理、同一候选物品全集（并使用相同 seed）
+- 基线来源：`models/jodie_rnn.py`（不再依赖外部官方仓库）
+
+当你在公开数据集上完成架构搜索后，可以把最佳架构与 `jodie_rnn` 做同集对比：
+
+```bash
+python compare_public_dataset.py --dataset wikipedia --best-arch-path outputs_wikipedia/best_arch.json --epochs 3 --output-dir outputs/public_compare_wikipedia
+```
+
+也可以使用本地 CSV：
+
+```bash
+python compare_public_dataset.py --dataset public_csv --local-data-path data/public/wikipedia.csv --best-arch-path outputs/best_arch.json --epochs 3 --output-dir outputs/public_compare_csv
+```
+
+对比输出文件：
+
+- `comparison_result.json`：包含 `searched_model.*`、`jodie_rnn.*`、`delta_mrr`、`delta_recall_at_10`
 
 ## 常见问题
 

@@ -19,9 +19,13 @@ class RandomGraphNASController:
 
     def sample_arch(self) -> Dict:
         arch = {k: self.random.choice(v) for k, v in self.search_space.items()}
+        # 可能的输出：
+        # {'embedding_dim': 64, 'agg': 'attn', 'gnn_layers': 2  ...}
         return sanitize_config(arch)
 
     def topk(self, results: List[Dict], k: int = 3) -> List[Dict]:
+        #从所有尝试过的架构中，返回 Top-K 最好的架构描述
+        # 按照 score、params参数量、time_sec训练时间 降序排序
         return sorted(results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)[:k]
 
 

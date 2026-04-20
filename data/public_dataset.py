@@ -88,6 +88,12 @@ def load_public_dataset(
         for line_no, row in enumerate(reader, start=1):
             if not row:
                 continue
+
+            # Skip optional header rows like: user_id,item_id,timestamp,state_label,...
+            first_col = row[0].strip().lower()
+            if first_col in {"user", "user_id"}:
+                continue
+
             if len(row) < 5:
                 raise ValueError(
                     f"{dataset_path}:{line_no} expected at least 5 columns "
