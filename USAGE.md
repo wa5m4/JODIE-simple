@@ -21,11 +21,11 @@
 --coarse-trials 你的粗搜候选数(如24)   
 --coarse-epochs 你的粗搜训练轮数(如2)
 --rerank-top-k 你的重排候选数(如6)   
---rerank-epochs 你的重排训练轮数(如6)
+--rerank-epochs 你的重排训练轮数(如6)    
 --selection-metric 你的选择指标(mrr/recall_at_k)   
 --k 你的Recall@K(如10)
 --lr 你的学习率(如3e-4)   
---seed 你的随机种子(如42)
+--seed 你的随机种子(如42)     
 --output-dir 你的输出目录路径
 
 
@@ -38,15 +38,16 @@ c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe search.py `
   --train-ratio 0.7 `
   --val-ratio 0.1 `
   --search-mode rl `
-  --coarse-trials 24 `
-  --coarse-epochs 2 `
-  --rerank-top-k 6 `
-  --rerank-epochs 6 `
+  --controller-lr 5e-3 `
+  --coarse-trials 48 `
+  --coarse-epochs 3 `
+  --rerank-top-k 10 `
+  --rerank-epochs 8 `
   --selection-metric mrr `
   --k 10 `
   --lr 3e-4 `
   --seed 42 `
-  --output-dir outputs_wikipedia_midbudget_v3
+  --output-dir outputs_wikipedia_midbudget_v4
 
 
 
@@ -65,6 +66,10 @@ c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe search.py `
 --lr 你的学习率(如3e-4)
 --k 你的Recall@K(如10)   
 --seeds 你的多随机种子列表(如42,43,44,45,46)
+--baseline-jodie-mode 你的基线模式(match_best/default_arch)
+--baseline-embedding-dim 你的固定基线embedding维度(如32)
+--baseline-cell-type 你的固定基线记忆单元(rnn/gru/lstm/add)
+--baseline-time-proj 你的固定基线时间投影(on/off)
 --strict-meta-check `
 --output-dir 你的对比结果输出目录路径
 
@@ -73,7 +78,7 @@ c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe search.py `
 c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe compare_public_dataset.py `
   --dataset wikipedia `
   --dataset-dir data/public `
-  --best-arch-path outputs_wikipedia_midbudget_v2/best_arch.json `
+  --best-arch-path outputs_wikipedia_midbudget_v4/best_arch.json `
   --max-events 20000 `
   --train-ratio 0.7 `
   --val-ratio 0.1 `
@@ -81,8 +86,12 @@ c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe compare_public_data
   --lr 3e-4 `
   --k 10 `
   --seeds 42,43,44,45,46 `
+  --baseline-jodie-mode default_arch `
+  --baseline-embedding-dim 32 `
+  --baseline-cell-type rnn `
+  --baseline-time-proj on `
   --strict-meta-check `
-  --output-dir outputs/public_compare_wikipedia_midbudget_v3
+  --output-dir outputs/public_compare_wikipedia_midbudget_v4_vs_default_jodie
 
 
 
@@ -218,6 +227,11 @@ user_id,item_id,timestamp,label,f1[,f2,...]
 
 ## 7. 公开数据集：最优架构 vs jodie_rnn 对比
 
+`compare_public_dataset.py` 的 jodie_rnn 基线有两种模式：
+
+- `match_best`（默认）：复制最佳架构的可用超参后切换到 `jodie_rnn`。
+- `default_arch`：使用固定 jodie_rnn 架构（由 baseline 参数控制）。
+
 先完成一次搜索拿到 `best_arch.json`，再运行：
 
 ```powershell
@@ -229,6 +243,25 @@ c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe compare_public_data
   --train-ratio 0.8 `
   --seed 42 `
   --output-dir outputs/public_compare_wikipedia
+```
+
+固定 jodie_rnn 架构对比示例：
+
+```powershell
+c:/Users/17789/Desktop/jodie-simple/.venv/Scripts/python.exe compare_public_dataset.py `
+  --dataset wikipedia `
+  --best-arch-path outputs_wikipedia_midbudget_v4/best_arch.json `
+  --epochs 6 `
+  --lr 3e-4 `
+  --train-ratio 0.7 `
+  --val-ratio 0.1 `
+  --max-events 20000 `
+  --seeds 42,43,44,45,46 `
+  --baseline-jodie-mode default_arch `
+  --baseline-embedding-dim 32 `
+  --baseline-cell-type rnn `
+  --baseline-time-proj on `
+  --output-dir outputs/public_compare_wikipedia_midbudget_v4_vs_default_jodie
 ```
 
 本地 CSV 对比：

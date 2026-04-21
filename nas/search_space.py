@@ -22,6 +22,10 @@ def get_small_search_space() -> Dict[str, List]:
         "memory_cell": ["rnn", "gru", "lstm", "add"],
         "time_proj": ["off", "linear", "mlp"],
         "memory_gate": ["on", "off"],
+        "enable_event_agg": ["on", "off"],
+        "enable_graph_update": ["on", "off"],
+        "message_mode": ["agg", "peer"],
+        "msg_linear": ["on", "off"],
     }
 
 
@@ -39,7 +43,25 @@ def sanitize_config(config: Dict) -> Dict:
         cfg["max_neighbors"] = 0
         cfg["hidden_dim"] = 0
         cfg["memory_gate"] = "off"
-    elif cfg.get("event_agg") != "attn":
-        cfg["attn_type"] = "dot"
+        cfg["enable_event_agg"] = "off"
+        cfg["enable_graph_update"] = "off"
+        cfg["message_mode"] = "peer"
+        cfg["msg_linear"] = "off"
+    else:
+        cfg.setdefault("enable_event_agg", "on")
+        cfg.setdefault("enable_graph_update", "on")
+        cfg.setdefault("message_mode", "agg")
+        cfg.setdefault("msg_linear", "on")
+
+        if cfg.get("message_mode") == "peer":
+            cfg["enable_event_agg"] = "off"
+
+        if cfg.get("enable_event_agg") == "off":
+            cfg["event_agg"] = "none"
+            cfg["agg_activation"] = "none"
+            cfg["attn_type"] = "dot"
+            cfg["time_decay"] = "none"
+        elif cfg.get("event_agg") != "attn":
+            cfg["attn_type"] = "dot"
 
     return cfg

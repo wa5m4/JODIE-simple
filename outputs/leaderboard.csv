@@ -1,2 +1,0 @@
-rank,score,params,time_sec,model,config_json
-1,0.9116666666666666,518913,4.3806,temporal_event_gnn_jodie,"{""num_users"": 500, ""num_items"": 1000, ""num_interactions"": 3000, ""feature_dim"": 8, ""lr"": 0.001, ""neg_sample_size"": 5, ""k"": 10, ""seed"": 42, ""model"": ""temporal_event_gnn_jodie"", ""embedding_dim"": 128, ""hidden_dim"": 128, ""event_agg"": ""sum"", ""agg_activation"": ""none"", ""attn_type"": ""dot"", ""time_decay"": ""none"", ""max_neighbors"": 20, ""memory_cell"": ""lstm"", ""time_proj"": ""linear"", ""memory_gate"": ""on""}"

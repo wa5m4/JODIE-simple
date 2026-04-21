@@ -45,6 +45,30 @@ def parse_args():
         default="",
         help="Comma-separated seeds for multi-seed evaluation. Example: 42,43,44",
     )
+    parser.add_argument(
+        "--baseline-jodie-mode",
+        choices=["match_best", "default_arch"],
+        default="match_best",
+        help="Baseline config mode: match_best copies searched best hyperparams; default_arch uses fixed jodie_rnn architecture settings.",
+    )
+    parser.add_argument(
+        "--baseline-embedding-dim",
+        type=int,
+        default=32,
+        help="Embedding dim for jodie_rnn baseline when --baseline-jodie-mode=default_arch.",
+    )
+    parser.add_argument(
+        "--baseline-cell-type",
+        type=str,
+        default="rnn",
+        help="Cell type for jodie_rnn baseline when --baseline-jodie-mode=default_arch.",
+    )
+    parser.add_argument(
+        "--baseline-time-proj",
+        choices=["on", "off"],
+        default="on",
+        help="Whether to enable time projection for jodie_rnn baseline when --baseline-jodie-mode=default_arch.",
+    )
     parser.add_argument("--output-dir", type=str, default="outputs/public_compare")
     parser.add_argument("--strict-meta-check", action="store_true", help="Fail when run config mismatches best_arch metadata.")
     return parser.parse_args()
@@ -111,12 +135,33 @@ def _validate_metadata(args, metadata: Dict, train_data: List, val_data: List, t
         print(f"[Warning] {text}")
 
 
-def _build_jodie_rnn_config(best_config: Dict, num_users: int, num_items: int, feature_dim: int) -> Dict:
-    config = dict(best_config)
-    config["num_users"] = num_users
-    config["num_items"] = num_items
-    config["feature_dim"] = feature_dim
-    config["model"] = "jodie_rnn"
+def _build_jodie_rnn_config(
+    best_config: Dict,
+    num_users: int,
+    num_items: int,
+    feature_dim: int,
+    baseline_mode: str,
+    baseline_embedding_dim: int,
+    baseline_cell_type: str,
+    baseline_time_proj: str,
+) -> Dict:
+    if baseline_mode == "match_best":
+        config = dict(best_config)
+        config["num_users"] = num_users
+        config["num_items"] = num_items
+        config["feature_dim"] = feature_dim
+        config["model"] = "jodie_rnn"
+        return config
+
+    config = {
+        "model": "jodie_rnn",
+        "num_users": num_users,
+        "num_items": num_items,
+        "feature_dim": feature_dim,
+        "embedding_dim": int(baseline_embedding_dim),
+        "memory_cell": str(baseline_cell_type).lower(),
+        "time_proj": "linear" if baseline_time_proj == "on" else "off",
+    }
     return config
 
 
@@ -152,6 +197,10 @@ def _evaluate_single_seed(
     epochs: int,
     lr: float,
     k: int,
+    baseline_mode: str,
+    baseline_embedding_dim: int,
+    baseline_cell_type: str,
+    baseline_time_proj: str,
 ) -> Dict:
     _set_seed(seed)
 
@@ -183,7 +232,16 @@ def _evaluate_single_seed(
         graph_ctx=searched_graph,
     )
 
-    jodie_rnn_config = _build_jodie_rnn_config(best_config, num_users, num_items, feature_dim)
+    jodie_rnn_config = _build_jodie_rnn_config(
+        best_config,
+        num_users,
+        num_items,
+        feature_dim,
+        baseline_mode,
+        baseline_embedding_dim,
+        baseline_cell_type,
+        baseline_time_proj,
+    )
     jodie_rnn_model = _build_jodie_rnn_model(jodie_rnn_config)
     train_model_ce(
         jodie_rnn_model,
@@ -209,8 +267,10 @@ def _evaluate_single_seed(
         },
         "jodie_rnn": {
             "model": "jodie_rnn",
+            "baseline_mode": baseline_mode,
             "cell_type": jodie_rnn_config.get("memory_cell", "rnn"),
             "use_time_proj": str(jodie_rnn_config.get("time_proj", "linear")).lower() not in {"off", "none"},
+            "embedding_dim": int(jodie_rnn_config.get("embedding_dim", 32)),
             "mrr": float(jodie_rnn_metrics["mrr"]),
             "recall_at_k": float(jodie_rnn_metrics["recall_at_k"]),
         },
@@ -248,6 +308,10 @@ def main():
             epochs=args.epochs,
             lr=args.lr,
             k=args.k,
+            baseline_mode=args.baseline_jodie_mode,
+            baseline_embedding_dim=args.baseline_embedding_dim,
+            baseline_cell_type=args.baseline_cell_type,
+            baseline_time_proj=args.baseline_time_proj,
         )
         for seed in seeds
     ]
@@ -290,6 +354,12 @@ def main():
         "num_test_events": len(test_data),
         "k": args.k,
         "candidate_policy": "global_item_set",
+        "baseline_jodie_mode": args.baseline_jodie_mode,
+        "baseline_jodie_config": {
+            "embedding_dim": int(args.baseline_embedding_dim),
+            "cell_type": str(args.baseline_cell_type).lower(),
+            "use_time_proj": args.baseline_time_proj == "on",
+        },
         "seeds": seeds,
         "per_seed": per_seed_results,
         "summary": summary,

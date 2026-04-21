@@ -34,6 +34,7 @@ class EventGraphOperator(nn.Module):
         hidden_dim: int = None,
         attn_type: str = "dot",
         time_decay: str = "none",
+        msg_linear: bool = True,
     ):
         super().__init__()
         self.embedding_dim = embedding_dim # 嵌入维度
@@ -43,7 +44,7 @@ class EventGraphOperator(nn.Module):
         self.time_decay = time_decay # 时间衰减方式
         self.hidden_dim = hidden_dim if hidden_dim is not None else embedding_dim
 
-        self.msg_linear = nn.Linear(embedding_dim, embedding_dim)
+        self.msg_linear = nn.Linear(embedding_dim, embedding_dim) if msg_linear else nn.Identity()
         #对邻居节点的嵌入向量进行线性变换，维度不变
         self.attn_mlp = nn.Sequential(
             nn.Linear(embedding_dim * 3, self.hidden_dim),
@@ -106,6 +107,9 @@ class EventGraphOperator(nn.Module):
         edge_last_time: Dict[Tuple[int, int], float], # 边的最后时间字典
         current_time: float, # 当前时间
     ) -> torch.Tensor:
+        if self.event_agg == "none":
+            return torch.zeros_like(center_emb)
+
         if len(neighbors) == 0: # 邻居节点为空，返回全零向量
             return torch.zeros_like(center_emb)
 

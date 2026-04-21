@@ -29,6 +29,10 @@ class TemporalEventGNNJODIE(nn.Module):
         memory_cell: str = "gru",       # 内存单元类型
         time_proj: str = "linear",     # 时间投影方式
         memory_gate: str = "on",       # 内存门类型
+        enable_event_agg: bool = True,   # 是否启用事件聚合
+        enable_graph_update: bool = True, # 是否更新动态图结构
+        message_mode: str = "agg",      # 消息来源（agg/peer）
+        msg_linear: bool = True,         # 聚合消息线性层开关
     ):
         super().__init__()
         self.num_users = num_users
@@ -41,6 +45,16 @@ class TemporalEventGNNJODIE(nn.Module):
         self.memory_cell = memory_cell
         self.time_proj_mode = time_proj
         self.memory_gate = memory_gate
+        self.enable_event_agg = bool(enable_event_agg)
+        self.enable_graph_update = bool(enable_graph_update)
+        self.message_mode = str(message_mode).lower()
+        if self.message_mode not in {"agg", "peer"}:
+            raise ValueError(f"Unsupported message_mode: {message_mode}")
+
+        if self.message_mode == "peer":
+            self.enable_event_agg = False
+
+        op_agg = event_agg if self.enable_event_agg else "none"
 
         self.register_buffer("memory", torch.zeros(self.num_nodes, embedding_dim))
         # memory 存储所有节点的向量表示 ，大小为 num_nodes * embedding_dim
@@ -49,11 +63,12 @@ class TemporalEventGNNJODIE(nn.Module):
 
         self.event_operator = EventGraphOperator(
             embedding_dim=embedding_dim,
-            event_agg=event_agg,
+            event_agg=op_agg,
             agg_activation=agg_activation,
             hidden_dim=hidden_dim,
             attn_type=attn_type,
             time_decay=time_decay,
+            msg_linear=msg_linear,
         )
         # 事件级图聚合模块（mean/sum/attn），在每个事件发生时候进行的聚合操作
         #实现部分在gnn_encoder.py中，提供三种聚合选项，分别是mean，sum，attn
@@ -198,29 +213,33 @@ class TemporalEventGNNJODIE(nn.Module):
         d_query = (torch.tensor([query_time], dtype=timestamps.dtype, device=timestamps.device) - self.last_time[user_nodes]).unsqueeze(-1)
         query_user = self._project_time(old_user, d_query)
 
-        user_neighbors = self._neighbors(graph_state, uid)
-        item_neighbors = self._neighbors(graph_state, iid)
-        # 获取用户和物品的邻居列表
+        if self.message_mode == "peer":
+            user_msg = proj_item
+            item_msg = proj_user
+        else:
+            user_neighbors = self._neighbors(graph_state, uid)
+            item_neighbors = self._neighbors(graph_state, iid)
+            # 获取用户和物品的邻居列表
 
-        user_msg = self.event_operator.event_aggregate(
-            # 计算用户邻居的消息聚合
-            center_idx=uid,
-            center_emb=proj_user.squeeze(0),
-            memory=self.memory,
-            neighbors=user_neighbors,
-            edge_last_time=graph_state["edge_last_time"],
-            current_time=ts,
-        ).unsqueeze(0)
+            user_msg = self.event_operator.event_aggregate(
+                # 计算用户邻居的消息聚合
+                center_idx=uid,
+                center_emb=proj_user.squeeze(0),
+                memory=self.memory,
+                neighbors=user_neighbors,
+                edge_last_time=graph_state["edge_last_time"],
+                current_time=ts,
+            ).unsqueeze(0)
 
-        item_msg = self.event_operator.event_aggregate(
-            # 聚合物品邻居的消息
-            center_idx=iid,
-            center_emb=proj_item.squeeze(0),
-            memory=self.memory,
-            neighbors=item_neighbors,
-            edge_last_time=graph_state["edge_last_time"],
-            current_time=ts,
-        ).unsqueeze(0)
+            item_msg = self.event_operator.event_aggregate(
+                # 聚合物品邻居的消息
+                center_idx=iid,
+                center_emb=proj_item.squeeze(0),
+                memory=self.memory,
+                neighbors=item_neighbors,
+                edge_last_time=graph_state["edge_last_time"],
+                current_time=ts,
+            ).unsqueeze(0)
 
         user_input = torch.cat([proj_user, item_msg, features], dim=-1)
         item_input = torch.cat([proj_item, user_msg, features], dim=-1)
@@ -241,7 +260,8 @@ class TemporalEventGNNJODIE(nn.Module):
         self.last_time[user_nodes] = timestamps
         self.last_time[item_nodes] = timestamps
 
-        self._update_graph_state(graph_state, uid, iid, ts)
+        if self.enable_graph_update:
+            self._update_graph_state(graph_state, uid, iid, ts)
 
         return pred_item_emb, new_user, new_item
 

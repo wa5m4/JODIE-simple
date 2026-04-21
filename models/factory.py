@@ -26,6 +26,10 @@ def build_model(config: Dict):
             memory_cell=config.get("memory_cell", "gru"),
             time_proj=config.get("time_proj", "linear"),
             memory_gate=config.get("memory_gate", "on"),
+            enable_event_agg=str(config.get("enable_event_agg", "on")).lower() != "off",
+            enable_graph_update=str(config.get("enable_graph_update", "on")).lower() != "off",
+            message_mode=config.get("message_mode", "agg"),
+            msg_linear=str(config.get("msg_linear", "on")).lower() != "off",
         )
 
     if model_type == "jodie_rnn":

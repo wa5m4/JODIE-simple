@@ -86,15 +86,25 @@ user_id,item_id,timestamp,label,f1[,f2,...]
 ## 与 jodie_rnn 基线对比
 
 当前对齐协议：
-- 训练目标：下一物品分类 Cross-Entropy（CE）
+- 训练目标：预测嵌入与目标嵌入的 L2 回归损失
 - 评估指标：MRR + Recall@10
 - 对比约束：同一数据集、同一时间切分、同一训练轮数与学习率、同一特征处理、同一候选物品全集（并使用相同 seed）
 - 基线来源：`models/jodie_rnn.py`（不再依赖外部官方仓库）
+
+`compare_public_dataset.py` 支持两种 jodie_rnn 基线模式：
+- `match_best`（默认）：复制搜索最优配置的可用超参，再切到 `jodie_rnn`。
+- `default_arch`：使用固定的 jodie_rnn 架构配置（可通过命令行显式指定）。
 
 当你在公开数据集上完成架构搜索后，可以把最佳架构与 `jodie_rnn` 做同集对比：
 
 ```bash
 python compare_public_dataset.py --dataset wikipedia --best-arch-path outputs_wikipedia/best_arch.json --epochs 3 --output-dir outputs/public_compare_wikipedia
+```
+
+如果你要做“搜索最优 vs 固定 jodie_rnn 架构”对比：
+
+```bash
+python compare_public_dataset.py --dataset wikipedia --best-arch-path outputs_wikipedia/best_arch.json --epochs 3 --baseline-jodie-mode default_arch --baseline-embedding-dim 32 --baseline-cell-type rnn --baseline-time-proj on --output-dir outputs/public_compare_wikipedia_vs_default_jodie
 ```
 
 也可以使用本地 CSV：
