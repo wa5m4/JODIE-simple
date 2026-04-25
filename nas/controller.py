@@ -19,13 +19,12 @@ class RandomGraphNASController:
 
     def sample_arch(self) -> Dict:
         arch = {k: self.random.choice(v) for k, v in self.search_space.items()}
-        # 可能的输出：
-        # {'embedding_dim': 64, 'agg': 'attn', 'gnn_layers': 2  ...}
         return sanitize_config(arch)
 
+    def sample_arch_batch(self, batch_size: int) -> List[Dict]:
+        return [self.sample_arch() for _ in range(batch_size)]
+
     def topk(self, results: List[Dict], k: int = 3) -> List[Dict]:
-        #从所有尝试过的架构中，返回 Top-K 最好的架构描述
-        # 按照 score、params参数量、time_sec训练时间 降序排序
         return sorted(results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)[:k]
 
 
@@ -62,6 +61,12 @@ class RLGraphNASController:
         arch = sanitize_config(arch)
         return arch, logprob
 
+    def sample_arch_batch(self, batch_size: int) -> List[Dict]:
+        return [self.sample_arch() for _ in range(batch_size)]
+
+    def sample_arch_batch_with_logprob(self, batch_size: int) -> List[Tuple[Dict, torch.Tensor]]:
+        return [self.sample_arch_with_logprob() for _ in range(batch_size)]
+
     def reinforce_step(self, logprob: torch.Tensor, reward: float):
         self.reward_baseline = 0.9 * self.reward_baseline + 0.1 * reward
         advantage = reward - self.reward_baseline
@@ -69,6 +74,22 @@ class RLGraphNASController:
         loss = -(logprob * advantage)
         self.optimizer.zero_grad()
         loss.backward()
+        self.optimizer.step()
+
+    def reinforce_step_batch(self, samples: List[Tuple[torch.Tensor, float]]):
+        if not samples:
+            return
+
+        self.optimizer.zero_grad()
+        total_loss = None
+
+        for logprob, reward in samples:
+            self.reward_baseline = 0.9 * self.reward_baseline + 0.1 * reward
+            advantage = reward - self.reward_baseline
+            sample_loss = -(logprob * advantage)
+            total_loss = sample_loss if total_loss is None else total_loss + sample_loss
+
+        total_loss.backward()
         self.optimizer.step()
 
     def topk(self, results: List[Dict], k: int = 3) -> List[Dict]:

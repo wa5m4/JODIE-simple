@@ -98,3 +98,25 @@ def clone_graph_state_template(state_template: Dict) -> Dict:
         "edge_last_time": {},
         "edge_weight": {},
     }
+
+
+def snapshot_graph_state(graph_state: Dict) -> Dict:
+    return {
+        "num_users": int(graph_state["num_users"]),
+        "num_items": int(graph_state["num_items"]),
+        "max_neighbors": int(graph_state["max_neighbors"]),
+        "adj": {int(node): list(neighbors) for node, neighbors in graph_state["adj"].items()},
+        "edge_last_time": dict(graph_state["edge_last_time"]),
+        "edge_weight": dict(graph_state["edge_weight"]),
+    }
+
+
+def restore_graph_state(snapshot: Dict) -> Dict:
+    return {
+        "num_users": int(snapshot["num_users"]),
+        "num_items": int(snapshot["num_items"]),
+        "max_neighbors": int(snapshot["max_neighbors"]),
+        "adj": {int(node): list(neighbors) for node, neighbors in snapshot["adj"].items()},
+        "edge_last_time": dict(snapshot["edge_last_time"]),
+        "edge_weight": dict(snapshot["edge_weight"]),
+    }

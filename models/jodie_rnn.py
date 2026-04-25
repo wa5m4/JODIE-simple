@@ -61,6 +61,20 @@ class JODIERNN(nn.Module):
         self.user_last_time.zero_()
         self.item_last_time.zero_()
 
+    def export_runtime_state(self):
+        return {
+            "user_embeddings": self.user_embeddings.detach().clone(),
+            "item_embeddings": self.item_embeddings.detach().clone(),
+            "user_last_time": self.user_last_time.detach().clone(),
+            "item_last_time": self.item_last_time.detach().clone(),
+        }
+
+    def import_runtime_state(self, state) -> None:
+        self.user_embeddings.copy_(state["user_embeddings"].to(self.user_embeddings.device))
+        self.item_embeddings.copy_(state["item_embeddings"].to(self.item_embeddings.device))
+        self.user_last_time.copy_(state["user_last_time"].to(self.user_last_time.device))
+        self.item_last_time.copy_(state["item_last_time"].to(self.item_last_time.device))
+
     def get_projected_embedding(self, node_embedding: torch.Tensor, delta_t: torch.Tensor) -> torch.Tensor:
         if not self.use_time_proj:
             return node_embedding

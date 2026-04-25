@@ -1,0 +1,306 @@
+# pipeline trace log
+# created_at=2026-04-23 19:09:16
+[pipeline-trace] wall=19:09:23 elapsed=5.294s phase=train event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:09:23 elapsed=5.300s phase=train event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:09:23 elapsed=5.305s phase=train event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:09:23 elapsed=5.310s phase=train event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:09:46 elapsed=28.735s phase=train event=complete trial=0 stage=1/2 stage_duration_sec=23.442
+[pipeline-trace] wall=19:09:46 elapsed=28.737s phase=train event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:10:33 elapsed=75.917s phase=train event=complete trial=1 stage=1/2 stage_duration_sec=70.617
+[pipeline-trace] wall=19:10:33 elapsed=75.919s phase=train event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:10:48 elapsed=90.504s phase=train event=complete trial=0 stage=2/2 stage_duration_sec=61.766
+[pipeline-trace] wall=19:11:06 elapsed=108.357s phase=train event=complete trial=2 stage=1/2 stage_duration_sec=103.052
+[pipeline-trace] wall=19:11:06 elapsed=108.359s phase=train event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:11:33 elapsed=135.876s phase=train event=complete trial=1 stage=2/2 stage_duration_sec=59.956
+[pipeline-trace] wall=19:11:45 elapsed=147.496s phase=train event=complete trial=3 stage=1/2 stage_duration_sec=142.187
+[pipeline-trace] wall=19:11:45 elapsed=147.498s phase=train event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:11:59 elapsed=161.896s phase=train event=complete trial=2 stage=2/2 stage_duration_sec=53.537
+[pipeline-trace] wall=19:12:08 elapsed=171.097s phase=train event=complete trial=3 stage=2/2 stage_duration_sec=23.599
+[pipeline-trace] wall=19:12:08 elapsed=171.097s phase=eval event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:12:08 elapsed=171.102s phase=eval event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:12:08 elapsed=171.106s phase=eval event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:12:08 elapsed=171.109s phase=eval event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:12:09 elapsed=171.246s phase=eval event=complete trial=0 stage=1/2 stage_duration_sec=0.148
+[pipeline-trace] wall=19:12:09 elapsed=171.246s phase=eval event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:12:09 elapsed=171.350s phase=eval event=complete trial=1 stage=1/2 stage_duration_sec=0.248
+[pipeline-trace] wall=19:12:09 elapsed=171.351s phase=eval event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:12:09 elapsed=171.386s phase=eval event=complete trial=0 stage=2/2 stage_duration_sec=0.140
+[pipeline-trace] wall=19:12:09 elapsed=171.420s phase=eval event=complete trial=2 stage=1/2 stage_duration_sec=0.315
+[pipeline-trace] wall=19:12:09 elapsed=171.421s phase=eval event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:12:09 elapsed=171.491s phase=eval event=complete trial=1 stage=2/2 stage_duration_sec=0.140
+[pipeline-trace] wall=19:12:09 elapsed=171.509s phase=eval event=complete trial=3 stage=1/2 stage_duration_sec=0.400
+[pipeline-trace] wall=19:12:09 elapsed=171.510s phase=eval event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:12:09 elapsed=171.563s phase=eval event=complete trial=2 stage=2/2 stage_duration_sec=0.142
+[pipeline-trace] wall=19:12:09 elapsed=171.647s phase=eval event=complete trial=3 stage=2/2 stage_duration_sec=0.137
+[pipeline-trace] wall=19:12:09 elapsed=0.415s phase=train event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:12:09 elapsed=0.424s phase=train event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:12:09 elapsed=0.429s phase=train event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:12:09 elapsed=0.435s phase=train event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:12:21 elapsed=11.984s phase=train event=complete trial=0 stage=1/2 stage_duration_sec=11.568
+[pipeline-trace] wall=19:12:21 elapsed=11.984s phase=train event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:12:31 elapsed=22.206s phase=train event=complete trial=1 stage=1/2 stage_duration_sec=21.782
+[pipeline-trace] wall=19:12:31 elapsed=22.207s phase=train event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:12:32 elapsed=22.869s phase=train event=complete trial=0 stage=2/2 stage_duration_sec=10.885
+[pipeline-trace] wall=19:12:40 elapsed=31.269s phase=train event=complete trial=2 stage=1/2 stage_duration_sec=30.841
+[pipeline-trace] wall=19:12:40 elapsed=31.270s phase=train event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:12:42 elapsed=32.654s phase=train event=complete trial=1 stage=2/2 stage_duration_sec=10.447
+[pipeline-trace] wall=19:12:50 elapsed=40.728s phase=train event=complete trial=2 stage=2/2 stage_duration_sec=9.458
+[pipeline-trace] wall=19:12:50 elapsed=40.908s phase=train event=complete trial=3 stage=1/2 stage_duration_sec=40.474
+[pipeline-trace] wall=19:12:50 elapsed=40.909s phase=train event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:12:59 elapsed=50.226s phase=train event=complete trial=3 stage=2/2 stage_duration_sec=9.317
+[pipeline-trace] wall=19:12:59 elapsed=50.227s phase=eval event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:12:59 elapsed=50.232s phase=eval event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:12:59 elapsed=50.235s phase=eval event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:12:59 elapsed=50.240s phase=eval event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:12:59 elapsed=50.349s phase=eval event=complete trial=0 stage=1/2 stage_duration_sec=0.123
+[pipeline-trace] wall=19:12:59 elapsed=50.350s phase=eval event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:12:59 elapsed=50.445s phase=eval event=complete trial=1 stage=1/2 stage_duration_sec=0.213
+[pipeline-trace] wall=19:12:59 elapsed=50.445s phase=eval event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:13:00 elapsed=50.749s phase=eval event=complete trial=0 stage=2/2 stage_duration_sec=0.399
+[pipeline-trace] wall=19:13:00 elapsed=50.752s phase=eval event=complete trial=2 stage=1/2 stage_duration_sec=0.517
+[pipeline-trace] wall=19:13:00 elapsed=50.753s phase=eval event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:13:00 elapsed=50.759s phase=eval event=complete trial=3 stage=1/2 stage_duration_sec=0.520
+[pipeline-trace] wall=19:13:00 elapsed=50.760s phase=eval event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:13:00 elapsed=50.842s phase=eval event=complete trial=1 stage=2/2 stage_duration_sec=0.397
+[pipeline-trace] wall=19:13:00 elapsed=50.923s phase=eval event=complete trial=2 stage=2/2 stage_duration_sec=0.170
+[pipeline-trace] wall=19:13:00 elapsed=51.020s phase=eval event=complete trial=3 stage=2/2 stage_duration_sec=0.260
+[pipeline-trace] wall=19:13:00 elapsed=0.425s phase=train event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:13:00 elapsed=0.429s phase=train event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:13:00 elapsed=0.433s phase=train event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:13:00 elapsed=0.438s phase=train event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:13:12 elapsed=11.929s phase=train event=complete trial=0 stage=1/2 stage_duration_sec=11.504
+[pipeline-trace] wall=19:13:12 elapsed=11.930s phase=train event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:13:22 elapsed=21.865s phase=train event=complete trial=0 stage=2/2 stage_duration_sec=9.936
+[pipeline-trace] wall=19:13:23 elapsed=22.592s phase=train event=complete trial=1 stage=1/2 stage_duration_sec=22.163
+[pipeline-trace] wall=19:13:23 elapsed=22.592s phase=train event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:13:32 elapsed=31.792s phase=train event=complete trial=2 stage=1/2 stage_duration_sec=31.359
+[pipeline-trace] wall=19:13:32 elapsed=31.793s phase=train event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:13:33 elapsed=32.955s phase=train event=complete trial=1 stage=2/2 stage_duration_sec=10.363
+[pipeline-trace] wall=19:13:41 elapsed=41.105s phase=train event=complete trial=3 stage=1/2 stage_duration_sec=40.667
+[pipeline-trace] wall=19:13:41 elapsed=41.105s phase=train event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:13:42 elapsed=42.019s phase=train event=complete trial=2 stage=2/2 stage_duration_sec=10.226
+[pipeline-trace] wall=19:13:51 elapsed=50.930s phase=train event=complete trial=3 stage=2/2 stage_duration_sec=9.825
+[pipeline-trace] wall=19:13:51 elapsed=50.931s phase=eval event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:13:51 elapsed=50.934s phase=eval event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:13:51 elapsed=50.938s phase=eval event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:13:51 elapsed=50.941s phase=eval event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:13:51 elapsed=51.035s phase=eval event=complete trial=0 stage=1/2 stage_duration_sec=0.104
+[pipeline-trace] wall=19:13:51 elapsed=51.036s phase=eval event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:13:51 elapsed=51.131s phase=eval event=complete trial=0 stage=2/2 stage_duration_sec=0.095
+[pipeline-trace] wall=19:13:51 elapsed=51.156s phase=eval event=complete trial=1 stage=1/2 stage_duration_sec=0.222
+[pipeline-trace] wall=19:13:51 elapsed=51.157s phase=eval event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:13:51 elapsed=51.246s phase=eval event=complete trial=2 stage=1/2 stage_duration_sec=0.308
+[pipeline-trace] wall=19:13:51 elapsed=51.246s phase=eval event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:13:51 elapsed=51.281s phase=eval event=complete trial=1 stage=2/2 stage_duration_sec=0.124
+[pipeline-trace] wall=19:13:51 elapsed=51.336s phase=eval event=complete trial=3 stage=1/2 stage_duration_sec=0.395
+[pipeline-trace] wall=19:13:51 elapsed=51.337s phase=eval event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:13:51 elapsed=51.369s phase=eval event=complete trial=2 stage=2/2 stage_duration_sec=0.123
+[pipeline-trace] wall=19:13:51 elapsed=51.452s phase=eval event=complete trial=3 stage=2/2 stage_duration_sec=0.115
+[pipeline-trace] wall=19:13:52 elapsed=0.415s phase=train event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:13:52 elapsed=0.420s phase=train event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:13:52 elapsed=0.425s phase=train event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:13:52 elapsed=0.429s phase=train event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:14:03 elapsed=11.052s phase=train event=complete trial=0 stage=1/2 stage_duration_sec=10.636
+[pipeline-trace] wall=19:14:03 elapsed=11.053s phase=train event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:14:11 elapsed=19.578s phase=train event=complete trial=1 stage=1/2 stage_duration_sec=19.158
+[pipeline-trace] wall=19:14:11 elapsed=19.579s phase=train event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:14:12 elapsed=20.597s phase=train event=complete trial=0 stage=2/2 stage_duration_sec=9.545
+[pipeline-trace] wall=19:14:20 elapsed=28.824s phase=train event=complete trial=1 stage=2/2 stage_duration_sec=9.245
+[pipeline-trace] wall=19:14:22 elapsed=30.280s phase=train event=complete trial=2 stage=1/2 stage_duration_sec=29.856
+[pipeline-trace] wall=19:14:22 elapsed=30.281s phase=train event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:14:32 elapsed=40.651s phase=train event=complete trial=2 stage=2/2 stage_duration_sec=10.370
+[pipeline-trace] wall=19:14:38 elapsed=46.248s phase=train event=complete trial=3 stage=1/2 stage_duration_sec=45.819
+[pipeline-trace] wall=19:14:38 elapsed=46.249s phase=train event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:14:54 elapsed=62.429s phase=train event=complete trial=3 stage=2/2 stage_duration_sec=16.180
+[pipeline-trace] wall=19:14:54 elapsed=62.430s phase=eval event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:14:54 elapsed=62.434s phase=eval event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:14:54 elapsed=62.438s phase=eval event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:14:54 elapsed=62.442s phase=eval event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:14:54 elapsed=62.537s phase=eval event=complete trial=0 stage=1/2 stage_duration_sec=0.107
+[pipeline-trace] wall=19:14:54 elapsed=62.538s phase=eval event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:14:54 elapsed=62.628s phase=eval event=complete trial=1 stage=1/2 stage_duration_sec=0.194
+[pipeline-trace] wall=19:14:54 elapsed=62.628s phase=eval event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:14:54 elapsed=62.648s phase=eval event=complete trial=0 stage=2/2 stage_duration_sec=0.111
+[pipeline-trace] wall=19:14:54 elapsed=62.728s phase=eval event=complete trial=1 stage=2/2 stage_duration_sec=0.100
+[pipeline-trace] wall=19:14:54 elapsed=62.754s phase=eval event=complete trial=2 stage=1/2 stage_duration_sec=0.316
+[pipeline-trace] wall=19:14:54 elapsed=62.755s phase=eval event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:14:54 elapsed=62.883s phase=eval event=complete trial=2 stage=2/2 stage_duration_sec=0.128
+[pipeline-trace] wall=19:14:54 elapsed=62.898s phase=eval event=complete trial=3 stage=1/2 stage_duration_sec=0.456
+[pipeline-trace] wall=19:14:54 elapsed=62.899s phase=eval event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:14:55 elapsed=63.040s phase=eval event=complete trial=3 stage=2/2 stage_duration_sec=0.141
+[pipeline-trace] wall=19:14:55 elapsed=0.553s phase=train event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:14:55 elapsed=0.558s phase=train event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:14:55 elapsed=0.564s phase=train event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:14:55 elapsed=0.569s phase=train event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:15:07 elapsed=12.457s phase=train event=complete trial=0 stage=1/2 stage_duration_sec=11.903
+[pipeline-trace] wall=19:15:07 elapsed=12.457s phase=train event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:15:18 elapsed=23.646s phase=train event=complete trial=0 stage=2/2 stage_duration_sec=11.189
+[pipeline-trace] wall=19:15:19 elapsed=24.382s phase=train event=complete trial=1 stage=1/2 stage_duration_sec=23.824
+[pipeline-trace] wall=19:15:19 elapsed=24.383s phase=train event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:15:29 elapsed=34.152s phase=train event=complete trial=2 stage=1/2 stage_duration_sec=33.588
+[pipeline-trace] wall=19:15:29 elapsed=34.153s phase=train event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:15:30 elapsed=35.152s phase=train event=complete trial=1 stage=2/2 stage_duration_sec=10.769
+[pipeline-trace] wall=19:15:37 elapsed=42.930s phase=train event=complete trial=3 stage=1/2 stage_duration_sec=42.361
+[pipeline-trace] wall=19:15:37 elapsed=42.931s phase=train event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:15:39 elapsed=44.501s phase=train event=complete trial=2 stage=2/2 stage_duration_sec=10.348
+[pipeline-trace] wall=19:15:47 elapsed=52.738s phase=train event=complete trial=3 stage=2/2 stage_duration_sec=9.807
+[pipeline-trace] wall=19:15:47 elapsed=52.739s phase=eval event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:15:47 elapsed=52.742s phase=eval event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:15:47 elapsed=52.746s phase=eval event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:15:47 elapsed=52.750s phase=eval event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:15:47 elapsed=52.848s phase=eval event=complete trial=0 stage=1/2 stage_duration_sec=0.109
+[pipeline-trace] wall=19:15:47 elapsed=52.848s phase=eval event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:15:48 elapsed=52.950s phase=eval event=complete trial=0 stage=2/2 stage_duration_sec=0.101
+[pipeline-trace] wall=19:15:48 elapsed=52.952s phase=eval event=complete trial=1 stage=1/2 stage_duration_sec=0.210
+[pipeline-trace] wall=19:15:48 elapsed=52.953s phase=eval event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:15:48 elapsed=53.061s phase=eval event=complete trial=1 stage=2/2 stage_duration_sec=0.108
+[pipeline-trace] wall=19:15:48 elapsed=53.063s phase=eval event=complete trial=2 stage=1/2 stage_duration_sec=0.317
+[pipeline-trace] wall=19:15:48 elapsed=53.064s phase=eval event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:15:48 elapsed=53.147s phase=eval event=complete trial=3 stage=1/2 stage_duration_sec=0.398
+[pipeline-trace] wall=19:15:48 elapsed=53.148s phase=eval event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:15:48 elapsed=53.176s phase=eval event=complete trial=2 stage=2/2 stage_duration_sec=0.113
+[pipeline-trace] wall=19:15:48 elapsed=53.259s phase=eval event=complete trial=3 stage=2/2 stage_duration_sec=0.111
+[pipeline-trace] wall=19:15:48 elapsed=0.546s phase=train event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:15:48 elapsed=0.551s phase=train event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:15:48 elapsed=0.555s phase=train event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:15:48 elapsed=0.560s phase=train event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:15:59 elapsed=11.531s phase=train event=complete trial=0 stage=1/2 stage_duration_sec=10.985
+[pipeline-trace] wall=19:15:59 elapsed=11.532s phase=train event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:16:09 elapsed=21.215s phase=train event=complete trial=0 stage=2/2 stage_duration_sec=9.683
+[pipeline-trace] wall=19:16:16 elapsed=27.719s phase=train event=complete trial=1 stage=1/2 stage_duration_sec=27.169
+[pipeline-trace] wall=19:16:16 elapsed=27.720s phase=train event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:16:26 elapsed=37.687s phase=train event=complete trial=2 stage=1/2 stage_duration_sec=37.131
+[pipeline-trace] wall=19:16:26 elapsed=37.687s phase=train event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:16:32 elapsed=43.665s phase=train event=complete trial=1 stage=2/2 stage_duration_sec=15.945
+[pipeline-trace] wall=19:16:35 elapsed=47.552s phase=train event=complete trial=3 stage=1/2 stage_duration_sec=46.992
+[pipeline-trace] wall=19:16:35 elapsed=47.553s phase=train event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:16:41 elapsed=53.130s phase=train event=complete trial=2 stage=2/2 stage_duration_sec=15.442
+[pipeline-trace] wall=19:16:50 elapsed=62.389s phase=train event=complete trial=3 stage=2/2 stage_duration_sec=14.837
+[pipeline-trace] wall=19:16:50 elapsed=62.390s phase=eval event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:16:50 elapsed=62.394s phase=eval event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:16:50 elapsed=62.398s phase=eval event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:16:50 elapsed=62.401s phase=eval event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:16:50 elapsed=62.494s phase=eval event=complete trial=0 stage=1/2 stage_duration_sec=0.104
+[pipeline-trace] wall=19:16:50 elapsed=62.495s phase=eval event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:16:50 elapsed=62.594s phase=eval event=complete trial=0 stage=2/2 stage_duration_sec=0.099
+[pipeline-trace] wall=19:16:50 elapsed=62.656s phase=eval event=complete trial=1 stage=1/2 stage_duration_sec=0.262
+[pipeline-trace] wall=19:16:50 elapsed=62.657s phase=eval event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:16:51 elapsed=62.749s phase=eval event=complete trial=2 stage=1/2 stage_duration_sec=0.351
+[pipeline-trace] wall=19:16:51 elapsed=62.750s phase=eval event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:16:51 elapsed=62.818s phase=eval event=complete trial=1 stage=2/2 stage_duration_sec=0.161
+[pipeline-trace] wall=19:16:51 elapsed=62.855s phase=eval event=complete trial=3 stage=1/2 stage_duration_sec=0.453
+[pipeline-trace] wall=19:16:51 elapsed=62.855s phase=eval event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:16:51 elapsed=62.911s phase=eval event=complete trial=2 stage=2/2 stage_duration_sec=0.162
+[pipeline-trace] wall=19:16:51 elapsed=63.015s phase=eval event=complete trial=3 stage=2/2 stage_duration_sec=0.160
+[pipeline-trace] wall=19:16:51 elapsed=0.414s phase=train event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:16:51 elapsed=0.419s phase=train event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:16:51 elapsed=0.423s phase=train event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:16:51 elapsed=0.428s phase=train event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:17:03 elapsed=12.545s phase=train event=complete trial=0 stage=1/2 stage_duration_sec=12.131
+[pipeline-trace] wall=19:17:03 elapsed=12.546s phase=train event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:17:13 elapsed=21.940s phase=train event=complete trial=1 stage=1/2 stage_duration_sec=21.521
+[pipeline-trace] wall=19:17:13 elapsed=21.940s phase=train event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:17:13 elapsed=22.587s phase=train event=complete trial=0 stage=2/2 stage_duration_sec=10.041
+[pipeline-trace] wall=19:17:23 elapsed=31.748s phase=train event=complete trial=1 stage=2/2 stage_duration_sec=9.807
+[pipeline-trace] wall=19:17:27 elapsed=36.408s phase=train event=complete trial=2 stage=1/2 stage_duration_sec=35.985
+[pipeline-trace] wall=19:17:27 elapsed=36.408s phase=train event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:17:36 elapsed=45.435s phase=train event=complete trial=3 stage=1/2 stage_duration_sec=45.008
+[pipeline-trace] wall=19:17:36 elapsed=45.436s phase=train event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:17:41 elapsed=50.199s phase=train event=complete trial=2 stage=2/2 stage_duration_sec=13.791
+[pipeline-trace] wall=19:17:50 elapsed=58.819s phase=train event=complete trial=3 stage=2/2 stage_duration_sec=13.383
+[pipeline-trace] wall=19:17:50 elapsed=58.820s phase=eval event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:17:50 elapsed=58.823s phase=eval event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:17:50 elapsed=58.826s phase=eval event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:17:50 elapsed=58.830s phase=eval event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:17:50 elapsed=58.927s phase=eval event=complete trial=0 stage=1/2 stage_duration_sec=0.107
+[pipeline-trace] wall=19:17:50 elapsed=58.927s phase=eval event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:17:50 elapsed=59.017s phase=eval event=complete trial=1 stage=1/2 stage_duration_sec=0.194
+[pipeline-trace] wall=19:17:50 elapsed=59.017s phase=eval event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:17:50 elapsed=59.028s phase=eval event=complete trial=0 stage=2/2 stage_duration_sec=0.101
+[pipeline-trace] wall=19:17:50 elapsed=59.116s phase=eval event=complete trial=1 stage=2/2 stage_duration_sec=0.098
+[pipeline-trace] wall=19:17:50 elapsed=59.148s phase=eval event=complete trial=2 stage=1/2 stage_duration_sec=0.321
+[pipeline-trace] wall=19:17:50 elapsed=59.148s phase=eval event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:17:50 elapsed=59.240s phase=eval event=complete trial=3 stage=1/2 stage_duration_sec=0.410
+[pipeline-trace] wall=19:17:50 elapsed=59.241s phase=eval event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:17:50 elapsed=59.286s phase=eval event=complete trial=2 stage=2/2 stage_duration_sec=0.137
+[pipeline-trace] wall=19:17:50 elapsed=59.370s phase=eval event=complete trial=3 stage=2/2 stage_duration_sec=0.129
+[pipeline-trace] wall=19:17:51 elapsed=0.437s phase=train event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:17:51 elapsed=0.442s phase=train event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:18:01 elapsed=10.360s phase=train event=complete trial=0 stage=1/2 stage_duration_sec=9.923
+[pipeline-trace] wall=19:18:01 elapsed=10.361s phase=train event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:18:09 elapsed=18.395s phase=train event=complete trial=0 stage=2/2 stage_duration_sec=8.034
+[pipeline-trace] wall=19:18:10 elapsed=19.971s phase=train event=complete trial=1 stage=1/2 stage_duration_sec=19.529
+[pipeline-trace] wall=19:18:10 elapsed=19.971s phase=train event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:18:19 elapsed=29.036s phase=train event=complete trial=1 stage=2/2 stage_duration_sec=9.065
+[pipeline-trace] wall=19:18:19 elapsed=29.037s phase=eval event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:18:19 elapsed=29.040s phase=eval event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:18:19 elapsed=29.127s phase=eval event=complete trial=0 stage=1/2 stage_duration_sec=0.090
+[pipeline-trace] wall=19:18:19 elapsed=29.127s phase=eval event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:18:19 elapsed=29.220s phase=eval event=complete trial=0 stage=2/2 stage_duration_sec=0.093
+[pipeline-trace] wall=19:18:19 elapsed=29.223s phase=eval event=complete trial=1 stage=1/2 stage_duration_sec=0.183
+[pipeline-trace] wall=19:18:19 elapsed=29.224s phase=eval event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:18:20 elapsed=29.315s phase=eval event=complete trial=1 stage=2/2 stage_duration_sec=0.091
+[pipeline-trace] wall=19:18:20 elapsed=0.457s phase=train event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:18:20 elapsed=0.465s phase=train event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:18:20 elapsed=0.469s phase=train event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:18:20 elapsed=0.473s phase=train event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:18:20 elapsed=0.478s phase=train event=dispatch trial=4 stage=1/2
+[pipeline-trace] wall=19:18:20 elapsed=0.482s phase=train event=dispatch trial=5 stage=1/2
+[pipeline-trace] wall=19:18:20 elapsed=0.487s phase=train event=dispatch trial=6 stage=1/2
+[pipeline-trace] wall=19:18:20 elapsed=0.491s phase=train event=dispatch trial=7 stage=1/2
+[pipeline-trace] wall=19:18:38 elapsed=18.777s phase=train event=complete trial=0 stage=1/2 stage_duration_sec=18.320
+[pipeline-trace] wall=19:18:38 elapsed=18.777s phase=train event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:18:54 elapsed=34.234s phase=train event=complete trial=1 stage=1/2 stage_duration_sec=33.770
+[pipeline-trace] wall=19:18:54 elapsed=34.235s phase=train event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:18:55 elapsed=35.750s phase=train event=complete trial=0 stage=2/2 stage_duration_sec=16.972
+[pipeline-trace] wall=19:19:09 elapsed=49.775s phase=train event=complete trial=2 stage=1/2 stage_duration_sec=49.305
+[pipeline-trace] wall=19:19:09 elapsed=49.775s phase=train event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:19:10 elapsed=50.614s phase=train event=complete trial=1 stage=2/2 stage_duration_sec=16.379
+[pipeline-trace] wall=19:19:25 elapsed=65.604s phase=train event=complete trial=2 stage=2/2 stage_duration_sec=15.828
+[pipeline-trace] wall=19:19:27 elapsed=67.412s phase=train event=complete trial=3 stage=1/2 stage_duration_sec=66.938
+[pipeline-trace] wall=19:19:27 elapsed=67.413s phase=train event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:19:42 elapsed=82.349s phase=train event=complete trial=4 stage=1/2 stage_duration_sec=81.872
+[pipeline-trace] wall=19:19:42 elapsed=82.350s phase=train event=dispatch trial=4 stage=2/2
+[pipeline-trace] wall=19:19:44 elapsed=84.390s phase=train event=complete trial=3 stage=2/2 stage_duration_sec=16.978
+[pipeline-trace] wall=19:19:58 elapsed=98.843s phase=train event=complete trial=4 stage=2/2 stage_duration_sec=16.493
+[pipeline-trace] wall=19:20:09 elapsed=109.139s phase=train event=complete trial=5 stage=1/2 stage_duration_sec=108.657
+[pipeline-trace] wall=19:20:09 elapsed=109.139s phase=train event=dispatch trial=5 stage=2/2
+[pipeline-trace] wall=19:20:31 elapsed=131.870s phase=train event=complete trial=6 stage=1/2 stage_duration_sec=131.383
+[pipeline-trace] wall=19:20:31 elapsed=131.872s phase=train event=dispatch trial=6 stage=2/2
+[pipeline-trace] wall=19:21:02 elapsed=162.760s phase=train event=complete trial=5 stage=2/2 stage_duration_sec=53.620
+[pipeline-trace] wall=19:21:30 elapsed=190.146s phase=train event=complete trial=7 stage=1/2 stage_duration_sec=189.655
+[pipeline-trace] wall=19:21:30 elapsed=190.147s phase=train event=dispatch trial=7 stage=2/2
+[pipeline-trace] wall=19:22:10 elapsed=230.547s phase=train event=complete trial=6 stage=2/2 stage_duration_sec=98.676
+[pipeline-trace] wall=19:23:16 elapsed=296.435s phase=train event=complete trial=7 stage=2/2 stage_duration_sec=106.287
+[pipeline-trace] wall=19:23:16 elapsed=296.437s phase=eval event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=19:23:16 elapsed=296.461s phase=eval event=dispatch trial=1 stage=1/2
+[pipeline-trace] wall=19:23:16 elapsed=296.474s phase=eval event=dispatch trial=2 stage=1/2
+[pipeline-trace] wall=19:23:16 elapsed=296.486s phase=eval event=dispatch trial=3 stage=1/2
+[pipeline-trace] wall=19:23:16 elapsed=296.500s phase=eval event=dispatch trial=4 stage=1/2
+[pipeline-trace] wall=19:23:16 elapsed=296.512s phase=eval event=dispatch trial=5 stage=1/2
+[pipeline-trace] wall=19:23:16 elapsed=296.528s phase=eval event=dispatch trial=6 stage=1/2
+[pipeline-trace] wall=19:23:16 elapsed=296.546s phase=eval event=dispatch trial=7 stage=1/2
+[pipeline-trace] wall=19:23:17 elapsed=297.040s phase=eval event=complete trial=0 stage=1/2 stage_duration_sec=0.603
+[pipeline-trace] wall=19:23:17 elapsed=297.042s phase=eval event=dispatch trial=0 stage=2/2
+[pipeline-trace] wall=19:23:17 elapsed=297.562s phase=eval event=complete trial=1 stage=1/2 stage_duration_sec=1.101
+[pipeline-trace] wall=19:23:17 elapsed=297.564s phase=eval event=dispatch trial=1 stage=2/2
+[pipeline-trace] wall=19:23:17 elapsed=297.594s phase=eval event=complete trial=0 stage=2/2 stage_duration_sec=0.552
+[pipeline-trace] wall=19:23:18 elapsed=298.113s phase=eval event=complete trial=2 stage=1/2 stage_duration_sec=1.639
+[pipeline-trace] wall=19:23:18 elapsed=298.115s phase=eval event=dispatch trial=2 stage=2/2
+[pipeline-trace] wall=19:23:18 elapsed=298.142s phase=eval event=complete trial=1 stage=2/2 stage_duration_sec=0.578
+[pipeline-trace] wall=19:23:18 elapsed=298.561s phase=eval event=complete trial=2 stage=2/2 stage_duration_sec=0.447
+[pipeline-trace] wall=19:23:18 elapsed=298.694s phase=eval event=complete trial=3 stage=1/2 stage_duration_sec=2.208
+[pipeline-trace] wall=19:23:18 elapsed=298.696s phase=eval event=dispatch trial=3 stage=2/2
+[pipeline-trace] wall=19:23:19 elapsed=299.100s phase=eval event=complete trial=4 stage=1/2 stage_duration_sec=2.600
+[pipeline-trace] wall=19:23:19 elapsed=299.103s phase=eval event=dispatch trial=4 stage=2/2
+[pipeline-trace] wall=19:23:19 elapsed=299.285s phase=eval event=complete trial=3 stage=2/2 stage_duration_sec=0.589
+[pipeline-trace] wall=19:23:19 elapsed=299.686s phase=eval event=complete trial=4 stage=2/2 stage_duration_sec=0.584
+[pipeline-trace] wall=19:23:19 elapsed=299.919s phase=eval event=complete trial=5 stage=1/2 stage_duration_sec=3.407
+[pipeline-trace] wall=19:23:19 elapsed=299.920s phase=eval event=dispatch trial=5 stage=2/2
+[pipeline-trace] wall=19:23:20 elapsed=300.493s phase=eval event=complete trial=6 stage=1/2 stage_duration_sec=3.965
+[pipeline-trace] wall=19:23:20 elapsed=300.495s phase=eval event=dispatch trial=6 stage=2/2
+[pipeline-trace] wall=19:23:20 elapsed=300.746s phase=eval event=complete trial=5 stage=2/2 stage_duration_sec=0.825
+[pipeline-trace] wall=19:23:21 elapsed=301.015s phase=eval event=complete trial=7 stage=1/2 stage_duration_sec=4.468
+[pipeline-trace] wall=19:23:21 elapsed=301.016s phase=eval event=dispatch trial=7 stage=2/2
+[pipeline-trace] wall=19:23:21 elapsed=301.248s phase=eval event=complete trial=6 stage=2/2 stage_duration_sec=0.753
+[pipeline-trace] wall=19:23:21 elapsed=301.741s phase=eval event=complete trial=7 stage=2/2 stage_duration_sec=0.725

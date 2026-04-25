@@ -111,6 +111,16 @@ class TemporalEventGNNJODIE(nn.Module):
         self.memory.zero_()
         self.last_time.zero_()
 
+    def export_runtime_state(self) -> Dict[str, torch.Tensor]:
+        return {
+            "memory": self.memory.detach().clone(),
+            "last_time": self.last_time.detach().clone(),
+        }
+
+    def import_runtime_state(self, state: Dict[str, torch.Tensor]) -> None:
+        self.memory.copy_(state["memory"].to(self.memory.device))
+        self.last_time.copy_(state["last_time"].to(self.last_time.device))
+
     def _project_time(self, emb: torch.Tensor, delta_t: torch.Tensor) -> torch.Tensor:
         # 时间投影层，将时间差映射到嵌入维度
         if self.time_proj is None or self.time_proj_mode == "off":

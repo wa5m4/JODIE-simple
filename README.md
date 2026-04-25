@@ -5,7 +5,7 @@
 - `synthetic`：合成交互数据（快速验证）
 - `wikipedia`：JODIE 原论文公开数据集
 - `reddit`：JODIE 原论文公开数据集
-- `public_csv`：本地 JODIE 格式 CSV
+- `public_csv`：本地 JODIE 格式 CSV，例如 `data/public/mooc.csv`
 
 ## 项目结构
 
@@ -52,12 +52,35 @@ python search.py --dataset reddit --search-mode rl --trials 24 --epochs-per-tria
 ### 4) 本地 CSV 训练
 
 ```bash
-python search.py --dataset public_csv --local-data-path data/public/wikipedia.csv --search-mode rl --trials 24 --epochs-per-trial 3 --k 10 --selection-metric mrr --output-dir outputs_csv
+python search.py --dataset public_csv --local-data-path data/public/mooc.csv --search-mode rl --trials 24 --epochs-per-trial 3 --k 10 --selection-metric mrr --output-dir outputs_csv
 ```
+
+### 5) Ray pipeline 训练（MOOC）
+
+适合希望把多个架构在多个 stage 间流水线推进的场景。当前 pipeline 模式支持 `--coarse-epochs`，并且每个 epoch 都会重置动态图状态，和串行模式保持一致。
+
+从本版本开始，pipeline stage 切分默认使用 cost-aware 连续切分（`--stage-balance-strategy cost`），以降低 stage 间负载不均导致的空转等待。也可以通过 `--stage-balance-strategy count` 回退为按分区数量均分。
+`cost` 估计同时考虑交互量、用户/物品活跃度，以及时序新颖度（new user/item）。
+
+另外支持每个 stage 配置多个 worker（trial 级并行），例如让 stage1 用 2 个 worker、stage2 用 1 个 worker：`--pipeline-stage-train-workers 2,1`。
+该并行只发生在不同 trial 之间；单个 trial 仍然保持 stage 顺序和时间分区顺序，不会破坏单模型时序约束。
+
+```bash
+python search.py --dataset public_csv --local-data-path data/public/mooc.csv --search-mode rl --execution-mode ray_pipeline --coarse-trials 30 --coarse-epochs 6 --architectures-per-step 4 --partition-size 256 --num-pipeline-stages 2 --pipeline-worker-gpus 0 --pipeline-worker-cpus 2 --pipeline-stage-train-workers 2,1 --pipeline-stage-eval-workers 1,1 --stage-balance-strategy cost --stage-balance-user-weight 0.25 --stage-balance-item-weight 0.25 --stage-balance-span-weight 0.0 --max-events 10000 --lr 3e-4 --k 10 --seed 42 --pipeline-trace --output-dir outputs_mooc_pipeline_small
+```
+
+常用负载均衡参数：
+
+- `--stage-balance-strategy cost|count`
+- `--stage-balance-user-weight`：用户多样性权重
+- `--stage-balance-item-weight`：物品多样性权重
+- `--stage-balance-span-weight`：时间跨度权重
+- `--pipeline-stage-train-workers`：每个 train stage 的 worker 数（单值或逗号列表）
+- `--pipeline-stage-eval-workers`：每个 eval stage 的 worker 数（单值或逗号列表）
 
 ## 数据格式说明（public_csv）
 
-`public_csv` 需要 JODIE 风格 CSV，每行至少 5 列：
+`public_csv` 需要 JODIE 风格 CSV，每行至少 5 列，例如 `mooc.csv`：
 
 ```text
 user_id,item_id,timestamp,label,f1[,f2,...]
@@ -90,6 +113,10 @@ user_id,item_id,timestamp,label,f1[,f2,...]
 - 评估指标：MRR + Recall@10
 - 对比约束：同一数据集、同一时间切分、同一训练轮数与学习率、同一特征处理、同一候选物品全集（并使用相同 seed）
 - 基线来源：`models/jodie_rnn.py`（不再依赖外部官方仓库）
+
+补充说明：
+- `TemporalEventGNNJODIE` 需要动态图上下文 `graph_ctx`，因此 pipeline 模式会为每个 trial 初始化独立图状态。
+- pipeline 模式下每个 epoch 会重置 `graph_state`，避免把上一轮的图结构累积到下一轮，和串行模式保持一致。
 
 `compare_public_dataset.py` 支持两种 jodie_rnn 基线模式：
 - `match_best`（默认）：复制搜索最优配置的可用超参，再切到 `jodie_rnn`。
