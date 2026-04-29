@@ -149,11 +149,11 @@ class JODIERNN(nn.Module):
         timestamps: torch.Tensor,
         features: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        user_emb = self.user_embeddings[user_ids]
-        item_emb = self.item_embeddings[item_ids]
+        user_emb = self.user_embeddings[user_ids].clone()
+        item_emb = self.item_embeddings[item_ids].clone()
 
-        delta_user = (timestamps - self.user_last_time[user_ids]).unsqueeze(-1)
-        delta_item = (timestamps - self.item_last_time[item_ids]).unsqueeze(-1)
+        delta_user = (timestamps - self.user_last_time[user_ids].clone()).unsqueeze(-1)
+        delta_item = (timestamps - self.item_last_time[item_ids].clone()).unsqueeze(-1)
 
         delta_user_feat = self._delta_feature(delta_user)
         delta_item_feat = self._delta_feature(delta_item)
@@ -180,12 +180,13 @@ class JODIERNN(nn.Module):
         item_rnn_input = torch.cat(item_inputs, dim=-1)
 
         if self.cell_type == "lstm":
-            user_c = self.user_cell_state[user_ids]
-            item_c = self.item_cell_state[item_ids]
+            user_c = self.user_cell_state[user_ids].clone()
+            item_c = self.item_cell_state[item_ids].clone()
             new_user_emb, new_user_c = self.user_cell(user_rnn_input, (user_emb, user_c))
             new_item_emb, new_item_c = self.item_cell(item_rnn_input, (item_emb, item_c))
             self.user_cell_state[user_ids] = new_user_c.detach()
             self.item_cell_state[item_ids] = new_item_c.detach()
+
         else:
             new_user_emb = self.user_cell(user_rnn_input, user_emb)
             new_item_emb = self.item_cell(item_rnn_input, item_emb)

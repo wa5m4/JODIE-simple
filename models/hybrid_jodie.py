@@ -209,12 +209,15 @@ class TemporalEventGNNJODIE(nn.Module):
         ts = float(timestamps[0].item())
         #从批量张量中提取第一个样本的标量值
 
-        old_user = self.memory[user_nodes]
-        old_item = self.memory[item_nodes]
-        # 获取用户和物品的旧嵌入
+        old_user = self.memory[user_nodes].clone()
+        old_item = self.memory[item_nodes].clone()
+        # clone() 防止后续 memory 原地更新破坏 autograd 计算图
 
-        du = (timestamps - self.last_time[user_nodes]).unsqueeze(-1)
-        di = (timestamps - self.last_time[item_nodes]).unsqueeze(-1)
+        last_u = self.last_time[user_nodes].clone()
+        last_i = self.last_time[item_nodes].clone()
+
+        du = (timestamps - last_u).unsqueeze(-1)
+        di = (timestamps - last_i).unsqueeze(-1)
         # 计算时间差
 
         proj_user = self._project_time(old_user, du)
@@ -222,7 +225,7 @@ class TemporalEventGNNJODIE(nn.Module):
         # 时间投影层，将时间差映射到嵌入维度
 
         # 查询阶段可使用 query_time 外推用户状态，训练时 query_time=timestamp
-        d_query = (torch.tensor([query_time], dtype=timestamps.dtype, device=timestamps.device) - self.last_time[user_nodes]).unsqueeze(-1)
+        d_query = (torch.tensor([query_time], dtype=timestamps.dtype, device=timestamps.device) - last_u).unsqueeze(-1)
         query_user = self._project_time(old_user, d_query)
 
         if self.message_mode == "peer":
@@ -258,12 +261,13 @@ class TemporalEventGNNJODIE(nn.Module):
         # 计算用户和物品的输入向量
 
         if self.memory_cell == "lstm":
-            user_c = self.user_cell_state[user_nodes]
-            item_c = self.item_cell_state[item_nodes]
+            user_c = self.user_cell_state[user_ids].clone()
+            item_c = self.item_cell_state[item_ids].clone()
             new_user, new_user_c = self.user_cell(user_input, (old_user, user_c))
             new_item, new_item_c = self.item_cell(item_input, (old_item, item_c))
-            self.user_cell_state[user_nodes] = new_user_c.detach()
-            self.item_cell_state[item_nodes] = new_item_c.detach()
+            self.user_cell_state[user_ids] = new_user_c.detach()
+            self.item_cell_state[item_ids] = new_item_c.detach()
+
         else:
             new_user = self._memory_update("user", user_input, old_user)
             new_item = self._memory_update("item", item_input, old_item)

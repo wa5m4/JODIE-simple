@@ -115,7 +115,7 @@ class EventGraphOperator(nn.Module):
 
         neigh_ids = torch.tensor(neighbors, dtype=torch.long, device=memory.device)
         # 将邻居ID列表转换为PyTorch张量
-        neigh_emb = memory[neigh_ids]
+        neigh_emb = memory[neigh_ids].clone()
         # 从嵌入表中获取邻居节点的嵌入向量
         center_expand = center_emb.unsqueeze(0).expand_as(neigh_emb)
         # 将中心节点的嵌入向量扩展为与邻居节点数量相同的形状，以便后续计算（同维度）
