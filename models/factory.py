@@ -40,6 +40,8 @@ def build_model(config: Dict):
             feature_dim=config.get("feature_dim", 8),
             cell_type=config.get("memory_cell", "gru"),
             use_time_proj=str(config.get("time_proj", "linear")).lower() not in {"off", "none"},
+            use_static_embeddings=str(config.get("use_static_embeddings", "on")).lower() not in {"off", "none", "false", "0"},
+            normalize_state=str(config.get("normalize_state", "on")).lower() not in {"off", "none", "false", "0"},
         )
 
     raise ValueError(f"Unsupported model type: {model_type}")

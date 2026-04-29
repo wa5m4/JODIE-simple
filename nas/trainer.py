@@ -2,9 +2,12 @@
 GraphNAS 训练器：对候选架构做短训练并打分（事件级动态图）。
 """
 
+import json
 import random
+import subprocess
+import threading
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 import numpy as np
 import torch
@@ -15,6 +18,7 @@ from data.temporal_partition import build_partition_plan
 from models.factory import build_model
 from models.training import evaluate_ranking_metrics, evaluate_recall_by_type, train_model, train_model_ce
 from nas.ray_pipeline import RayPipelineExecutor
+from nas.search_space import canonical_config_signature, sanitize_config
 
 
 class GraphNASTrainer:
@@ -27,6 +31,49 @@ class GraphNASTrainer:
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
+
+    def _sample_unique_arch(
+        self,
+        controller,
+        seen_signatures: Set[str],
+        max_attempts: int = 64,
+    ) -> Tuple[Dict, Optional[torch.Tensor]]:
+        attempts = 0
+
+        while attempts < max_attempts:
+            if hasattr(controller, "sample_arch_with_logprob"):
+                arch, logprob = controller.sample_arch_with_logprob()
+            else:
+                arch = controller.sample_arch()
+                logprob = None
+
+            arch = sanitize_config(arch)
+            signature = canonical_config_signature(arch)
+            if signature not in seen_signatures:
+                seen_signatures.add(signature)
+                return arch, logprob
+            attempts += 1
+
+        # Exhausted unique attempts, return one valid sample to keep the run progressing.
+        if hasattr(controller, "sample_arch_with_logprob"):
+            arch, logprob = controller.sample_arch_with_logprob()
+        else:
+            arch = controller.sample_arch()
+            logprob = None
+        arch = sanitize_config(arch)
+        return arch, logprob
+
+    def _sample_unique_arch_batch(
+        self,
+        controller,
+        batch_size: int,
+        seen_signatures: Set[str],
+    ) -> List[Tuple[Dict, Optional[torch.Tensor]]]:
+        samples: List[Tuple[Dict, Optional[torch.Tensor]]] = []
+        for _ in range(batch_size):
+            arch, logprob = self._sample_unique_arch(controller, seen_signatures)
+            samples.append((arch, logprob))
+        return samples
 
     def _prepare_data(self):
         dataset_name = self.base_config.get("dataset", "synthetic")
@@ -373,20 +420,46 @@ class GraphNASTrainer:
         family_balanced_rerank: bool = False,
         family_balance_per_model: int = 1,
     ) -> Tuple[Dict, List[Dict]]:
+        print(f"\n{'='*70}", flush=True)
+        print(f"[GraphNAS] Starting search pipeline", flush=True)
+        print(f"[GraphNAS] Coarse trials: {coarse_trials}, epochs: {coarse_epochs}", flush=True)
+        print(f"[GraphNAS] Rerank top-k: {rerank_top_k}, epochs: {rerank_epochs}", flush=True)
+        print(f"{'='*70}\n", flush=True)
+        
+        # 启动效率监控（如果启用）
+        monitor_process = None
+        if self.base_config.get("enable_efficiency_monitor", False) and self.base_config.get("pipeline_trace_log_path"):
+            trace_file = self.base_config.get("pipeline_trace_log_path")
+            interval = self.base_config.get("efficiency_monitor_interval", 10)
+            
+            try:
+                print(f"[Efficiency Monitor] Starting efficiency monitor (interval: {interval}s)", flush=True)
+                monitor_process = subprocess.Popen(
+                    ["python", "tools/monitor_pipeline_efficiency.py", trace_file, str(interval)],
+                )
+                print(f"[Efficiency Monitor] Monitor process started (PID: {monitor_process.pid})", flush=True)
+            except Exception as e:
+                print(f"[Efficiency Monitor] ⚠️ Failed to start monitor: {e}", flush=True)
+                monitor_process = None
+        
         train_data, val_data, test_data, user_type_prefs, item_type, graph_template, partition_plan = self._prepare_data()
         results: List[Dict] = []
         total_generated = 0
+        seen_signatures: Set[str] = set()
 
         while total_generated < coarse_trials:
             batch_size = min(architectures_per_step, coarse_trials - total_generated)
-            if hasattr(controller, "sample_arch_batch_with_logprob"):
-                samples = controller.sample_arch_batch_with_logprob(batch_size)
-                arch_batch = [arch for arch, _ in samples]
-                logprobs = [logprob for _, logprob in samples]
-            else:
-                arch_batch = controller.sample_arch_batch(batch_size)
-                logprobs = [None] * len(arch_batch)
+            print(f"[Coarse Phase] Sampling batch {total_generated//batch_size + 1}: {batch_size} architectures", flush=True)
+            
+            samples = self._sample_unique_arch_batch(
+                controller=controller,
+                batch_size=batch_size,
+                seen_signatures=seen_signatures,
+            )
+            arch_batch = [arch for arch, _ in samples]
+            logprobs = [logprob for _, logprob in samples]
 
+            print(f"[Coarse Phase] Evaluating architectures {total_generated+1}-{total_generated+len(arch_batch)}/{coarse_trials}", flush=True)
             batch_results = self.evaluate_arch_pipeline(
                 arch_configs=arch_batch,
                 partition_plan=partition_plan,
@@ -411,6 +484,7 @@ class GraphNASTrainer:
                         controller.reinforce_step(logprob, result["score"])
 
             total_generated += len(batch_results)
+            print(f"[Coarse Phase] Progress: {total_generated}/{coarse_trials} trials completed", flush=True)
 
         coarse_sorted = sorted(results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)
         selected = coarse_sorted[0]
@@ -426,6 +500,7 @@ class GraphNASTrainer:
                 rerank_candidates = coarse_sorted[:rerank_top_k]
 
             rerank_configs = [row["config"] for row in rerank_candidates]
+            print(f"[Rerank Phase] Evaluating {len(rerank_configs)} candidates with {rerank_epochs} epochs", flush=True)
             rerank_results = self.evaluate_arch_pipeline(
                 arch_configs=rerank_configs,
                 partition_plan=partition_plan,
@@ -440,6 +515,31 @@ class GraphNASTrainer:
 
         best = selected
         best["distribution_metadata"] = self._distribution_metadata(train_data, val_data, test_data)
+        
+        # 停止效率监控
+        if monitor_process is not None:
+            try:
+                monitor_process.terminate()
+                monitor_process.wait(timeout=5)
+                print(f"[Efficiency Monitor] Monitor process stopped", flush=True)
+                
+                # 生成效率报告
+                trace_file = self.base_config.get("pipeline_trace_log_path")
+                if trace_file:
+                    efficiency_log = trace_file.replace("pipeline_trace_", "efficiency_log_").replace(".log", ".csv")
+                    report_file = efficiency_log.replace(".csv", "_report.txt")
+                    try:
+                        subprocess.run(
+                            ["python", "tools/visualize_efficiency_log.py", efficiency_log, "--export", report_file],
+                            timeout=10,
+                            check=False,
+                        )
+                        print(f"[Efficiency Monitor] Report saved to: {report_file}", flush=True)
+                    except Exception as e:
+                        print(f"[Efficiency Monitor] ⚠️ Failed to generate report: {e}", flush=True)
+            except Exception as e:
+                print(f"[Efficiency Monitor] ⚠️ Error stopping monitor: {e}", flush=True)
+        
         return best, results
 
     def search(
@@ -455,13 +555,13 @@ class GraphNASTrainer:
     ) -> Tuple[Dict, List[Dict]]:
         train_data, val_data, test_data, user_type_prefs, item_type, graph_template, partition_plan = self._prepare_data()
         results: List[Dict] = []
+        seen_signatures: Set[str] = set()
 
         for trial in range(coarse_trials):
-            if hasattr(controller, "sample_arch_with_logprob"):
-                arch, logprob = controller.sample_arch_with_logprob()
-            else:
-                arch = controller.sample_arch()
-                logprob = None
+            arch, logprob = self._sample_unique_arch(
+                controller=controller,
+                seen_signatures=seen_signatures,
+            )
 
             trial_seed = int(self.base_config.get("seed", 42)) + trial
             result = self._evaluate_arch_multi_seed(
@@ -487,6 +587,7 @@ class GraphNASTrainer:
                 f"model={result['config'].get('model', 'unknown')} "
                 f"agg={result['config'].get('event_agg', 'na')} "
                 f"memory={result['config'].get('memory_cell', 'na')} "
+                f"time_proj={result['config'].get('time_proj', 'na')} "
                 f"val_score={result['score']:.4f}"
             )
 

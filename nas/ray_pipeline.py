@@ -1,5 +1,6 @@
 from collections import deque
 from dataclasses import dataclass
+import os
 from typing import Deque, Dict, List, Optional, Tuple
 import time
 
@@ -42,6 +43,9 @@ class PartitionShardWorker:
     def __init__(self, partitions: List[TemporalPartition], base_config: Dict):
         self.partitions = {partition.partition_id: partition for partition in partitions}
         self.base_config = dict(base_config)
+        self.pipeline_trace = bool(self.base_config.get("pipeline_trace", False))
+        self.pipeline_trace_log_path = str(self.base_config.get("pipeline_trace_log_path", "")).strip()
+        self._trace_start = time.perf_counter()
 
     def _build_model(self, payload: PipelineModelPayload):
         config = dict(self.base_config)
@@ -51,6 +55,20 @@ class PartitionShardWorker:
         if payload.runtime_state is not None and hasattr(model, "import_runtime_state"):
             model.import_runtime_state(payload.runtime_state)
         return model, config
+
+    def _append_trace_line(self, line: str) -> None:
+        if not self.pipeline_trace_log_path:
+            return
+        with open(self.pipeline_trace_log_path, "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+
+    def _trace_progress(self, message: str) -> None:
+        elapsed = time.perf_counter() - self._trace_start
+        wall_ts = time.strftime("%H:%M:%S", time.localtime())
+        line = f"[pipeline-trace] wall={wall_ts} elapsed={elapsed:.3f}s {message}"
+        self._append_trace_line(line)
+        if self.pipeline_trace:
+            print(line, flush=True)
 
     def run_train_stage_batch(
         self,
@@ -68,6 +86,7 @@ class PartitionShardWorker:
             optimizer.load_state_dict(payload.optimizer_state)
 
         epochs = max(int(num_epochs), 1)
+        progress_every = int(self.base_config.get("pipeline_train_progress_every", 100))
         graph_state = restore_graph_state(payload.graph_state) if payload.graph_state is not None else None
         for epoch in range(epochs):
             if hasattr(model, "reset_state"):
@@ -87,6 +106,10 @@ class PartitionShardWorker:
                         neg_sample_size=config.get("neg_sample_size", 5),
                         graph_ctx=epoch_graph_state,
                         seed=payload.seed + epoch * 100000 + partition_id,
+                        progress_every=progress_every,
+                        progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
+                            f"phase=train event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=bpr epoch={epoch + 1}/{epochs}"
+                        ),
                     )
                 else:
                     train_partition_ce(
@@ -94,6 +117,10 @@ class PartitionShardWorker:
                         partition=partition,
                         optimizer=optimizer,
                         graph_ctx=epoch_graph_state,
+                        progress_every=progress_every,
+                        progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
+                            f"phase=train event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=ce epoch={epoch + 1}/{epochs}"
+                        ),
                     )
 
         runtime_state = model.export_runtime_state() if hasattr(model, "export_runtime_state") else None
@@ -126,12 +153,19 @@ class PartitionShardWorker:
 
         model, _ = self._build_model(payload)
         graph_state = restore_graph_state(payload.graph_state) if payload.graph_state is not None else None
+        progress_every = int(self.base_config.get("pipeline_eval_progress_every", 100))
+        stage_label = f"trial={payload.trial_id} partitions={partition_ids}"
+        self._trace_progress(f"phase=eval event=batch_start {stage_label} synthetic={synthetic_mode}")
 
         total_hits = 0
         total_count = 0
         total_mrr = 0.0
         for partition_id in partition_ids:
             partition = self.partitions[partition_id]
+            partition_start = time.perf_counter()
+            self._trace_progress(
+                f"phase=eval event=partition_start trial={payload.trial_id} partition={partition_id} interactions={len(partition.interactions)}"
+            )
             if synthetic_mode:
                 metrics = evaluate_partition_type_recall(
                     model,
@@ -140,15 +174,33 @@ class PartitionShardWorker:
                     user_type_prefs=user_type_prefs,
                     k=k,
                     graph_ctx=graph_state,
+                    progress_label=stage_label,
+                    progress_every=progress_every,
+                    progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
+                        f"phase=eval event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=type"
+                    ),
                 )
                 total_hits += int(metrics["hits"])
                 total_count += int(metrics["total"])
                 total_mrr += float(metrics["hits"])
             else:
-                metrics = evaluate_partition_ranking(model, partition, k=k, graph_ctx=graph_state)
+                metrics = evaluate_partition_ranking(
+                    model,
+                    partition,
+                    k=k,
+                    graph_ctx=graph_state,
+                    progress_label=stage_label,
+                    progress_every=progress_every,
+                    progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
+                        f"phase=eval event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=ranking"
+                    ),
+                )
                 total_hits += int(metrics["hits"])
                 total_count += int(metrics["total"])
                 total_mrr += float(metrics["mrr_sum"])
+            self._trace_progress(
+                f"phase=eval event=partition_complete trial={payload.trial_id} partition={partition_id} elapsed_sec={time.perf_counter() - partition_start:.3f} hits={int(metrics['hits'])} total={int(metrics['total'])}"
+            )
 
         runtime_state = model.export_runtime_state() if hasattr(model, "export_runtime_state") else None
         updated_payload = PipelineModelPayload(
@@ -207,7 +259,8 @@ def create_ray_worker(partitions: List[TemporalPartition], base_config: Dict):
 
 class RayPipelineExecutor:
     def __init__(self, base_config: Dict, partition_plan: TemporalPartitionPlan):
-        self.base_config = dict(base_config)
+        self.base_config = dict(base_config)    
+        
         self.partition_plan = partition_plan
         self.pipeline_trace = bool(self.base_config.get("pipeline_trace", False))
         self.pipeline_trace_log_path = str(self.base_config.get("pipeline_trace_log_path", "")).strip()
@@ -217,6 +270,32 @@ class RayPipelineExecutor:
         self.stage_balance_span_weight = float(self.base_config.get("stage_balance_span_weight", 0.0))
         self._trace_start = time.perf_counter()
         self._stage_dispatch_times: Dict[str, float] = {}
+        self._trace_scan_pos = 0
+
+    def _scan_worker_progress_events(self) -> Tuple[int, Optional[str]]:
+        if not self.pipeline_trace_log_path:
+            return 0, None
+        if not os.path.exists(self.pipeline_trace_log_path):
+            return 0, None
+
+        progress_count = 0
+        last_progress_line = None
+        try:
+            with open(self.pipeline_trace_log_path, "r", encoding="utf-8") as f:
+                f.seek(self._trace_scan_pos)
+                for line in f:
+                    if (
+                        "event=interaction_progress" in line
+                        or "event=partition_start" in line
+                        or "event=partition_complete" in line
+                    ):
+                        progress_count += 1
+                        last_progress_line = line.strip()
+                self._trace_scan_pos = f.tell()
+        except OSError:
+            return 0, None
+
+        return progress_count, last_progress_line
 
     def _resolve_stage_worker_counts(self, key: str, num_stages: int, fallback: Optional[List[int]] = None) -> List[int]:
         raw = str(self.base_config.get(key, "")).strip()
@@ -403,6 +482,9 @@ class RayPipelineExecutor:
         pending_by_stage: List[Deque[PipelineModelPayload]] = [deque() for _ in range(stage_total)]
         pending_by_stage[0] = deque(payloads)
         idle_workers: List[Deque[int]] = [deque(range(len(pool))) for pool in stage_workers]
+        last_heartbeat = time.perf_counter()
+        heartbeat_interval = float(self.base_config.get("pipeline_heartbeat_interval_sec", 5.0))
+        last_progress_events_seen = 0
 
         while True:
             progress = False
@@ -427,11 +509,46 @@ class RayPipelineExecutor:
                     continue
                 break
 
-            done_refs, _ = ray.wait(list(in_flight.keys()), num_returns=1)
+            done_refs, _ = ray.wait(list(in_flight.keys()), num_returns=1, timeout=5.0)
+            if not done_refs:
+                now = time.perf_counter()
+                progress_delta, last_progress_line = self._scan_worker_progress_events()
+                if progress_delta > 0:
+                    last_progress_events_seen += progress_delta
+                # 固定间隔打印有意义的心跳：只依据真实进度事件变化判断状态
+                if now - last_heartbeat >= heartbeat_interval:
+                    active_by_stage: Dict[int, int] = {}
+                    for stage_idx, _ in in_flight.values():
+                        active_by_stage[stage_idx] = active_by_stage.get(stage_idx, 0) + 1
+                    active_desc = ", ".join(
+                        f"stage {stage_idx + 1}={count}" for stage_idx, count in sorted(active_by_stage.items())
+                    ) or "none"
+                    pending_desc = ", ".join(
+                        f"stage {stage_idx + 1}={len(queue)}" for stage_idx, queue in enumerate(pending_by_stage)
+                    )
+                    if progress_delta > 0:
+                        status = "advancing"
+                    else:
+                        status = "no_new_progress"
+                    print(
+                        f"[pipeline-heartbeat] wall={time.strftime('%H:%M:%S', time.localtime())} "
+                        f"phase=train status={status} progress_events_total={last_progress_events_seen} progress_events_delta={progress_delta} "
+                        f"in_flight={len(in_flight)} active={active_desc} pending={pending_desc}"
+                        + (f" last_progress={last_progress_line}" if last_progress_line else ""),
+                        flush=True,
+                    )
+                    last_heartbeat = now
+                continue
             done_ref = done_refs[0]
             stage_idx, worker_idx = in_flight.pop(done_ref)
             idle_workers[stage_idx].append(worker_idx)
-            updated_payload = ray.get(done_ref)
+            try:
+                updated_payload = ray.get(done_ref)
+            except Exception as e:
+                print(f"[ERROR] Ray task failed for train pipeline: {str(e)}", flush=True)
+                import traceback
+                traceback.print_exc()
+                raise
             self._trace_event("train", "complete", updated_payload.trial_id, stage_idx, stage_total)
 
             if stage_idx >= last_stage_idx:
@@ -467,6 +584,9 @@ class RayPipelineExecutor:
         pending_by_stage: List[Deque[PipelineModelPayload]] = [deque() for _ in range(stage_total)]
         pending_by_stage[0] = deque(payloads)
         idle_workers: List[Deque[int]] = [deque(range(len(pool))) for pool in eval_stage_workers]
+        last_progress_events_seen = 0
+        last_heartbeat = time.perf_counter()
+        heartbeat_interval = float(self.base_config.get("pipeline_heartbeat_interval_sec", 5.0))
 
         while True:
             progress = False
@@ -493,11 +613,46 @@ class RayPipelineExecutor:
                     continue
                 break
 
-            done_refs, _ = ray.wait(list(in_flight.keys()), num_returns=1)
+            done_refs, _ = ray.wait(list(in_flight.keys()), num_returns=1, timeout=5.0)
+            if not done_refs:
+                now = time.perf_counter()
+                progress_delta, last_progress_line = self._scan_worker_progress_events()
+                if progress_delta > 0:
+                    last_progress_events_seen += progress_delta
+                # 固定间隔打印有意义的心跳：只依据真实进度事件变化判断状态
+                if now - last_heartbeat >= heartbeat_interval:
+                    active_by_stage: Dict[int, int] = {}
+                    for stage_idx, _ in in_flight.values():
+                        active_by_stage[stage_idx] = active_by_stage.get(stage_idx, 0) + 1
+                    active_desc = ", ".join(
+                        f"stage {stage_idx + 1}={count}" for stage_idx, count in sorted(active_by_stage.items())
+                    ) or "none"
+                    pending_desc = ", ".join(
+                        f"stage {stage_idx + 1}={len(queue)}" for stage_idx, queue in enumerate(pending_by_stage)
+                    )
+                    if progress_delta > 0:
+                        status = "advancing"
+                    else:
+                        status = "no_new_progress"
+                    print(
+                        f"[pipeline-heartbeat] wall={time.strftime('%H:%M:%S', time.localtime())} "
+                        f"phase=eval status={status} progress_events_total={last_progress_events_seen} progress_events_delta={progress_delta} "
+                        f"in_flight={len(in_flight)} active={active_desc} pending={pending_desc}"
+                        + (f" last_progress={last_progress_line}" if last_progress_line else ""),
+                        flush=True,
+                    )
+                    last_heartbeat = now
+                continue
             done_ref = done_refs[0]
             stage_idx, worker_idx = in_flight.pop(done_ref)
             idle_workers[stage_idx].append(worker_idx)
-            stage_result = ray.get(done_ref)
+            try:
+                stage_result = ray.get(done_ref)
+            except Exception as e:
+                print(f"[ERROR] Ray task failed for eval pipeline: {str(e)}", flush=True)
+                import traceback
+                traceback.print_exc()
+                raise
             payload = stage_result["payload"]
             self._trace_event("eval", "complete", payload.trial_id, stage_idx, stage_total)
             trial_score = scores[payload.trial_id]
@@ -512,6 +667,16 @@ class RayPipelineExecutor:
             pending_by_stage[next_stage].append(payload)
 
         return scores
+
+    def _shutdown_worker_pool(self, stage_workers) -> None:
+        if ray is None:
+            return
+        for pool in stage_workers:
+            for worker in pool:
+                try:
+                    ray.kill(worker, no_restart=True)
+                except Exception:
+                    pass
 
     def _make_payload(self, arch_config: Dict, trial_id: int, seed: int) -> PipelineModelPayload:
         config = dict(self.base_config)
@@ -551,14 +716,36 @@ class RayPipelineExecutor:
         train_worker_counts = self._resolve_stage_worker_counts("pipeline_stage_train_workers", stage_total)
         eval_worker_counts = self._resolve_stage_worker_counts("pipeline_stage_eval_workers", len(eval_groups), fallback=[1 for _ in range(len(eval_groups))])
 
-        train_stage_workers = [
-            [create_ray_worker(partitions, self.base_config) for _ in range(train_worker_counts[idx])]
-            for idx, partitions in enumerate(train_groups)
-        ]
-        eval_stage_workers = [
-            [create_ray_worker(partitions, self.base_config) for _ in range(eval_worker_counts[idx])]
-            for idx, partitions in enumerate(eval_groups)
-        ] if eval_groups else []
+        # 自动检测本机可见 GPU 并在用户未指定 pipeline_worker_gpus 时做出合理默认
+        try:
+            gpu_count = int(torch.cuda.device_count() if torch.cuda.is_available() else 0)
+        except Exception:
+            gpu_count = 0
+
+        specified_worker_gpus = float(self.base_config.get("pipeline_worker_gpus", 0.0))
+        if gpu_count > 0 and specified_worker_gpus <= 0.0:
+            # 优先为每个 actor 请求 1 GPU，用户仍可通过 CLI 覆盖
+            self.base_config["pipeline_worker_gpus"] = 1.0
+            print(
+                f"[RayPipeline] detected {gpu_count} GPUs; auto-setting pipeline_worker_gpus=1.0 (one GPU per actor).",
+                flush=True,
+            )
+            total_train_workers = sum(train_worker_counts)
+            if total_train_workers > gpu_count:
+                print(
+                    f"[RayPipeline] warning: requested total train workers={total_train_workers} > available GPUs={gpu_count}; "
+                    f"Ray will schedule up to {gpu_count} concurrent GPU-actors; consider lowering pipeline_stage_train_workers.",
+                    flush=True,
+                )
+
+        print(
+            f"[RayPipeline] train stage count={stage_total}, train worker counts={train_worker_counts}, train groups={[ [p.partition_id for p in group] for group in train_groups ]}",
+            flush=True,
+        )
+        print(
+            f"[RayPipeline] eval stage count={len(eval_groups)}, eval worker counts={eval_worker_counts}, eval groups={[ [p.partition_id for p in group] for group in eval_groups ]}",
+            flush=True,
+        )
 
         payloads = [self._make_payload(arch, trial_id=idx, seed=int(self.base_config.get("seed", 42)) + idx) for idx, arch in enumerate(arch_configs)]
         synthetic_mode = self.base_config.get("dataset", "synthetic") == "synthetic"
@@ -566,22 +753,51 @@ class RayPipelineExecutor:
         use_bpr = synthetic_mode
         train_epochs = max(int(num_train_epochs), 1)
 
-        payloads = self._run_train_pipeline(
-            payloads,
-            train_groups,
-            train_stage_workers,
-            use_bpr=use_bpr,
-            num_train_epochs=train_epochs,
-        )
-        eval_scores = self._run_eval_pipeline(
-            payloads,
-            eval_groups,
-            eval_stage_workers,
-            item_type=item_type,
-            user_type_prefs=user_type_prefs,
-            k=k,
-            synthetic_mode=synthetic_mode,
-        )
+        train_stage_workers = []
+        eval_stage_workers = []
+        try:
+            train_stage_workers = [
+                [create_ray_worker(partitions, self.base_config) for _ in range(train_worker_counts[idx])]
+                for idx, partitions in enumerate(train_groups)
+            ]
+
+            print(
+                f"[RayPipeline] created train worker pools={[len(pool) for pool in train_stage_workers]}",
+                flush=True,
+            )
+
+            payloads = self._run_train_pipeline(
+                payloads,
+                train_groups,
+                train_stage_workers,
+                use_bpr=use_bpr,
+                num_train_epochs=train_epochs,
+            )
+
+            # Free train actors first to avoid GPU resource contention when scheduling eval actors.
+            self._shutdown_worker_pool(train_stage_workers)
+            train_stage_workers = []
+
+            eval_stage_workers = [
+                [create_ray_worker(partitions, self.base_config) for _ in range(eval_worker_counts[idx])]
+                for idx, partitions in enumerate(eval_groups)
+            ] if eval_groups else []
+            print(
+                f"[RayPipeline] created eval worker pools={[len(pool) for pool in eval_stage_workers]}",
+                flush=True,
+            )
+            eval_scores = self._run_eval_pipeline(
+                payloads,
+                eval_groups,
+                eval_stage_workers,
+                item_type=item_type,
+                user_type_prefs=user_type_prefs,
+                k=k,
+                synthetic_mode=synthetic_mode,
+            )
+        finally:
+            self._shutdown_worker_pool(train_stage_workers)
+            self._shutdown_worker_pool(eval_stage_workers)
 
         results = []
         for payload in payloads:

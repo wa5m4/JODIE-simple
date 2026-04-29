@@ -42,6 +42,68 @@ python search.py `
   --output-dir outputs_mooc_pipeline_small
 
 
+
+服务器训练，使用0，1，2号gpu
+
+CUDA_VISIBLE_DEVICES="0,1,2" python search.py \
+  --dataset public_csv \
+  --local-data-path "data/public/mooc.csv" \
+  --search-mode rl \
+  --execution-mode ray_pipeline \
+  --coarse-trials 30 \
+  --coarse-epochs 6 \
+  --rerank-top-k 8 \
+  --rerank-epochs 10 \
+  --architectures-per-step 4 \
+  --partition-size 256 \
+  --num-pipeline-stages 2 \
+  --pipeline-worker-gpus 1 \
+  --pipeline-worker-cpus 2 \
+  --pipeline-stage-train-workers 2,1 \
+  --pipeline-stage-eval-workers 1,1 \
+  --stage-balance-strategy cost \
+  --stage-balance-user-weight 0.25 \
+  --stage-balance-item-weight 0.25 \
+  --stage-balance-span-weight 0.0 \
+  --max-events 10000 \
+  --lr 3e-4 \
+  --k 10 \
+  --seed 42 \
+  --pipeline-trace \
+  --output-dir "outputs_mooc_pipeline_small"
+
+
+
+跑mooc数据集准备和论文对比
+
+cd /home/wanghaoyu/JODIE-simple
+
+CUDA_VISIBLE_DEVICES=0,1,2 python search.py \
+  --space paper_compare \
+  --search-mode rl \
+  --execution-mode ray_pipeline \
+  --dataset public_csv \
+  --dataset-dir data/public \
+  --local-data-path data/public/mooc.csv \
+  --train-ratio 0.7 \
+  --val-ratio 0.1 \
+  --max-events 0 \
+  --feature-dim 8 \
+  --lr 0.0003 \
+  --k 10 \
+  --seed 42 \
+  --coarse-trials 6 \
+  --coarse-epochs 1 \
+  --rerank-top-k 3 \
+  --rerank-epochs 3 \
+  --pipeline-worker-gpus 1.0 \
+  --num-pipeline-stages 2 \
+  --output-dir outputs_mooc_paper_search_new
+
+
+
+
+
 | 参数 | 类型 | 默认值 | 适用范围 | 说明 |
 |---|---|---|---|---|
 | `--space` | str | `small` | 全部 | 搜索空间名称（当前仅支持 `small`） |

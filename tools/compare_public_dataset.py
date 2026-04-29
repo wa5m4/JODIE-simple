@@ -12,6 +12,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 import torch
 
+from baselines.official_jodie_adapter import run_official_jodie_baseline
 from data.public_dataset import load_public_dataset
 from data.synthetic import init_dynamic_graph_state
 from models.factory import build_model
@@ -71,6 +72,24 @@ def parse_args():
     )
     parser.add_argument("--output-dir", type=str, default="outputs/public_compare")
     parser.add_argument("--strict-meta-check", action="store_true", help="Fail when run config mismatches best_arch metadata.")
+    parser.add_argument(
+        "--official-jodie-repo",
+        type=str,
+        default="",
+        help="Path to official JODIE repository for baseline comparison. If provided, will run official JODIE for fair protocol comparison.",
+    )
+    parser.add_argument(
+        "--official-python",
+        type=str,
+        default="python",
+        help="Python interpreter to use for official JODIE.",
+    )
+    parser.add_argument(
+        "--official-embedding-dim",
+        type=int,
+        default=128,
+        help="Embedding dimension for official JODIE baseline.",
+    )
     return parser.parse_args()
 
 
@@ -184,6 +203,23 @@ def _aggregate_metric(values: List[float]) -> Dict[str, float]:
     if len(values) == 1:
         return {"mean": float(values[0]), "std": 0.0}
     return {"mean": float(mean(values)), "std": float(pstdev(values))}
+
+
+def _generate_protocol_json(output_dir: str, csv_path: str, train_ratio: float, epochs: int, embedding_dim: int, lr: float) -> str:
+    """Generate protocol.json for official JODIE adapter."""
+    protocol = {
+        "official_dataset_csv": os.path.abspath(csv_path),
+        "official_network_name": "compare_search_official_jodie",
+        "official_embedding_dim": embedding_dim,
+        "train_ratio": train_ratio,
+        "epochs": epochs,
+        "lr": lr,
+    }
+    os.makedirs(output_dir, exist_ok=True)
+    protocol_path = os.path.join(output_dir, "protocol_official.json")
+    with open(protocol_path, "w", encoding="utf-8") as f:
+        json.dump(protocol, f, ensure_ascii=False, indent=2)
+    return protocol_path
 
 
 def _evaluate_single_seed(
@@ -338,6 +374,55 @@ def main():
         },
     }
 
+    # Run official JODIE if repo path provided
+    os.makedirs(args.output_dir, exist_ok=True)
+    official_jodie_result = None
+    if args.official_jodie_repo.strip():
+        print("\n=== Running official JODIE baseline ===")
+        # Build dataset CSV path from args
+        if args.dataset == "public_csv":
+            if not args.local_data_path:
+                print("Warning: dataset=public_csv requires --local-data-path for official JODIE")
+            csv_path = args.local_data_path
+        elif args.dataset in ("wikipedia", "reddit"):
+            csv_path = os.path.join(args.dataset_dir, f"{args.dataset}.csv")
+        else:
+            csv_path = os.path.join(args.dataset_dir, f"{args.dataset}.csv")
+
+        if not os.path.exists(csv_path):
+            print(f"Warning: CSV file not found: {csv_path}, skipping official JODIE")
+        else:
+            protocol_path = _generate_protocol_json(
+                args.output_dir,
+                csv_path,
+                args.train_ratio,
+                args.epochs,
+                args.official_embedding_dim,
+                args.lr,
+            )
+            official_result = run_official_jodie_baseline(
+                protocol_json_path=protocol_path,
+                result_json_path=os.path.join(args.output_dir, "official_jodie_result.json"),
+                official_jodie_repo=args.official_jodie_repo,
+                official_python=args.official_python,
+                official_cmd_template="",
+                require_official=False,
+            )
+            official_jodie_result = {
+                "status": official_result.status,
+                "reason": official_result.reason,
+                "mrr": official_result.mrr,
+                "recall_at_10": official_result.recall_at_10,
+                "repo_path": official_result.repo_path,
+                "commit": official_result.commit,
+            }
+            print(f"Official JODIE status: {official_result.status}")
+            if official_result.status == "ok":
+                print(f"Official JODIE MRR: {official_result.mrr:.4f}")
+                print(f"Official JODIE Recall@10: {official_result.recall_at_10:.4f}")
+            elif official_result.reason:
+                print(f"Official JODIE reason: {official_result.reason}")
+
     result = {
         "dataset": args.dataset,
         "best_arch_path": args.best_arch_path,
@@ -354,6 +439,7 @@ def main():
         "num_test_events": len(test_data),
         "k": args.k,
         "candidate_policy": "global_item_set",
+        "evaluation_protocol": "your_protocol",
         "baseline_jodie_mode": args.baseline_jodie_mode,
         "baseline_jodie_config": {
             "embedding_dim": int(args.baseline_embedding_dim),
@@ -365,20 +451,31 @@ def main():
         "summary": summary,
     }
 
-    os.makedirs(args.output_dir, exist_ok=True)
+    if official_jodie_result is not None:
+        result["official_jodie"] = official_jodie_result
+
     out_path = os.path.join(args.output_dir, "comparison_result.json")
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
+    print("\n=== Comparison Results ===")
     print(f"Dataset: {args.dataset}")
     print(f"Seeds: {seeds}")
-    print(f"Searched model MRR (mean±std): {summary['searched_model']['mrr']['mean']:.4f}±{summary['searched_model']['mrr']['std']:.4f}")
-    print(f"Searched model Recall@{args.k} (mean±std): {summary['searched_model']['recall_at_k']['mean']:.4f}±{summary['searched_model']['recall_at_k']['std']:.4f}")
-    print(f"jodie_rnn MRR (mean±std): {summary['jodie_rnn']['mrr']['mean']:.4f}±{summary['jodie_rnn']['mrr']['std']:.4f}")
-    print(f"jodie_rnn Recall@{args.k} (mean±std): {summary['jodie_rnn']['recall_at_k']['mean']:.4f}±{summary['jodie_rnn']['recall_at_k']['std']:.4f}")
-    print(f"Delta MRR (searched - jodie_rnn): {summary['delta']['mrr']['mean']:.4f}±{summary['delta']['mrr']['std']:.4f}")
-    print(f"Delta Recall@{args.k} (searched - jodie_rnn): {summary['delta']['recall_at_k']['mean']:.4f}±{summary['delta']['recall_at_k']['std']:.4f}")
-    print(f"Saved comparison to: {out_path}")
+    print(f"\nYour Protocol (CE loss + global item candidates):")
+    print(f"  Searched model MRR: {summary['searched_model']['mrr']['mean']:.4f}±{summary['searched_model']['mrr']['std']:.4f}")
+    print(f"  Searched model Recall@{args.k}: {summary['searched_model']['recall_at_k']['mean']:.4f}±{summary['searched_model']['recall_at_k']['std']:.4f}")
+    print(f"  jodie_rnn MRR: {summary['jodie_rnn']['mrr']['mean']:.4f}±{summary['jodie_rnn']['mrr']['std']:.4f}")
+    print(f"  jodie_rnn Recall@{args.k}: {summary['jodie_rnn']['recall_at_k']['mean']:.4f}±{summary['jodie_rnn']['recall_at_k']['std']:.4f}")
+    print(f"  Delta MRR (searched - jodie_rnn): {summary['delta']['mrr']['mean']:.4f}±{summary['delta']['mrr']['std']:.4f}")
+    print(f"  Delta Recall@{args.k}: {summary['delta']['recall_at_k']['mean']:.4f}±{summary['delta']['recall_at_k']['std']:.4f}")
+
+    if official_jodie_result is not None and official_jodie_result["status"] == "ok":
+        print(f"\nOfficial JODIE Protocol (paper baseline):")
+        print(f"  Official JODIE MRR: {official_jodie_result['mrr']:.4f}")
+        print(f"  Official JODIE Recall@10: {official_jodie_result['recall_at_10']:.4f}")
+        print(f"  Repository commit: {official_jodie_result['commit']}")
+
+    print(f"\nResults saved to: {out_path}")
 
 
 if __name__ == "__main__":

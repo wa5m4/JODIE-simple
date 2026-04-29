@@ -2,6 +2,7 @@
 训练与评估公用模块（事件级动态图版本）。
 """
 
+import time
 from typing import Dict, List, Optional
 
 import numpy as np
@@ -90,11 +91,17 @@ def train_partition_bpr(
     neg_sample_size: int = 5,
     graph_ctx: Optional[Dict] = None,
     seed: Optional[int] = None,
+    progress_every: int = 0,
+    progress_callback=None,
 ) -> float:
     rng = np.random.default_rng(seed)
     total_loss = 0.0
 
-    for interaction in partition.interactions:
+    interaction_total = len(partition.interactions)
+    for idx, interaction in enumerate(partition.interactions, start=1):
+        if progress_every > 0 and (idx == 1 or idx % max(progress_every, 100) == 0 or idx == interaction_total):
+            if progress_callback is not None:
+                progress_callback(idx, interaction_total)
         uid = torch.tensor([interaction.user_id], dtype=torch.long)
         iid = torch.tensor([interaction.item_id], dtype=torch.long)
         t = torch.tensor([interaction.timestamp], dtype=torch.float32)
@@ -112,7 +119,7 @@ def train_partition_bpr(
         pos_emb = _item_embeddings_for_loss(model, iid)
         neg_emb = _item_embeddings_for_loss(model, neg_ids).unsqueeze(0)
         loss = criterion(pred_emb, pos_emb, neg_emb)
-        loss.backward()
+        loss.backward(retain_graph=True)
         optimizer.step()
 
         total_loss += loss.item()
@@ -125,10 +132,16 @@ def train_partition_ce(
     partition: TemporalPartition,
     optimizer,
     graph_ctx: Optional[Dict] = None,
+    progress_every: int = 0,
+    progress_callback=None,
 ) -> float:
     total_loss = 0.0
 
-    for interaction in partition.interactions:
+    interaction_total = len(partition.interactions)
+    for idx, interaction in enumerate(partition.interactions, start=1):
+        if progress_every > 0 and (idx == 1 or idx % max(progress_every, 100) == 0 or idx == interaction_total):
+            if progress_callback is not None:
+                progress_callback(idx, interaction_total)
         uid = torch.tensor([interaction.user_id], dtype=torch.long)
         iid = torch.tensor([interaction.item_id], dtype=torch.long)
         t = torch.tensor([interaction.timestamp], dtype=torch.float32)
@@ -138,7 +151,7 @@ def train_partition_ce(
         pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
         target_emb = _item_embeddings_for_loss(model, iid)
         loss = ((pred_emb - target_emb) ** 2).sum(dim=-1).mean()
-        loss.backward()
+        loss.backward(retain_graph=True)
         optimizer.step()
 
         total_loss += loss.item()
@@ -216,11 +229,22 @@ def train_model_ce(
 
 
 @torch.no_grad()
-def evaluate_partition_ranking(model, partition: TemporalPartition, k: int = 10, graph_ctx=None) -> Dict[str, float]:
+def evaluate_partition_ranking(model, partition: TemporalPartition, k: int = 10, graph_ctx=None, progress_label: str = "", progress_every: int = 0, progress_callback=None) -> Dict[str, float]:
     hits = 0
     mrr_sum = 0.0
+    interaction_total = len(partition.interactions)
 
-    for interaction in partition.interactions:
+    start_time = time.time()
+    for idx, interaction in enumerate(partition.interactions, start=1):
+        if progress_every > 0 and (idx == 1 or idx % max(progress_every, 100) == 0 or idx == interaction_total):
+            if progress_callback is not None:
+                progress_callback(idx, interaction_total)
+            elapsed = time.time() - start_time
+            rate = idx / max(elapsed, 0.1)
+            remaining = (interaction_total - idx) / max(rate, 0.1)
+            pct = 100.0 * idx / max(interaction_total, 1)
+            prefix = f"[{progress_label}] " if progress_label else ""
+            print(f"{prefix}[Interaction {idx}/{interaction_total} ({pct:.1f}%)] elapsed={elapsed:.1f}s, est.remain={remaining:.1f}s, partition={partition.partition_id}", flush=True)
         uid = torch.tensor([interaction.user_id], dtype=torch.long)
         pred_emb, _, _ = model(
             uid,
@@ -241,7 +265,7 @@ def evaluate_partition_ranking(model, partition: TemporalPartition, k: int = 10,
         rank = int((sorted_indices == interaction.item_id).nonzero(as_tuple=False)[0].item()) + 1
         mrr_sum += 1.0 / rank
 
-    total = max(len(partition.interactions), 1)
+    total = max(interaction_total, 1)
     return {
         "hits": hits,
         "mrr_sum": mrr_sum,
@@ -283,10 +307,16 @@ def evaluate_recall_at_k(model, test_interactions: List[Interaction], k: int = 1
 
 
 @torch.no_grad()
-def evaluate_partition_type_recall(model, partition: TemporalPartition, item_type, user_type_prefs, k=10, graph_ctx=None) -> Dict[str, int]:
+def evaluate_partition_type_recall(model, partition: TemporalPartition, item_type, user_type_prefs, k=10, graph_ctx=None, progress_label: str = "", progress_every: int = 0, progress_callback=None) -> Dict[str, int]:
     hits = 0
+    interaction_total = len(partition.interactions)
 
-    for interaction in partition.interactions:
+    for idx, interaction in enumerate(partition.interactions, start=1):
+        if progress_every > 0 and (idx == 1 or idx % progress_every == 0 or idx == interaction_total):
+            if progress_callback is not None:
+                progress_callback(idx, interaction_total)
+            prefix = f"[{progress_label}] " if progress_label else ""
+            print(f"{prefix}eval type progress {idx}/{interaction_total} partition={partition.partition_id}", flush=True)
         uid = interaction.user_id
         pred_emb, _, _ = model(
             torch.tensor([uid], dtype=torch.long),
@@ -305,7 +335,7 @@ def evaluate_partition_type_recall(model, partition: TemporalPartition, item_typ
 
     return {
         "hits": hits,
-        "total": max(len(partition.interactions), 1),
+        "total": max(interaction_total, 1),
     }
 
 

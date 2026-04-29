@@ -9,13 +9,13 @@ import os
 import time
 
 from nas.controller import RLGraphNASController, RandomGraphNASController
-from nas.search_space import get_small_search_space
+from nas.search_space import get_search_space
 from nas.trainer import GraphNASTrainer
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="GraphNAS search for event-level temporal GNN JODIE")
-    parser.add_argument("--space", choices=["small"], default="small", help="Search space name.")
+    parser.add_argument("--space", choices=["small", "paper_compare"], default="small", help="Search space name.")
     parser.add_argument("--search-mode", choices=["random", "rl"], default="rl", help="Architecture search mode.")
     parser.add_argument("--execution-mode", choices=["serial", "ray_pipeline"], default="serial", help="Execution backend.")
     parser.add_argument("--controller-lr", type=float, default=1e-2, help="Learning rate for RL controller.")
@@ -117,6 +117,8 @@ def parse_args():
     )
     parser.add_argument("--seed", type=int, default=42, help="Random seed.")
     parser.add_argument("--output-dir", type=str, default="outputs", help="Directory for search outputs.")
+    parser.add_argument("--enable-efficiency-monitor", action="store_true", help="Enable real-time efficiency monitoring during pipeline execution.")
+    parser.add_argument("--efficiency-monitor-interval", type=int, default=10, help="Efficiency monitoring sampling interval in seconds (when enabled).")
     return parser.parse_args()
 
 
@@ -157,10 +159,7 @@ def save_results(best, results, output_dir):
 def main():
     args = parse_args()
 
-    if args.space != "small":
-        raise ValueError("Only small search space is implemented in this version.")
-
-    search_space = get_small_search_space()
+    search_space = get_search_space(args.space)
     if args.search_mode == "rl":
         controller = RLGraphNASController(search_space, seed=args.seed, lr=args.controller_lr)
     else:
@@ -207,6 +206,8 @@ def main():
         "pipeline_trace": args.pipeline_trace,
         "pipeline_trace_log_path": pipeline_trace_log_path,
         "output_dir": args.output_dir,
+        "enable_efficiency_monitor": args.enable_efficiency_monitor,
+        "efficiency_monitor_interval": args.efficiency_monitor_interval,
     }
 
     trainer = GraphNASTrainer(base_config)
