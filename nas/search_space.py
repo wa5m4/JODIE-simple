@@ -91,8 +91,6 @@ def sanitize_config(config: Dict) -> Dict:
         cfg["enable_graph_update"] = "off"
         cfg["message_mode"] = "peer"
         cfg["msg_linear"] = "off"
-        cfg["hidden_dim"] = 0
-        cfg["max_neighbors"] = 0
 
         cfg["memory_cell"] = _choose(str(cfg.get("memory_cell", "gru")).lower(), {"rnn", "gru", "lstm"}, "gru")
         cfg["time_proj"] = _choose(str(cfg.get("time_proj", "linear")).lower(), {"off", "linear"}, "linear")

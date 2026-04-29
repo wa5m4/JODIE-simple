@@ -285,38 +285,97 @@ class PipelineEfficiencyMonitor:
     
     def _compute_pipeline_speedup(self, events: List[Dict]) -> Tuple[float, float]:
         """计算 pipeline speedup 和 efficiency"""
-        
-        # 提取 trial_0 的完成时间
+
         trial_0_events = [e for e in events if e['event'] == 'complete' and e['trial'] == 0]
-        
         if not trial_0_events:
             return 1.0, 0.0
-        
+
         baseline_time = sum(e['duration'] for e in trial_0_events if e['duration'])
-        
-        # 所有完成的 trial 数
         complete_events = [e for e in events if e['event'] == 'complete']
         if not complete_events:
             return 1.0, 0.0
-        
+
         final_stage = max(e['stage'] for e in complete_events)
         final_trials = set(e['trial'] for e in complete_events if e['stage'] == final_stage)
         num_trials = len(final_trials)
-        
-        # 实际时间
         max_elapsed = max(e['elapsed'] for e in complete_events if e['stage'] == final_stage)
-        
         sequential_time = baseline_time * num_trials
         actual_time = max_elapsed - min(e['elapsed'] for e in events if e['event'] == 'dispatch')
-        
+
         if actual_time <= 0:
             return 1.0, 0.0
-        
+
         speedup = sequential_time / actual_time
         speedup_eff = speedup / num_trials if num_trials > 0 else 0
-        
         return speedup, speedup_eff
-    
+
+    def _detect_bottleneck_stage(self, events: List[Dict]) -> Dict:
+        """检测 pipeline 瓶颈 stage"""
+        by_stage = defaultdict(lambda: {"durations": [], "total_work": 0.0, "dispatch_count": 0, "complete_count": 0})
+        for e in events:
+            if e['event'] == 'complete' and e['stage'] is not None and e.get('duration'):
+                by_stage[e['stage']]["durations"].append(e['duration'])
+                by_stage[e['stage']]["total_work"] += e['duration']
+                by_stage[e['stage']]["complete_count"] += 1
+            elif e['event'] == 'dispatch' and e['stage'] is not None:
+                by_stage[e['stage']]["dispatch_count"] += 1
+
+        if not by_stage:
+            return {"bottleneck_stage": None, "reason": "no_data"}
+
+        avg_durations = {}
+        for stage, data in by_stage.items():
+            if data["durations"]:
+                avg_durations[stage] = sum(data["durations"]) / len(data["durations"])
+
+        if not avg_durations:
+            return {"bottleneck_stage": None, "reason": "no_duration_data"}
+
+        bottleneck = max(avg_durations, key=avg_durations.get)
+        slowest_avg = avg_durations[bottleneck]
+        fastest_avg = min(avg_durations.values())
+        imbalance_ratio = slowest_avg / max(fastest_avg, 0.001)
+
+        return {
+            "bottleneck_stage": bottleneck,
+            "avg_duration": slowest_avg,
+            "fastest_avg": fastest_avg,
+            "imbalance_ratio": imbalance_ratio,
+            "per_stage_avg": {int(s): round(v, 3) for s, v in avg_durations.items()},
+        }
+
+    def _generate_recommendations(self, metrics: Dict, bottleneck: Dict) -> List[str]:
+        """基于指标生成可操作建议"""
+        recs = []
+
+        if metrics is None:
+            return recs
+
+        gpu_util = metrics.get("gpu_util_ratio", 0)
+        if gpu_util < 0.3:
+            recs.append(f"GPU 利用率仅 {gpu_util:.1%}，考虑减少 pipeline_stage_train_workers 或增加 --num-pipeline-stages")
+        elif gpu_util < 0.6:
+            recs.append(f"GPU 利用率偏低 ({gpu_util:.1%})，可增加 --architectures-per-step 以提高并发")
+
+        imb = bottleneck.get("imbalance_ratio", 1.0)
+        if imb > 3.0:
+            bn = bottleneck.get("bottleneck_stage", "?")
+            recs.append(f"Stage {bn} 耗时是其他 stage 的 {imb:.1f}x，建议用 --stage-balance-strategy=cost 并调整 stage-balance-*-weight")
+        elif imb > 2.0:
+            bn = bottleneck.get("bottleneck_stage", "?")
+            recs.append(f"Stage 间负载不均衡 (imbalance={imb:.1f}x)，Stage {bn} 是瓶颈")
+
+        speedup = metrics.get("pipeline_speedup", 1.0)
+        if speedup < 2.0 and metrics.get("num_completed_tasks", 0) > 5:
+            recs.append(f"Pipeline speedup 仅 {speedup:.1f}x，考虑增加每个 stage 的 worker 数 (--pipeline-stage-train-workers)")
+
+        if metrics.get("avg_stage_util", 0) < 0.3:
+            recs.append("Stage 利用率过低，可能存在 I/O 等待或 partition 切分过细")
+
+        if not recs:
+            recs.append("当前效率正常，无需调整")
+        return recs
+
     def _write_metrics(self, metrics: Dict):
         """写入指标到效率日志"""
         
@@ -339,56 +398,62 @@ class PipelineEfficiencyMonitor:
             f.flush()
     
     def start_monitoring(self, duration: int = None):
-        """启动监控
-        
-        Args:
-            duration: 监控持续时间（秒），None 表示无限期
-        """
-        
-        print(f"🔍 开始监控 {self.trace_file}")
-        print(f"📊 效率日志: {self.efficiency_log_file}")
-        print(f"⏱️  采样间隔: {self.sampling_interval}s")
-        print(f"🖥️  归一化 GPU 数: {self.num_gpus}")
-        print(f"{'='*80}\n")
-        
+        """启动监控，实时报告效率并诊断瓶颈"""
+
+        print(f"Pipeline Efficiency Monitor")
+        print(f"  trace: {self.trace_file}")
+        print(f"  log:   {self.efficiency_log_file}")
+        print(f"  sampling every {self.sampling_interval}s, GPUs={self.num_gpus}")
+        print("=" * 70)
+
         start_time = time.time()
         iteration = 0
-        
+        last_recommendation_iter = -5
+
         try:
             while True:
-                # 检查是否超时
                 if duration is not None:
-                    elapsed = time.time() - start_time
-                    if elapsed > duration:
-                        print(f"\n✅ 监控时间已到 ({elapsed:.0f}s)，停止监控")
+                    if time.time() - start_time > duration:
+                        print(f"\nMonitoring complete ({duration}s elapsed)")
                         break
-                
-                # 读取新事件
+
                 new_events = self._read_new_events()
                 if new_events:
                     self.events_cache.extend(new_events)
-                
-                # 计算和写入指标
+
                 if self.events_cache:
                     metrics = self._compute_metrics(self.events_cache)
                     if metrics:
                         self._write_metrics(metrics)
                         iteration += 1
-                        
-                        # 终端输出最新指标
-                        print(f"[{metrics['timestamp']}] "
-                             f"GPU利用率: {metrics['gpu_util_ratio']:.1%} | "
-                             f"GPU效率: {metrics['gpu_efficiency']:.1%} | "
-                             f"Speedup: {metrics['pipeline_speedup']:.2f}x | "
-                             f"完成任务: {metrics['num_completed_tasks']}")
-                
-                # 等待下一个采样周期
+
+                        # 每 5 次迭代输出详细诊断（含瓶颈和建议）
+                        if iteration % 5 == 0 and iteration > last_recommendation_iter:
+                            last_recommendation_iter = iteration
+                            bottleneck = self._detect_bottleneck_stage(self.events_cache)
+                            recs = self._generate_recommendations(metrics, bottleneck)
+                            print(f"\n--- Pipeline Diagnostics (iter {iteration}) ---")
+                            print(f"  GPU util: {metrics['gpu_util_ratio']:.1%}  |  GPU efficiency: {metrics['gpu_efficiency']:.1%}  |  Speedup: {metrics['pipeline_speedup']:.2f}x")
+                            print(f"  Throughput: {metrics['trial_throughput']:.3f} trials/s  |  Tasks done: {metrics['num_completed_tasks']}")
+                            if bottleneck.get("bottleneck_stage") is not None:
+                                per_stage = bottleneck.get("per_stage_avg", {})
+                                stage_str = "  ".join(f"S{s}={v:.1f}s" for s, v in sorted(per_stage.items()))
+                                print(f"  Per-stage avg duration: {stage_str}")
+                                print(f"  Bottleneck: Stage {bottleneck['bottleneck_stage']} (avg {bottleneck['avg_duration']:.1f}s, imbalance={bottleneck['imbalance_ratio']:.1f}x)")
+                            for rec in recs:
+                                print(f"  -> {rec}")
+                            print("-" * 70)
+                        else:
+                            print(f"[{iteration}] GPU util={metrics['gpu_util_ratio']:.1%}  "
+                                  f"speedup={metrics['pipeline_speedup']:.2f}x  "
+                                  f"done={metrics['num_completed_tasks']}")
+
                 time.sleep(self.sampling_interval)
-        
+
         except KeyboardInterrupt:
-            print(f"\n⏹️  监控已停止 (按 Ctrl+C)")
+            print(f"\nMonitoring stopped (Ctrl+C)")
         except Exception as e:
-            print(f"\n❌ 错误: {e}")
+            print(f"\nError: {e}")
             import traceback
             traceback.print_exc()
 

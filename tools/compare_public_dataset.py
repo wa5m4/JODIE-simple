@@ -55,13 +55,13 @@ def parse_args():
     parser.add_argument(
         "--baseline-embedding-dim",
         type=int,
-        default=32,
+        default=128,
         help="Embedding dim for jodie_rnn baseline when --baseline-jodie-mode=default_arch.",
     )
     parser.add_argument(
         "--baseline-cell-type",
         type=str,
-        default="rnn",
+        default="gru",
         help="Cell type for jodie_rnn baseline when --baseline-jodie-mode=default_arch.",
     )
     parser.add_argument(

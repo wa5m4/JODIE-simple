@@ -115,6 +115,7 @@ def parse_args():
         default="mrr",
         help="Primary score used to rank architectures on public datasets.",
     )
+    parser.add_argument("--device", type=str, default="auto", help="Device: 'auto' (cuda if available), 'cuda', 'cpu'.")
     parser.add_argument("--seed", type=int, default=42, help="Random seed.")
     parser.add_argument("--output-dir", type=str, default="outputs", help="Directory for search outputs.")
     parser.add_argument("--enable-efficiency-monitor", action="store_true", help="Enable real-time efficiency monitoring during pipeline execution.")
@@ -175,6 +176,12 @@ def main():
             f.write(f"# created_at={time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}\n")
         print(f"Pipeline trace log file: {pipeline_trace_log_path}")
 
+    if args.device == "auto":
+        import torch
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    else:
+        device = args.device
+
     base_config = {
         "dataset": args.dataset,
         "dataset_dir": args.dataset_dir,
@@ -190,6 +197,7 @@ def main():
         "neg_sample_size": args.neg_sample_size,
         "k": args.k,
         "selection_metric": args.selection_metric,
+        "device": device,
         "seed": args.seed,
         "partition_size": args.partition_size,
         "partition_strategy": args.partition_strategy,

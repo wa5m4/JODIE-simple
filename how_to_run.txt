@@ -1,0 +1,142 @@
+好的，我用最通俗的方式给你讲，从最简单的到生产用的。
+
+一句话理解
+这个项目的命令行就是：选数据 → 选搜索方式 → 选运行模式 → 设定预算 → 开始跑。
+
+第一级：冒烟测试（确认环境没问题）
+只用 CPU，跑合成假数据，2 个架构，每个训练 1 轮，2 分钟内跑完：
+
+
+python search.py \
+  --dataset synthetic \
+  --search-mode random \
+  --execution-mode serial \
+  --trials 2 \
+  --epochs-per-trial 1 \
+  --output-dir outputs_test
+如果这个能跑通，说明环境没问题。
+
+第二级：串行搜索真数据（单 GPU 或 CPU）
+在 Wikipedia 数据集上搜 32 个架构，选前 8 名加训验证，得到最终最佳架构：
+
+
+python search.py \
+  --dataset wikipedia \
+  --search-mode rl \
+  --execution-mode serial \
+  --coarse-trials 32 \
+  --coarse-epochs 3 \
+  --rerank-top-k 8 \
+  --rerank-epochs 6 \
+  --selection-metric mrr \
+  --k 10 \
+  --lr 0.0003 \
+  --output-dir outputs_wikipedia
+各参数通俗解释：
+
+--dataset wikipedia → 用 Wikipedia 公开数据
+--search-mode rl → 用强化学习（RL）来智能搜索，比随机搜索更聪明
+--execution-mode serial → 一个一个架构串行训练（最简单最稳）
+--coarse-trials 32 → 第一轮粗筛，试 32 个架构
+--coarse-epochs 3 → 每个架构快速训练 3 轮（不需要太久，只是粗筛）
+--rerank-top-k 8 → 从 32 个里挑前 8 名，进入第二轮精评
+--rerank-epochs 6 → 这 8 个架构再多训练 6 轮（更准确）
+--selection-metric mrr → 用 MRR 指标评判哪个架构好
+--lr 0.0003 → 学习率
+--output-dir → 结果保存到哪里
+第三级：多 GPU 流水线并行（你服务器上用）
+你之前说在服务器上用 3 个 GPU 跑。这就是流水线模式的场景：
+
+
+CUDA_VISIBLE_DEVICES=0,1,2 python search.py \
+  --dataset public_csv \
+  --local-data-path data/public/mooc.csv \
+  --search-mode rl \
+  --execution-mode ray_pipeline \
+  --coarse-trials 30 \
+  --coarse-epochs 6 \
+  --rerank-top-k 8 \
+  --rerank-epochs 10 \
+  --architectures-per-step 4 \
+  --num-pipeline-stages 2 \
+  --pipeline-stage-train-workers 2,1 \
+  --pipeline-stage-eval-workers 2,1 \
+  --stage-balance-strategy cost \
+  --lr 0.0003 \
+  --k 10 \
+  --pipeline-trace \
+  --output-dir outputs_mooc
+流水线参数通俗解释：
+
+
+数据切成了 N 个时间块（partition），分成 2 个 stage：
+
+时间线：  |---- Stage 1 ----|---- Stage 2 ----|
+         partition 0,1,2,3    partition 4,5,6,7
+
+架构 A 流动： Stage1 训练 A → Stage2 训练 A → 完成
+架构 B 流动：         Stage1 训练 B → Stage2 训练 B → 完成
+                          ↑
+                    A 离开 Stage1 后，B 立即进入
+--num-pipeline-stages 2 → 把数据切成 2 段（stage），像工厂流水线的 2 个工位
+--pipeline-stage-train-workers 2,1 → Stage1 配 2 个 GPU worker（因为早期数据量大），Stage2 配 1 个
+--pipeline-stage-eval-workers 2,1 → 评估阶段同理
+--architectures-per-step 4 → 每批送 4 个架构进流水线
+--pipeline-trace → 记录每个架构在每个 stage 的耗时（方便后面分析效率）
+CUDA_VISIBLE_DEVICES=0,1,2 → 指定用哪几张 GPU
+我改完代码后，worker 数量不写也会自动分配了，3 个 GPU 会自动分 [2, 1]。
+
+第四级：搜索完后和 JODIE 论文对比
+搜索完会得到 outputs_mooc/best_arch.json（最佳架构），然后和 baseline 对比：
+
+
+python tools/compare_public_dataset.py \
+  --dataset public_csv \
+  --local-data-path data/public/mooc.csv \
+  --best-arch-path outputs_mooc/best_arch.json \
+  --epochs 10 \
+  --lr 0.0003 \
+  --seeds 42,43,44,45,46 \
+  --baseline-jodie-mode default_arch \
+  --output-dir outputs_comparison
+这会输出 comparison_result.json，里面有：
+
+你搜出来的架构的 MRR 和 Recall@10
+baseline 的 MRR 和 Recall@10
+两者的差值（你的架构比 baseline 好多少）
+最常用参数速查
+你想干什么	改这个参数
+跑快点，少试几个架构	--coarse-trials 10
+跑慢点，搜得更准	--coarse-trials 64 --rerank-top-k 16 --rerank-epochs 10
+GPU 不够用	减小 --architectures-per-step，减小 --pipeline-stage-train-workers
+看流水线效率	加 --pipeline-trace，同时开监控 --enable-efficiency-monitor
+换数据集	--dataset wikipedia 或 --dataset reddit 或 --dataset public_csv --local-data-path xxx.csv
+纯 CPU 跑	不加 CUDA_VISIBLE_DEVICES，--execution-mode serial
+建议你接下来做的事： 先用第一级的冒烟测试确认环境，然后根据你的数据用第三级的流水线命令跑正式搜索。有问题随时问我。
+
+
+
+****************************************************************************************************************************************************************************************
+
+一条中小规模、重点看效率的命令
+
+CUDA_VISIBLE_DEVICES=0,1,2 python search.py \
+  --space paper_compare \
+  --dataset public_csv \
+  --local-data-path data/public/mooc.csv \
+  --max-events 5000 \
+  --search-mode rl \
+  --execution-mode ray_pipeline \
+  --coarse-trials 12 \
+  --coarse-epochs 3 \
+  --rerank-top-k 4 \
+  --rerank-epochs 5 \
+  --architectures-per-step 3 \
+  --num-pipeline-stages 2 \
+  --stage-balance-strategy cost \
+  --lr 0.0003 \
+  --k 10 \
+  --selection-metric mrr \
+  --pipeline-trace \
+  --enable-efficiency-monitor \
+  --output-dir outputs_mooc_efficiency_test

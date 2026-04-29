@@ -14,6 +14,14 @@ from data.synthetic import Interaction, clone_graph_state_template
 from data.temporal_partition import TemporalPartition
 
 
+def _model_device(model) -> torch.device:
+    """Return the device of the model's first parameter or buffer."""
+    try:
+        return next(model.parameters()).device
+    except StopIteration:
+        return next(model.buffers()).device
+
+
 class BPRLoss(nn.Module):
     """Bayesian Personalized Ranking Loss"""
 
@@ -94,6 +102,7 @@ def train_partition_bpr(
     progress_every: int = 0,
     progress_callback=None,
 ) -> float:
+    device = _model_device(model)
     rng = np.random.default_rng(seed)
     total_loss = 0.0
 
@@ -102,24 +111,24 @@ def train_partition_bpr(
         if progress_every > 0 and (idx == 1 or idx % max(progress_every, 100) == 0 or idx == interaction_total):
             if progress_callback is not None:
                 progress_callback(idx, interaction_total)
-        uid = torch.tensor([interaction.user_id], dtype=torch.long)
-        iid = torch.tensor([interaction.item_id], dtype=torch.long)
-        t = torch.tensor([interaction.timestamp], dtype=torch.float32)
-        f = interaction.features.unsqueeze(0)
+        uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+        iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+        t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
+        f = interaction.features.unsqueeze(0).to(device)
 
         neg_items = []
         while len(neg_items) < neg_sample_size:
             neg = int(rng.integers(0, _num_items(model)))
             if neg != interaction.item_id:
                 neg_items.append(neg)
-        neg_ids = torch.tensor(neg_items, dtype=torch.long)
+        neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
 
         optimizer.zero_grad()
         pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
         pos_emb = _item_embeddings_for_loss(model, iid)
         neg_emb = _item_embeddings_for_loss(model, neg_ids).unsqueeze(0)
         loss = criterion(pred_emb, pos_emb, neg_emb)
-        loss.backward(retain_graph=True)
+        loss.backward()
         optimizer.step()
 
         total_loss += loss.item()
@@ -135,6 +144,7 @@ def train_partition_ce(
     progress_every: int = 0,
     progress_callback=None,
 ) -> float:
+    device = _model_device(model)
     total_loss = 0.0
 
     interaction_total = len(partition.interactions)
@@ -142,16 +152,16 @@ def train_partition_ce(
         if progress_every > 0 and (idx == 1 or idx % max(progress_every, 100) == 0 or idx == interaction_total):
             if progress_callback is not None:
                 progress_callback(idx, interaction_total)
-        uid = torch.tensor([interaction.user_id], dtype=torch.long)
-        iid = torch.tensor([interaction.item_id], dtype=torch.long)
-        t = torch.tensor([interaction.timestamp], dtype=torch.float32)
-        f = interaction.features.unsqueeze(0)
+        uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+        iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+        t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
+        f = interaction.features.unsqueeze(0).to(device)
 
         optimizer.zero_grad()
         pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
         target_emb = _item_embeddings_for_loss(model, iid)
         loss = ((pred_emb - target_emb) ** 2).sum(dim=-1).mean()
-        loss.backward(retain_graph=True)
+        loss.backward()
         optimizer.step()
 
         total_loss += loss.item()
@@ -230,6 +240,7 @@ def train_model_ce(
 
 @torch.no_grad()
 def evaluate_partition_ranking(model, partition: TemporalPartition, k: int = 10, graph_ctx=None, progress_label: str = "", progress_every: int = 0, progress_callback=None) -> Dict[str, float]:
+    device = _model_device(model)
     hits = 0
     mrr_sum = 0.0
     interaction_total = len(partition.interactions)
@@ -245,12 +256,12 @@ def evaluate_partition_ranking(model, partition: TemporalPartition, k: int = 10,
             pct = 100.0 * idx / max(interaction_total, 1)
             prefix = f"[{progress_label}] " if progress_label else ""
             print(f"{prefix}[Interaction {idx}/{interaction_total} ({pct:.1f}%)] elapsed={elapsed:.1f}s, est.remain={remaining:.1f}s, partition={partition.partition_id}", flush=True)
-        uid = torch.tensor([interaction.user_id], dtype=torch.long)
+        uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
         pred_emb, _, _ = model(
             uid,
-            torch.tensor([interaction.item_id], dtype=torch.long),
-            torch.tensor([interaction.timestamp], dtype=torch.float32),
-            interaction.features.unsqueeze(0),
+            torch.tensor([interaction.item_id], dtype=torch.long, device=device),
+            torch.tensor([interaction.timestamp], dtype=torch.float32, device=device),
+            interaction.features.unsqueeze(0).to(device),
             interaction.timestamp,
             graph_ctx=graph_ctx,
         )
@@ -308,6 +319,7 @@ def evaluate_recall_at_k(model, test_interactions: List[Interaction], k: int = 1
 
 @torch.no_grad()
 def evaluate_partition_type_recall(model, partition: TemporalPartition, item_type, user_type_prefs, k=10, graph_ctx=None, progress_label: str = "", progress_every: int = 0, progress_callback=None) -> Dict[str, int]:
+    device = _model_device(model)
     hits = 0
     interaction_total = len(partition.interactions)
 
@@ -319,10 +331,10 @@ def evaluate_partition_type_recall(model, partition: TemporalPartition, item_typ
             print(f"{prefix}eval type progress {idx}/{interaction_total} partition={partition.partition_id}", flush=True)
         uid = interaction.user_id
         pred_emb, _, _ = model(
-            torch.tensor([uid], dtype=torch.long),
-            torch.tensor([interaction.item_id], dtype=torch.long),
-            torch.tensor([interaction.timestamp], dtype=torch.float32),
-            interaction.features.unsqueeze(0),
+            torch.tensor([uid], dtype=torch.long, device=device),
+            torch.tensor([interaction.item_id], dtype=torch.long, device=device),
+            torch.tensor([interaction.timestamp], dtype=torch.float32, device=device),
+            interaction.features.unsqueeze(0).to(device),
             interaction.timestamp,
             graph_ctx=graph_ctx,
         )

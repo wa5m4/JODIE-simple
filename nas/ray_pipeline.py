@@ -698,6 +698,45 @@ class RayPipelineExecutor:
             seed=seed,
         )
 
+    def _print_pipeline_summary(self, train_groups, eval_groups, train_worker_counts, eval_worker_counts, payloads):
+        """打印 pipeline 配置摘要，帮助用户诊断并行效率瓶颈"""
+        num_trials = len(payloads)
+        total_train_workers = sum(train_worker_counts)
+        total_eval_workers = sum(eval_worker_counts)
+        gpu_count = int(torch.cuda.device_count() if torch.cuda.is_available() else 0)
+
+        print(f"\n{'='*60}", flush=True)
+        print(f"[Pipeline Summary]", flush=True)
+        print(f"  Trials: {num_trials}", flush=True)
+        print(f"  Train stages: {len(train_groups)}, workers: {train_worker_counts} (total={total_train_workers})", flush=True)
+        print(f"  Eval stages:  {len(eval_groups)}, workers: {eval_worker_counts} (total={total_eval_workers})", flush=True)
+        if gpu_count > 0:
+            print(f"  GPUs: {gpu_count} (train workers {'fit' if total_train_workers <= gpu_count else 'oversubscribed'})", flush=True)
+
+        # Per-stage cost summary
+        for si, group in enumerate(train_groups):
+            n_int = sum(len(p.interactions) for p in group)
+            n_users = len({i.user_id for p in group for i in p.interactions})
+            n_items = len({i.item_id for p in group for i in p.interactions})
+            workers = train_worker_counts[si] if si < len(train_worker_counts) else 1
+            print(f"  Train S{si+1}: {len(group)} partitions, {n_int} interactions, "
+                  f"users={n_users}, items={n_items}, workers={workers}", flush=True)
+
+        for si, group in enumerate(eval_groups):
+            n_int = sum(len(p.interactions) for p in group)
+            workers = eval_worker_counts[si] if si < len(eval_worker_counts) else 1
+            print(f"  Eval S{si+1}:  {len(group)} partitions, {n_int} interactions, workers={workers}", flush=True)
+
+        # Efficiency hints
+        if max(train_worker_counts) <= 1 and len(train_groups) > 1:
+            print(f"  hint: only 1 worker per train stage, pipeline has no intra-stage parallelism", flush=True)
+        if gpu_count > 0 and total_train_workers < gpu_count:
+            print(f"  hint: {gpu_count - total_train_workers} GPUs unused during training; "
+                  f"add --pipeline-stage-train-workers to use them", flush=True)
+        if gpu_count > 0 and total_eval_workers < gpu_count:
+            print(f"  hint: {gpu_count - total_eval_workers} GPUs unused during evaluation", flush=True)
+        print(f"{'='*60}\n", flush=True)
+
     def run(self, arch_configs: List[Dict], user_type_prefs, item_type, num_train_epochs: int = 1) -> List[Dict]:
         if ray is None:
             raise ImportError("ray is required for execution_mode=ray_pipeline")
@@ -713,10 +752,8 @@ class RayPipelineExecutor:
         train_groups = self._group_partitions("train", num_stages)
         eval_groups = self._group_partitions("val", num_stages)
         stage_total = len(train_groups)
-        train_worker_counts = self._resolve_stage_worker_counts("pipeline_stage_train_workers", stage_total)
-        eval_worker_counts = self._resolve_stage_worker_counts("pipeline_stage_eval_workers", len(eval_groups), fallback=[1 for _ in range(len(eval_groups))])
 
-        # 自动检测本机可见 GPU 并在用户未指定 pipeline_worker_gpus 时做出合理默认
+        # 自动检测 GPU
         try:
             gpu_count = int(torch.cuda.device_count() if torch.cuda.is_available() else 0)
         except Exception:
@@ -724,26 +761,65 @@ class RayPipelineExecutor:
 
         specified_worker_gpus = float(self.base_config.get("pipeline_worker_gpus", 0.0))
         if gpu_count > 0 and specified_worker_gpus <= 0.0:
-            # 优先为每个 actor 请求 1 GPU，用户仍可通过 CLI 覆盖
             self.base_config["pipeline_worker_gpus"] = 1.0
+
+        # Smart worker count defaults: scale with GPU count when user hasn't specified
+        user_specified_train_workers = bool(str(self.base_config.get("pipeline_stage_train_workers", "")).strip())
+        if gpu_count > 0 and not user_specified_train_workers:
+            # Distribute workers across stages, more to earlier stages (bottleneck-heavy)
+            train_worker_counts = []
+            remaining_gpus = gpu_count
+            for si in range(stage_total):
+                stage_share = max(1, remaining_gpus // (stage_total - si))
+                train_worker_counts.append(stage_share)
+                remaining_gpus -= stage_share
             print(
-                f"[RayPipeline] detected {gpu_count} GPUs; auto-setting pipeline_worker_gpus=1.0 (one GPU per actor).",
+                f"[RayPipeline] auto worker allocation: {train_worker_counts} workers across {stage_total} stages (GPUs={gpu_count})",
                 flush=True,
             )
-            total_train_workers = sum(train_worker_counts)
+        else:
+            train_worker_counts = self._resolve_stage_worker_counts("pipeline_stage_train_workers", stage_total)
+
+        eval_worker_counts = self._resolve_stage_worker_counts("pipeline_stage_eval_workers", len(eval_groups), fallback=[1 for _ in range(len(eval_groups))])
+
+        # Warn if GPU count is underutilized
+        total_train_workers = sum(train_worker_counts)
+        if gpu_count > 0:
+            print(
+                f"[RayPipeline] detected {gpu_count} GPUs; pipeline_worker_gpus={self.base_config.get('pipeline_worker_gpus', 0.0)}",
+                flush=True,
+            )
             if total_train_workers > gpu_count:
                 print(
-                    f"[RayPipeline] warning: requested total train workers={total_train_workers} > available GPUs={gpu_count}; "
-                    f"Ray will schedule up to {gpu_count} concurrent GPU-actors; consider lowering pipeline_stage_train_workers.",
+                    f"[RayPipeline] warning: total train workers={total_train_workers} > GPUs={gpu_count}; "
+                    f"Ray will schedule up to {gpu_count} concurrent GPU-actors.",
+                    flush=True,
+                )
+            elif total_train_workers < gpu_count:
+                print(
+                    f"[RayPipeline] note: total train workers={total_train_workers} < GPUs={gpu_count}; "
+                    f"consider increasing --pipeline-stage-train-workers to use all GPUs.",
                     flush=True,
                 )
 
+        # Stage cost diagnostics
+        for si, group in enumerate(train_groups):
+            costs = self._estimate_partition_costs(group)
+            n_interactions = sum(len(p.interactions) for p in group)
+            print(
+                f"[RayPipeline] train stage {si+1}: {len(group)} partitions, "
+                f"{n_interactions} interactions, "
+                f"cost range=[{min(costs):.0f}-{max(costs):.0f}] sum={sum(costs):.0f}, "
+                f"workers={train_worker_counts[si] if si < len(train_worker_counts) else 1}",
+                flush=True,
+            )
+
         print(
-            f"[RayPipeline] train stage count={stage_total}, train worker counts={train_worker_counts}, train groups={[ [p.partition_id for p in group] for group in train_groups ]}",
+            f"[RayPipeline] train worker counts={train_worker_counts}, train groups={[ [p.partition_id for p in group] for group in train_groups ]}",
             flush=True,
         )
         print(
-            f"[RayPipeline] eval stage count={len(eval_groups)}, eval worker counts={eval_worker_counts}, eval groups={[ [p.partition_id for p in group] for group in eval_groups ]}",
+            f"[RayPipeline] eval worker counts={eval_worker_counts}, eval groups={[ [p.partition_id for p in group] for group in eval_groups ]}",
             flush=True,
         )
 
@@ -798,6 +874,9 @@ class RayPipelineExecutor:
         finally:
             self._shutdown_worker_pool(train_stage_workers)
             self._shutdown_worker_pool(eval_stage_workers)
+
+        # Print pipeline utilization summary
+        self._print_pipeline_summary(train_groups, eval_groups, train_worker_counts, eval_worker_counts, payloads)
 
         results = []
         for payload in payloads:

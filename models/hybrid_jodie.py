@@ -57,9 +57,11 @@ class TemporalEventGNNJODIE(nn.Module):
         op_agg = event_agg if self.enable_event_agg else "none"
 
         self.register_buffer("memory", torch.zeros(self.num_nodes, embedding_dim))
-        # memory 存储所有节点的向量表示 ，大小为 num_nodes * embedding_dim
         self.register_buffer("last_time", torch.zeros(self.num_nodes))
-        # last_time 存储每个节点的上次交互时间，大小为 num_nodes (一维)
+        # LSTM cell state buffers (only used when memory_cell == "lstm")
+        if memory_cell == "lstm":
+            self.register_buffer("user_cell_state", torch.zeros(num_users, embedding_dim))
+            self.register_buffer("item_cell_state", torch.zeros(num_items, embedding_dim))
 
         self.event_operator = EventGraphOperator(
             embedding_dim=embedding_dim,
@@ -110,16 +112,26 @@ class TemporalEventGNNJODIE(nn.Module):
     def reset_state(self):
         self.memory.zero_()
         self.last_time.zero_()
+        if self.memory_cell == "lstm":
+            self.user_cell_state.zero_()
+            self.item_cell_state.zero_()
 
     def export_runtime_state(self) -> Dict[str, torch.Tensor]:
-        return {
+        state = {
             "memory": self.memory.detach().clone(),
             "last_time": self.last_time.detach().clone(),
         }
+        if self.memory_cell == "lstm":
+            state["user_cell_state"] = self.user_cell_state.detach().clone()
+            state["item_cell_state"] = self.item_cell_state.detach().clone()
+        return state
 
     def import_runtime_state(self, state: Dict[str, torch.Tensor]) -> None:
         self.memory.copy_(state["memory"].to(self.memory.device))
         self.last_time.copy_(state["last_time"].to(self.last_time.device))
+        if self.memory_cell == "lstm":
+            self.user_cell_state.copy_(state["user_cell_state"].to(self.user_cell_state.device))
+            self.item_cell_state.copy_(state["item_cell_state"].to(self.item_cell_state.device))
 
     def _project_time(self, emb: torch.Tensor, delta_t: torch.Tensor) -> torch.Tensor:
         # 时间投影层，将时间差映射到嵌入维度
@@ -162,16 +174,6 @@ class TemporalEventGNNJODIE(nn.Module):
             if cell_type == "user":
                 return old_state + torch.tanh(self.add_linear_user(update_input))
             return old_state + torch.tanh(self.add_linear_item(update_input))
-
-        if self.memory_cell == "lstm":
-            # 使用旧状态作为 (h, c) 的初始化，保证与 memory 张量维度兼容
-            h0 = old_state
-            c0 = old_state
-            if cell_type == "user":
-                h1, _ = self.user_cell(update_input, (h0, c0))
-                return h1
-            h1, _ = self.item_cell(update_input, (h0, c0))
-            return h1
 
         if cell_type == "user":
             return self.user_cell(update_input, old_state)
@@ -255,9 +257,16 @@ class TemporalEventGNNJODIE(nn.Module):
         item_input = torch.cat([proj_item, user_msg, features], dim=-1)
         # 计算用户和物品的输入向量
 
-        new_user = self._memory_update("user", user_input, old_user)
-        new_item = self._memory_update("item", item_input, old_item)
-        # 更新用户和物品的状态，得到新的嵌入向量
+        if self.memory_cell == "lstm":
+            user_c = self.user_cell_state[user_nodes]
+            item_c = self.item_cell_state[item_nodes]
+            new_user, new_user_c = self.user_cell(user_input, (old_user, user_c))
+            new_item, new_item_c = self.item_cell(item_input, (old_item, item_c))
+            self.user_cell_state[user_nodes] = new_user_c.detach()
+            self.item_cell_state[item_nodes] = new_item_c.detach()
+        else:
+            new_user = self._memory_update("user", user_input, old_user)
+            new_item = self._memory_update("item", item_input, old_item)
 
         new_user = self._apply_gate(old_user, new_user)
         new_item = self._apply_gate(old_item, new_item)

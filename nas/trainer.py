@@ -152,6 +152,8 @@ class GraphNASTrainer:
     ) -> Dict[str, float]:
         self._set_seed(trial_seed)
         model = build_model(config)
+        device = torch.device(self.base_config.get("device", "cpu"))
+        model = model.to(device)
         model_name = config.get("model", "temporal_event_gnn_jodie")
         graph_ctx = None if model_name == "jodie_rnn" else graph_template
 
@@ -513,9 +515,35 @@ class GraphNASTrainer:
             results.extend(rerank_results)
             selected = sorted(rerank_results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)[0]
 
+        # Final evaluation on test set (train on train+val, evaluate on test) — matches JODIE paper protocol
+        final_train_data = train_data + val_data
+        final_partition_plan = build_partition_plan(
+            train_interactions=final_train_data,
+            val_interactions=[],
+            test_interactions=test_data,
+            partition_size=int(self.base_config.get("partition_size", 0)) if int(self.base_config.get("partition_size", 0)) > 0 else None,
+            strategy=self.base_config.get("partition_strategy", "count"),
+        )
+        final_epochs = rerank_epochs if rerank_top_k > 0 else coarse_epochs
+        print(f"[Final Test] Evaluating best architecture on test set (fit=train+val, test=test, epochs={final_epochs})", flush=True)
+        final_test_result = self.evaluate_arch_pipeline(
+            arch_configs=[selected["config"]],
+            partition_plan=final_partition_plan,
+            user_type_prefs=user_type_prefs,
+            item_type=item_type,
+            phase="final_pipeline",
+            eval_split="test",
+            epochs=final_epochs,
+        )[0]
+        selected["selected_val_score"] = float(selected["score"])
+        selected["score"] = float(final_test_result["score"])
+        selected["mrr"] = float(final_test_result["mrr"])
+        selected["recall_at_k"] = float(final_test_result["recall_at_k"])
+        selected["test_score"] = float(final_test_result["score"])
+
         best = selected
         best["distribution_metadata"] = self._distribution_metadata(train_data, val_data, test_data)
-        
+
         # 停止效率监控
         if monitor_process is not None:
             try:
