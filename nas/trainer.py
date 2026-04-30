@@ -2,7 +2,9 @@
 GraphNAS 训练器：对候选架构做短训练并打分（事件级动态图）。
 """
 
+import csv
 import json
+import os
 import random
 import subprocess
 import atexit
@@ -455,10 +457,24 @@ class GraphNASTrainer:
         total_generated = 0
         seen_signatures: Set[str] = set()
 
+        # 计时日志初始化
+        search_start_time = time.time()
+        output_dir = self.base_config.get("output_dir", "outputs")
+        os.makedirs(output_dir, exist_ok=True)
+        timing_log_path = os.path.join(output_dir, "timing_log.csv")
+        with open(timing_log_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["trial_id", "mode", "start_time_s", "end_time_s",
+                             "duration_s", "score", "mrr", "recall_at_k",
+                             "cumulative_best_score", "model"])
+        print(f"[Timing] Timing log: {timing_log_path}", flush=True)
+
+        cumulative_best = 0.0
+
         while total_generated < coarse_trials:
             batch_size = min(architectures_per_step, coarse_trials - total_generated)
             print(f"[Coarse Phase] Sampling batch {total_generated//batch_size + 1}: {batch_size} architectures", flush=True)
-            
+
             samples = self._sample_unique_arch_batch(
                 controller=controller,
                 batch_size=batch_size,
@@ -468,6 +484,7 @@ class GraphNASTrainer:
             logprobs = [logprob for _, logprob in samples]
 
             print(f"[Coarse Phase] Evaluating architectures {total_generated+1}-{total_generated+len(arch_batch)}/{coarse_trials}", flush=True)
+            batch_start = time.time()
             batch_results = self.evaluate_arch_pipeline(
                 arch_configs=arch_batch,
                 partition_plan=partition_plan,
@@ -477,7 +494,27 @@ class GraphNASTrainer:
                 eval_split="val",
                 epochs=coarse_epochs,
             )
+            batch_end = time.time()
             results.extend(batch_results)
+
+            # 写计时日志
+            with open(timing_log_path, "a", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                for i, result in enumerate(batch_results):
+                    trial_id = total_generated + i
+                    cumulative_best = max(cumulative_best, result["score"])
+                    writer.writerow([
+                        trial_id,
+                        "pipeline",
+                        round(batch_start - search_start_time, 3),
+                        round(batch_end - search_start_time, 3),
+                        round(batch_end - batch_start, 3),
+                        round(result["score"], 6),
+                        round(result["mrr"], 6),
+                        round(result["recall_at_k"], 6),
+                        round(cumulative_best, 6),
+                        result["config"].get("model", "unknown"),
+                    ])
 
             batch_samples = [
                 (logprob, result["score"])
@@ -591,6 +628,20 @@ class GraphNASTrainer:
         results: List[Dict] = []
         seen_signatures: Set[str] = set()
 
+        # 计时日志初始化
+        search_start_time = time.time()
+        output_dir = self.base_config.get("output_dir", "outputs")
+        os.makedirs(output_dir, exist_ok=True)
+        timing_log_path = os.path.join(output_dir, "timing_log.csv")
+        with open(timing_log_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["trial_id", "mode", "start_time_s", "end_time_s",
+                             "duration_s", "score", "mrr", "recall_at_k",
+                             "cumulative_best_score", "model"])
+        print(f"[Timing] Timing log: {timing_log_path}", flush=True)
+
+        cumulative_best = 0.0
+
         for trial in range(coarse_trials):
             arch, logprob = self._sample_unique_arch(
                 controller=controller,
@@ -598,6 +649,7 @@ class GraphNASTrainer:
             )
 
             trial_seed = int(self.base_config.get("seed", 42)) + trial
+            trial_start = time.time()
             result = self._evaluate_arch_multi_seed(
                 arch_config=arch,
                 train_data=train_data,
@@ -611,7 +663,25 @@ class GraphNASTrainer:
                 phase="coarse",
                 eval_split="val",
             )
+            trial_end = time.time()
             results.append(result)
+
+            # 写计时日志
+            cumulative_best = max(cumulative_best, result["score"])
+            with open(timing_log_path, "a", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    trial,
+                    "serial",
+                    round(trial_start - search_start_time, 3),
+                    round(trial_end - search_start_time, 3),
+                    round(trial_end - trial_start, 3),
+                    round(result["score"], 6),
+                    round(result["mrr"], 6),
+                    round(result["recall_at_k"], 6),
+                    round(cumulative_best, 6),
+                    result["config"].get("model", "unknown"),
+                ])
 
             if logprob is not None and hasattr(controller, "reinforce_step"):
                 controller.reinforce_step(logprob, result["score"])
