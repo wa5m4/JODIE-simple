@@ -209,12 +209,12 @@ class TemporalEventGNNJODIE(nn.Module):
         ts = float(timestamps[0].item())
         #从批量张量中提取第一个样本的标量值
 
-        old_user = self.memory[user_nodes].clone()
-        old_item = self.memory[item_nodes].clone()
-        # clone() 防止后续 memory 原地更新破坏 autograd 计算图
+        old_user = self.memory[user_nodes].detach().clone()
+        old_item = self.memory[item_nodes].detach().clone()
+        # detach().clone() 防止后续 memory 原地更新破坏 autograd 计算图，也防止保留前一次迭代的计算图
 
-        last_u = self.last_time[user_nodes].clone()
-        last_i = self.last_time[item_nodes].clone()
+        last_u = self.last_time[user_nodes].detach().clone()
+        last_i = self.last_time[item_nodes].detach().clone()
 
         du = (timestamps - last_u).unsqueeze(-1)
         di = (timestamps - last_i).unsqueeze(-1)

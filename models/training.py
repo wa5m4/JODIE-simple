@@ -125,10 +125,10 @@ def train_partition_bpr(
 
         optimizer.zero_grad()
         pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
-        pos_emb = _item_embeddings_for_loss(model, iid)
-        neg_emb = _item_embeddings_for_loss(model, neg_ids).unsqueeze(0)
+        pos_emb = _item_embeddings_for_loss(model, iid).detach()
+        neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().unsqueeze(0)
         loss = criterion(pred_emb, pos_emb, neg_emb)
-        loss.backward()
+        loss.backward(retain_graph=True)
         optimizer.step()
 
         total_loss += loss.item()
@@ -161,7 +161,7 @@ def train_partition_ce(
         pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
         target_emb = _item_embeddings_for_loss(model, iid)
         loss = ((pred_emb - target_emb) ** 2).sum(dim=-1).mean()
-        loss.backward()
+        loss.backward(retain_graph=True)
         optimizer.step()
 
         total_loss += loss.item()
