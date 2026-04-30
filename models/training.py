@@ -125,8 +125,8 @@ def train_partition_bpr(
 
         optimizer.zero_grad()
         pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
-        pos_emb = _item_embeddings_for_loss(model, iid).detach()
-        neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().unsqueeze(0)
+        pos_emb = _item_embeddings_for_loss(model, iid).detach().to(device)
+        neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().to(device).unsqueeze(0)
         loss = criterion(pred_emb, pos_emb, neg_emb)
         loss.backward(retain_graph=True)
         optimizer.step()
@@ -159,7 +159,7 @@ def train_partition_ce(
 
         optimizer.zero_grad()
         pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
-        target_emb = _item_embeddings_for_loss(model, iid)
+        target_emb = _item_embeddings_for_loss(model, iid).to(device)
         loss = ((pred_emb - target_emb) ** 2).sum(dim=-1).mean()
         loss.backward(retain_graph=True)
         optimizer.step()
@@ -265,7 +265,7 @@ def evaluate_partition_ranking(model, partition: TemporalPartition, k: int = 10,
             interaction.timestamp,
             graph_ctx=graph_ctx,
         )
-        all_item_emb = _all_item_embeddings(model)
+        all_item_emb = _all_item_embeddings(model).to(device)
         distances = torch.norm(all_item_emb - pred_emb, p=2, dim=-1)
         item_count = int(distances.shape[0])
         top_k = torch.argsort(distances, descending=False)[: min(k, item_count)].tolist()
@@ -338,7 +338,7 @@ def evaluate_partition_type_recall(model, partition: TemporalPartition, item_typ
             interaction.timestamp,
             graph_ctx=graph_ctx,
         )
-        all_item_emb = _all_item_embeddings(model)
+        all_item_emb = _all_item_embeddings(model).to(device)
         distances = torch.norm(all_item_emb - pred_emb, p=2, dim=-1)
         top_k_items = torch.argsort(distances, descending=False)[: min(k, distances.shape[0])].tolist()
         top_k_types = set(item_type[iid] for iid in top_k_items)

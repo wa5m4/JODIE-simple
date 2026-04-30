@@ -13,7 +13,7 @@ cd "$ROOT_DIR"
 # -------- 可调参数 --------
 DATASET="public_csv"
 DATA_FILE="data/public/mooc.csv"
-MAX_EVENTS=0           # 0 = 使用全量数据；调小可加快测试，例如 5000
+MAX_EVENTS=8000        # 中等数据量：约 2% 的 MOOC 全量，时序特征真实，耗时可控
 TRIALS=12              # 两种模式都搜索这么多个架构
 EPOCHS=1               # 每个 trial 训练 epoch 数
 SEED=42
@@ -21,10 +21,10 @@ K=10
 METRIC="mrr"
 
 # Pipeline 并行参数
-ARCH_PER_STEP=3        # 每批并发评估的架构数
+ARCH_PER_STEP=3        # 每批并发评估的架构数（= NUM_STAGES，填满流水线）
 NUM_STAGES=3           # pipeline stage 数
 WORKER_GPUS=0.33       # 每个 stage 占用的 GPU 比例（3 个 stage 共享 1 GPU）
-PARTITION_SIZE=2000    # 每个 partition 的事件数
+PARTITION_SIZE=500     # 每个 partition 约 500 事件，8000条 → 16个partition → 每stage≈5个
 
 OUTPUT_SERIAL="outputs/compare_serial"
 OUTPUT_PIPELINE="outputs/compare_pipeline"
