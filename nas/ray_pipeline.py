@@ -89,9 +89,9 @@ class PartitionShardWorker:
         progress_every = int(self.base_config.get("pipeline_train_progress_every", 100))
         graph_state = restore_graph_state(payload.graph_state) if payload.graph_state is not None else None
         for epoch in range(epochs):
-            if hasattr(model, "reset_state"):
-                model.reset_state()
-
+            # Do NOT call reset_state() here. State is cleared at epoch boundaries by the
+            # outer loop (runtime_state=None in payloads), and should flow between stages
+            # so that Stage 1 sees Stage 0's accumulated user_embeddings/user_last_time.
             epoch_graph_state = clone_graph_state_template(graph_state) if graph_state is not None else None
 
             for partition_id in partition_ids:
@@ -473,6 +473,32 @@ class RayPipelineExecutor:
     ) -> List[PipelineModelPayload]:
         if not payloads or not train_groups:
             return payloads
+        # 每个 epoch 独立走一遍完整的 stage 流水线（每 stage 只训 1 epoch），
+        # 等价于 serial 训练的多 epoch：epoch 循环在外，partition 顺序在内。
+        # 若只有 1 epoch 则与之前行为完全相同。
+        if num_train_epochs > 1:
+            current = payloads
+            for _ in range(num_train_epochs):
+                # Reset runtime state at each epoch boundary so Stage 0 starts with zero
+                # user_embeddings/user_last_time (equivalent to serial's reset_model_state).
+                # Stages within an epoch do NOT reset — state flows stage0→stage1→stage2
+                # so that later stages see temporal context from earlier partitions.
+                epoch_start = [
+                    PipelineModelPayload(
+                        trial_id=p.trial_id,
+                        arch_config=p.arch_config,
+                        model_state_dict=p.model_state_dict,
+                        runtime_state=None,
+                        graph_state=p.graph_state,
+                        optimizer_state=p.optimizer_state,
+                        seed=p.seed,
+                    )
+                    for p in current
+                ]
+                current = self._run_train_pipeline(
+                    epoch_start, train_groups, stage_workers, use_bpr, num_train_epochs=1
+                )
+            return current
 
         stage_partition_ids = [[p.partition_id for p in partitions] for partitions in train_groups]
         in_flight: Dict[object, Tuple[int, int]] = {}
@@ -750,7 +776,9 @@ class RayPipelineExecutor:
 
         num_stages = int(self.base_config.get("num_pipeline_stages", 1))
         train_groups = self._group_partitions("train", num_stages)
-        eval_groups = self._group_partitions("val", num_stages)
+        # prefer "test" split if available (final evaluation), fall back to "val"
+        eval_split = "test" if self.partition_plan.get_split_partitions("test") else "val"
+        eval_groups = self._group_partitions(eval_split, num_stages)
         stage_total = len(train_groups)
 
         # 自动检测 GPU

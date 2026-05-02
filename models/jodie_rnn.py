@@ -90,8 +90,8 @@ class JODIERNN(nn.Module):
         nn.init.zeros_(self.item_init)
 
     def reset_state(self):
-        self.user_embeddings.copy_(self.user_init.unsqueeze(0).expand(self.num_users, -1))
-        self.item_embeddings.copy_(self.item_init.unsqueeze(0).expand(self.num_items, -1))
+        self.user_embeddings.copy_(self.user_init.detach().unsqueeze(0).expand(self.num_users, -1))
+        self.item_embeddings.copy_(self.item_init.detach().unsqueeze(0).expand(self.num_items, -1))
         self.user_last_time.zero_()
         self.item_last_time.zero_()
         self.user_cell_state.zero_()

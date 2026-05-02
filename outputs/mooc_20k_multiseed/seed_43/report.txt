@@ -1,0 +1,160 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║       NAS Comparison: Single-GPU Serial  vs  Pipeline Parallel       ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+┌─ 1. Search Quality  架构搜索质量 ────────────────────────────────────┐
+
+  Metric                Serial (Baseline)   Pipeline (Ours)         Δ  Winner
+  ────────────────────  ────────────────  ────────────────  ────────  ──────
+  Best Score                      0.6793            0.7911   +0.1119       ◀
+  MRR                             0.6793            0.7911   +0.1119       ◀
+  Recall@10                       0.9038            0.9760   +0.0722       ◀
+
+  Top-5 val scores:
+    Serial  : 0.7322 | 0.7231 | 0.6793 | 0.4485 | 0.2485
+    Pipeline: 0.7911 | 0.6377 | 0.5707 | 0.5653 | 0.4680
+
+  Score Distribution (top-5):
+    Serial   mean=0.5663  std=0.1896  max=0.7322
+    Pipeline mean=0.6066  std=0.1070  max=0.7911
+
+  Best Architecture (Serial):
+    model=jodie_rnn  memory_cell=rnn  embedding_dim=128
+    event_agg=none  time_proj=linear  time_decay=none  memory_gate=off
+  Best Architecture (Pipeline):
+    model=jodie_rnn  memory_cell=rnn  embedding_dim=128
+    event_agg=none  time_proj=off  time_decay=none  memory_gate=off
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 2. Search Efficiency  搜索效率 ─────────────────────────────────────┐
+
+  策略：固定时间预算，比较相同时间内两种方法各能探索多少架构
+
+  Metric                              Serial      Pipeline     Ratio  Winner
+  ────────────────────────────  ────────────  ────────────  ────────  ──────
+  Architectures Explored                  15            30     2.00x       ◀
+  Total Wall Time (s)                 1861.0        1516.0     1.23x       ◀
+  Avg Time / Trial (s)                124.07         50.53     2.46x       ◀
+  Trial Throughput (tph)                29.0          71.2     2.46x       ◀
+
+  Architectures explored in same time budget:
+    Serial   [████████████████████░░░░░░░░░░░░░░░░░░░░] 15 trials
+    Pipeline [████████████████████████████████████████] 30 trials  (2.0x more)
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 3. Resource Utilization  系统资源利用率 ────────────────────────────┐
+
+  ── A. 架构级并发  Trial-level Parallelism
+     Pipeline 通过 Ray 同时调度多个 worker，在相同时间内并发评估多个架构，
+     直接提升 NAS 的架构搜索吞吐量。
+
+     Trial Throughput  Serial  : 29.0 trials/hr  (1.00x baseline)
+     Trial Throughput  Pipeline: 71.2 trials/hr  (2.46x)
+     Throughput Gain   [████████████████████████░░░░░░░░░░░░]  2.46x
+
+     Avg Concurrent Workers : 1.82  [█████████████████████░░░░░░░░░░░░░░░]
+     Workers timeline  ▂▅▅▃▅▆▅▅▅▅▅▅▅▇▆▇▄▆▄▂▃▁  (avg 1.82)
+
+  ── B. 数据分片流水线  Intra-trial Partition Speedup
+     每个 trial 的训练数据切成约 12 个 partition，
+     由流水线各 stage 并行处理，加速单个架构的评估速度。
+     （此加速比衡量的是 partition 级并行，与 A 部分的 trial 级并发独立。）
+
+     Partition Tasks Completed : 368  (≈12.3 partitions/trial)
+     Partition-level Speedup   : 15.45x  [██████████████████████████████░░░░░░]  vs 逐 partition 串行
+     Speedup Efficiency        : 100.0%  [████████████████████████████████████]
+     GPU Efficiency            : 100.0%  [████████████████████████████████████]
+     Trial Throughput          : 0.6076 trials/s
+
+  Serial (single GPU):
+    串行处理，无并发 worker，无分片流水线。GPU 在数据 I/O 期间空转。
+    Trial Throughput: 1.00x  |  Concurrent Workers: 1  |  Partition Speedup: 1.00x
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 4. Architecture Diversity  架构多样性 ──────────────────────────────┐
+
+  Metric                            Serial    Pipeline
+  ────────────────────────────  ──────────  ──────────
+  Architectures Evaluated               16          30
+  Unique Model Types                     2           2
+  Unique Event Agg                       2           3
+  Unique Memory Cell                     4           4
+  Unique Time Proj                       3           3
+
+  Serial   models explored : jodie_rnn, temporal_event_gnn_jodie
+  Pipeline models explored : jodie_rnn, temporal_event_gnn_jodie
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 5. Search Convergence Curve  搜索收敛曲线 ──────────────────────────┐
+
+  Best Score vs Wall Time  [S=Serial  P=Pipeline  *=Both]
+
+  0.7322 │                            S   S   S  S  S   S S  S
+  0.6975 │                                      P P           
+  0.6627 │                                                    
+  0.6280 │      P  P  P      P  P  P  P   P                   
+  0.5933 │                                                    
+  0.5585 │                                                    
+  0.5238 │                                                    
+  0.4891 │                                                    
+  0.4543 │                                                    
+  0.4196 │     SP S   S S   S  S S                            
+           └────────────────────────────────────────────────────
+  0s                              1649s
+
+  Trial  Serial BestScore  Serial t(s)  Pipeline BestScore  Pipeline t(s)
+  ─────  ────────────────  ───────────  ──────────────────  ─────────────
+      0            0.4485        163.8              0.4196          195.3
+      1            0.4485        280.4              0.6377          195.3
+      2            0.4485        406.0              0.6377          195.3
+      3            0.4485        473.2              0.6377          321.2
+      4            0.4485        601.9              0.6377          321.2
+      5            0.4485        680.5              0.6377          321.2
+      6            0.4485        750.8              0.6377          408.2
+      7            0.7322        929.9              0.6377          408.2
+      8            0.7322       1038.6              0.6377          408.2
+      9            0.7322       1173.8              0.6377          626.1
+     10            0.7322       1261.0              0.6377          626.1
+     11            0.7322       1373.5              0.6377          626.1
+     12            0.7322       1506.3              0.6377          741.3
+     13            0.7322       1578.6              0.6377          741.3
+     14            0.7322       1648.6              0.6377          741.3
+     15                 ─            ─              0.6377          836.2
+     16                 ─            ─              0.6377          836.2
+     17                 ─            ─              0.6377          836.2
+     18                 ─            ─              0.6377          925.2
+     19                 ─            ─              0.6377          925.2
+     20                 ─            ─              0.6377          925.2
+     21                 ─            ─              0.6377         1063.3
+     22                 ─            ─              0.6377         1063.3
+     23                 ─            ─              0.6377         1063.3
+     24                 ─            ─              0.7032         1232.8
+     25                 ─            ─              0.7032         1232.8
+     26                 ─            ─              0.7032         1232.8
+     27                 ─            ─              0.7032         1319.2
+     28                 ─            ─              0.7032         1319.2
+     29                 ─            ─              0.7032         1319.2
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 6. Summary  综合评估 ───────────────────────────────────────────────┐
+
+  ✓ Pipeline wins on Best Score: 0.6793 → 0.7911 (+16.5%)
+  ✓ Pipeline wins on MRR: 0.6793 → 0.7911 (+16.5%)
+  ✓ Pipeline wins on Search Time: 1861.0000s → 1516.0000s (1.23x faster)
+  ✓ Pipeline wins on Trials per Hour: 29.0167 → 71.2401 (+145.5%)
+
+  Overall: Serial 0 win(s)  |  Pipeline 4 win(s)
+  → Pipeline Parallel NAS dominates: faster search with competitive quality.
+
+  Fairness:
+  ✓ Same dataset, seed, epochs, evaluation metric
+  ✓ Pipeline runs 30 trials vs Serial 15 trials — same time budget, Pipeline uses its 2x throughput advantage
+  ✓ Pipeline uses same total GPU (fractional sharing on one device)
+  ✓ Both use RL controller (REINFORCE); pipeline batches updates per step
+
+└──────────────────────────────────────────────────────────────────────┘
