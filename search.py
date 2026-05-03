@@ -17,7 +17,10 @@ def parse_args():
     parser = argparse.ArgumentParser(description="GraphNAS search for event-level temporal GNN JODIE")
     parser.add_argument("--space", choices=["small", "paper_compare"], default="small", help="Search space name.")
     parser.add_argument("--search-mode", choices=["random", "rl"], default="rl", help="Architecture search mode.")
-    parser.add_argument("--execution-mode", choices=["serial", "ray_pipeline"], default="serial", help="Execution backend.")
+    parser.add_argument("--execution-mode", choices=["serial", "ray_pipeline", "data_parallel"], default="serial", help="Execution backend.")
+    parser.add_argument("--data-parallel-workers", type=int, default=3, help="Number of Ray workers for data-parallel intra-trial parallelism.")
+    parser.add_argument("--data-parallel-worker-gpus", type=float, default=1.0, help="GPU fraction for each data-parallel worker.")
+    parser.add_argument("--data-parallel-visible-gpus", type=str, default="0,1,2", help="CUDA_VISIBLE_DEVICES for data-parallel Ray workers.")
     parser.add_argument("--controller-lr", type=float, default=1e-2, help="Learning rate for RL controller.")
     parser.add_argument(
         "--dataset",
@@ -216,6 +219,9 @@ def main():
         "output_dir": args.output_dir,
         "enable_efficiency_monitor": args.enable_efficiency_monitor,
         "efficiency_monitor_interval": args.efficiency_monitor_interval,
+        "data_parallel_workers": args.data_parallel_workers,
+        "data_parallel_worker_gpus": args.data_parallel_worker_gpus,
+        "data_parallel_visible_gpus": args.data_parallel_visible_gpus,
     }
 
     trainer = GraphNASTrainer(base_config)
@@ -234,6 +240,13 @@ def main():
             rerank_epochs=rerank_epochs,
             family_balanced_rerank=args.family_balanced_rerank,
             family_balance_per_model=args.family_balance_per_model,
+        )
+    elif args.execution_mode == "data_parallel":
+        best, results = trainer.search_data_parallel(
+            controller=controller,
+            coarse_trials=coarse_trials,
+            coarse_epochs=coarse_epochs,
+            num_workers=args.data_parallel_workers,
         )
     else:
         best, results = trainer.search(

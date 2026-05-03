@@ -50,8 +50,10 @@ class PartitionShardWorker:
     def _build_model(self, payload: PipelineModelPayload):
         config = dict(self.base_config)
         config.update(payload.arch_config)
+        device = torch.device(config.get("device", "cpu"))
         model = build_model(config)
-        model.load_state_dict(payload.model_state_dict)
+        model.to(device)
+        model.load_state_dict({k: v.to(device) for k, v in payload.model_state_dict.items()})
         if payload.runtime_state is not None and hasattr(model, "import_runtime_state"):
             model.import_runtime_state(payload.runtime_state)
         return model, config
@@ -124,10 +126,12 @@ class PartitionShardWorker:
                     )
 
         runtime_state = model.export_runtime_state() if hasattr(model, "export_runtime_state") else None
+        if runtime_state is not None:
+            runtime_state = {k: v.cpu() for k, v in runtime_state.items()}
         return PipelineModelPayload(
             trial_id=payload.trial_id,
             arch_config=payload.arch_config,
-            model_state_dict=model.state_dict(),
+            model_state_dict={k: v.cpu() for k, v in model.state_dict().items()},
             runtime_state=runtime_state,
             graph_state=snapshot_graph_state(graph_state) if graph_state is not None else None,
             optimizer_state=optimizer.state_dict(),
@@ -203,10 +207,12 @@ class PartitionShardWorker:
             )
 
         runtime_state = model.export_runtime_state() if hasattr(model, "export_runtime_state") else None
+        if runtime_state is not None:
+            runtime_state = {k: v.cpu() for k, v in runtime_state.items()}
         updated_payload = PipelineModelPayload(
             trial_id=payload.trial_id,
             arch_config=payload.arch_config,
-            model_state_dict=model.state_dict(),
+            model_state_dict={k: v.cpu() for k, v in model.state_dict().items()},
             runtime_state=runtime_state,
             graph_state=snapshot_graph_state(graph_state) if graph_state is not None else None,
             optimizer_state=payload.optimizer_state,

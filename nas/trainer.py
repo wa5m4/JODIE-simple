@@ -20,6 +20,7 @@ from data.synthetic import generate_synthetic_data, init_dynamic_graph_state
 from data.temporal_partition import build_partition_plan
 from models.factory import build_model
 from models.training import evaluate_ranking_metrics, evaluate_recall_by_type, train_model, train_model_ce
+from nas.data_parallel_executor import DataParallelExecutor
 from nas.ray_pipeline import RayPipelineExecutor
 from nas.search_space import canonical_config_signature, sanitize_config
 
@@ -746,6 +747,125 @@ class GraphNASTrainer:
             eval_seeds=eval_seeds,
             default_seed=final_seed,
             phase="final",
+            eval_split="test",
+        )
+
+        final_result["selected_val_score"] = float(selected["score"])
+        final_result["distribution_metadata"] = self._distribution_metadata(train_data, val_data, test_data)
+        results.append(final_result)
+        return final_result, results
+
+    def search_data_parallel(
+        self,
+        controller,
+        coarse_trials: int,
+        coarse_epochs: int,
+        num_workers: int = 3,
+    ) -> Tuple[Dict, List[Dict]]:
+        print(f"\n{'='*70}", flush=True)
+        print(f"[GraphNAS] Starting data-parallel search", flush=True)
+        print(f"[GraphNAS] Coarse trials: {coarse_trials}, epochs: {coarse_epochs}, workers: {num_workers}", flush=True)
+        print(f"{'='*70}\n", flush=True)
+
+        train_data, val_data, test_data, user_type_prefs, item_type, graph_template, partition_plan = self._prepare_data()
+        results: List[Dict] = []
+        seen_signatures: Set[str] = set()
+
+        search_start_time = time.time()
+        output_dir = self.base_config.get("output_dir", "outputs")
+        os.makedirs(output_dir, exist_ok=True)
+        timing_log_path = os.path.join(output_dir, "timing_log.csv")
+        with open(timing_log_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["trial_id", "mode", "start_time_s", "end_time_s",
+                             "duration_s", "score", "mrr", "recall_at_k",
+                             "cumulative_best_score", "model"])
+        print(f"[Timing] Timing log: {timing_log_path}", flush=True)
+
+        executor = DataParallelExecutor(self.base_config, partition_plan, num_workers=num_workers)
+        cumulative_best = 0.0
+        search_start = time.time()
+
+        for trial_idx in range(coarse_trials):
+            # Sample THEN evaluate THEN update RL — same order as serial search to avoid
+            # inplace-modification of the controller's computation graph between sample and backward.
+            arch, logprob = self._sample_unique_arch(
+                controller=controller,
+                seen_signatures=seen_signatures,
+            )
+
+            raw_list = executor.run([arch], user_type_prefs=user_type_prefs,
+                                    item_type=item_type, num_train_epochs=coarse_epochs)
+            raw = raw_list[0]
+
+            config = dict(self.base_config)
+            config.update(raw["config"])
+            model_obj = build_model(config)
+            params = sum(p.numel() for p in model_obj.parameters())
+
+            trial_end_rel = time.time() - search_start
+            result = {
+                "config": config,
+                "phase": "coarse_dp",
+                "eval_split": "val",
+                "seed": int(self.base_config.get("seed", 42)) + trial_idx,
+                "score": float(raw["score"]),
+                "val_score": float(raw["score"]),
+                "test_score": None,
+                "mrr": float(raw["mrr"]),
+                "recall_at_k": float(raw["recall_at_k"]),
+                "params": int(params),
+                "time_sec": float(raw["time_sec"]),
+            }
+            results.append(result)
+
+            cumulative_best = max(cumulative_best, result["score"])
+            with open(timing_log_path, "a", newline="", encoding="utf-8") as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    trial_idx, "data_parallel",
+                    round(trial_end_rel - result["time_sec"], 3),
+                    round(trial_end_rel, 3),
+                    round(result["time_sec"], 3),
+                    round(result["score"], 6),
+                    round(result["mrr"], 6),
+                    round(result["recall_at_k"], 6),
+                    round(cumulative_best, 6),
+                    result["config"].get("model", "unknown"),
+                ])
+
+            if logprob is not None and hasattr(controller, "reinforce_step"):
+                controller.reinforce_step(logprob, result["score"])
+
+            print(
+                f"[DataParallel {trial_idx + 1}/{coarse_trials}] "
+                f"model={result['config'].get('model', 'unknown')} "
+                f"agg={result['config'].get('event_agg', 'na')} "
+                f"memory={result['config'].get('memory_cell', 'na')} "
+                f"val_score={result['score']:.4f}"
+            )
+
+        # Kill Ray workers so pipeline can have full resources
+        executor.shutdown()
+        print("[DataParallel] Workers shut down.", flush=True)
+
+        coarse_sorted = sorted(results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)
+        selected = coarse_sorted[0]
+
+        # Final evaluation on test set
+        final_seed = int(self.base_config.get("seed", 42)) + 20000
+        final_train_data = train_data + val_data
+        final_result = self._evaluate_arch_multi_seed(
+            arch_config=selected["config"],
+            train_data=final_train_data,
+            eval_data=test_data,
+            user_type_prefs=user_type_prefs,
+            item_type=item_type,
+            graph_template=graph_template,
+            epochs=coarse_epochs,
+            eval_seeds=None,
+            default_seed=final_seed,
+            phase="final_dp",
             eval_split="test",
         )
 

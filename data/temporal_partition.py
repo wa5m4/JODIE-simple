@@ -30,6 +30,26 @@ class TemporalPartitionPlan:
         return [partition for partition in self.partitions if partition.partition_id in ids]
 
 
+def split_partition_interactions(
+    partition: "TemporalPartition",
+    num_workers: int,
+) -> List[List[Interaction]]:
+    """Split partition.interactions into num_workers temporally-ordered chunks."""
+    interactions = partition.interactions
+    if num_workers <= 1:
+        return [list(interactions)]
+    chunk_size = len(interactions) // num_workers
+    remainder = len(interactions) % num_workers
+    chunks: List[List[Interaction]] = []
+    start = 0
+    for i in range(num_workers):
+        end = start + chunk_size + (1 if i < remainder else 0)
+        if end > start:
+            chunks.append(interactions[start:end])
+        start = end
+    return chunks
+
+
 def sort_interactions_by_time(interactions: Sequence[Interaction]) -> List[Interaction]:
     #对交互列表按时间戳进行升序排序
     #返回排序后的交互列表
