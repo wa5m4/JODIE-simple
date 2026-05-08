@@ -320,7 +320,9 @@ class RayPipelineExecutor:
         if len(values) == 1:
             return [values[0] for _ in range(num_stages)]
         if len(values) != num_stages:
-            raise ValueError(f"{key} expects one value or {num_stages} comma-separated values")
+            if fallback is not None and len(fallback) == num_stages:
+                return list(fallback)
+            return [values[0] for _ in range(num_stages)]
         return values
 
     def _trace_key(self, phase: str, trial_id: int, stage_idx: int) -> str:
@@ -700,6 +702,187 @@ class RayPipelineExecutor:
 
         return scores
 
+    def _run_train_eval_pipeline(
+        self,
+        payloads: List[PipelineModelPayload],
+        train_groups: List[List[TemporalPartition]],
+        eval_groups: List[List[TemporalPartition]],
+        stage_workers,
+        use_bpr: bool,
+        num_train_epochs: int,
+        item_type,
+        user_type_prefs,
+        k: int,
+        synthetic_mode: bool,
+        time_budget_sec: float = 0.0,
+        search_start_time: float = None,
+    ) -> Dict[int, Dict[str, float]]:
+        """Train and eval in one unified pipeline: arch flows into eval immediately after train."""
+        if num_train_epochs > 1:
+            # Multi-epoch: run train epochs first (state must reset between epochs),
+            # then do a single pass of the unified train+eval pipeline for the last epoch.
+            current = payloads
+            for epoch in range(num_train_epochs - 1):
+                epoch_start = [
+                    PipelineModelPayload(
+                        trial_id=p.trial_id,
+                        arch_config=p.arch_config,
+                        model_state_dict=p.model_state_dict,
+                        runtime_state=None,
+                        graph_state=p.graph_state,
+                        optimizer_state=p.optimizer_state,
+                        seed=p.seed,
+                    )
+                    for p in current
+                ]
+                current = self._run_train_pipeline(epoch_start, train_groups, stage_workers, use_bpr, num_train_epochs=1)
+            # Final epoch: reset state then run unified train+eval
+            final_start = [
+                PipelineModelPayload(
+                    trial_id=p.trial_id,
+                    arch_config=p.arch_config,
+                    model_state_dict=p.model_state_dict,
+                    runtime_state=None,
+                    graph_state=p.graph_state,
+                    optimizer_state=p.optimizer_state,
+                    seed=p.seed,
+                )
+                for p in current
+            ]
+            return self._run_train_eval_pipeline(
+                final_start, train_groups, eval_groups, stage_workers,
+                use_bpr, num_train_epochs=1,
+                item_type=item_type, user_type_prefs=user_type_prefs,
+                k=k, synthetic_mode=synthetic_mode,
+                time_budget_sec=time_budget_sec,
+                search_start_time=search_start_time,
+            )
+
+        train_stage_partition_ids = [[p.partition_id for p in g] for g in train_groups]
+        eval_stage_partition_ids = [[p.partition_id for p in g] for g in eval_groups]
+        num_train_stages = len(train_groups)
+        num_eval_stages = len(eval_groups)
+        total_stages = num_train_stages + num_eval_stages
+
+        in_flight: Dict[object, Tuple[str, int, int]] = {}  # ref → (phase, stage_idx, worker_idx)
+        scores: Dict[int, Dict[str, float]] = {
+            p.trial_id: {"hits": 0, "total": 0, "mrr_sum": 0.0} for p in payloads
+        }
+
+        train_pending: List[Deque[PipelineModelPayload]] = [deque() for _ in range(num_train_stages)]
+        train_pending[0] = deque(payloads)
+        eval_pending: List[Deque[PipelineModelPayload]] = [deque() for _ in range(num_eval_stages)]
+        # All stages share the same worker pool
+        idle_workers: List[Deque[int]] = [deque(range(len(pool))) for pool in stage_workers]
+
+        last_heartbeat = time.perf_counter()
+        heartbeat_interval = float(self.base_config.get("pipeline_heartbeat_interval_sec", 5.0))
+        time_budget_exceeded = False
+
+        while True:
+            # Check time budget before dispatching new tasks
+            if not time_budget_exceeded and time_budget_sec > 0 and search_start_time is not None:
+                if time.time() - search_start_time >= time_budget_sec:
+                    print(f"[Pipeline] Time budget {time_budget_sec:.0f}s exceeded, stopping new training", flush=True)
+                    time_budget_exceeded = True
+                    for q in train_pending:
+                        q.clear()
+                    try:
+                        for ref, (ph, si, widx) in list(in_flight.items()):
+                            if ph != "train":
+                                continue
+                            try:
+                                ray.cancel(ref, force=True)
+                            except Exception:
+                                pass
+                            idle_workers[si].append(widx)
+                            in_flight.pop(ref, None)
+                    except Exception:
+                        pass
+
+            progress = False
+
+            # Dispatch train stages only if time budget not exceeded
+            if not time_budget_exceeded:
+                for si in range(num_train_stages):
+                    while train_pending[si] and idle_workers[si]:
+                        payload = train_pending[si].popleft()
+                        worker_idx = idle_workers[si].popleft()
+                        self._trace_event("train", "dispatch", payload.trial_id, si, total_stages)
+                        ref = stage_workers[si][worker_idx].run_train_stage_batch.remote(
+                            payload, train_stage_partition_ids[si], use_bpr=use_bpr, num_epochs=1,
+                        )
+                        in_flight[ref] = ("train", si, worker_idx)
+                        progress = True
+
+            # Always dispatch pending eval stages (even after time budget exceeded)
+            for si in range(num_eval_stages):
+                worker_pool_idx = si  # eval stage si reuses worker pool si
+                while eval_pending[si] and idle_workers[worker_pool_idx]:
+                    payload = eval_pending[si].popleft()
+                    worker_idx = idle_workers[worker_pool_idx].popleft()
+                    self._trace_event("eval", "dispatch", payload.trial_id, si, total_stages)
+                    ref = stage_workers[worker_pool_idx][worker_idx].run_eval_stage_batch.remote(
+                        payload, eval_stage_partition_ids[si],
+                        item_type=item_type, user_type_prefs=user_type_prefs,
+                        k=k, synthetic_mode=synthetic_mode,
+                    )
+                    in_flight[ref] = ("eval", si, worker_idx)
+                    progress = True
+
+            if not in_flight:
+                if progress:
+                    continue
+                break
+
+            done_refs, _ = ray.wait(list(in_flight.keys()), num_returns=1, timeout=5.0)
+            if not done_refs:
+                now = time.perf_counter()
+                if now - last_heartbeat >= heartbeat_interval:
+                    print(
+                        f"[pipeline-heartbeat] wall={time.strftime('%H:%M:%S', time.localtime())} "
+                        f"in_flight={len(in_flight)} "
+                        f"train_pending={[len(q) for q in train_pending]} "
+                        f"eval_pending={[len(q) for q in eval_pending]}",
+                        flush=True,
+                    )
+                    last_heartbeat = now
+                continue
+
+            done_ref = done_refs[0]
+            phase, si, worker_idx = in_flight.pop(done_ref)
+            idle_workers[si].append(worker_idx)
+
+            if phase == "train":
+                try:
+                    updated_payload = ray.get(done_ref)
+                except Exception as e:
+                    if time_budget_exceeded:
+                        continue  # task was cancelled due to time budget, skip silently
+                    print(f"[ERROR] Ray train task failed: {e}", flush=True)
+                    raise
+                self._trace_event("train", "complete", updated_payload.trial_id, si, total_stages)
+                if si < num_train_stages - 1:
+                    train_pending[si + 1].append(updated_payload)
+                else:
+                    # Train done → immediately push into eval stage 0
+                    eval_pending[0].append(updated_payload)
+            else:
+                try:
+                    stage_result = ray.get(done_ref)
+                except Exception as e:
+                    print(f"[ERROR] Ray eval task failed: {e}", flush=True)
+                    raise
+                payload = stage_result["payload"]
+                self._trace_event("eval", "complete", payload.trial_id, si, total_stages)
+                scores[payload.trial_id]["hits"] += int(stage_result["hits"])
+                scores[payload.trial_id]["total"] += int(stage_result["total"])
+                scores[payload.trial_id]["mrr_sum"] += float(stage_result["mrr_sum"])
+                if si < num_eval_stages - 1:
+                    eval_pending[si + 1].append(payload)
+
+        return scores
+
     def _shutdown_worker_pool(self, stage_workers) -> None:
         if ray is None:
             return
@@ -709,6 +892,9 @@ class RayPipelineExecutor:
                     ray.kill(worker, no_restart=True)
                 except Exception:
                     pass
+
+    def shutdown(self) -> None:
+        pass  # workers are created/destroyed within run(); nothing persistent to clean up
 
     def _make_payload(self, arch_config: Dict, trial_id: int, seed: int) -> PipelineModelPayload:
         config = dict(self.base_config)
@@ -769,7 +955,7 @@ class RayPipelineExecutor:
             print(f"  hint: {gpu_count - total_eval_workers} GPUs unused during evaluation", flush=True)
         print(f"{'='*60}\n", flush=True)
 
-    def run(self, arch_configs: List[Dict], user_type_prefs, item_type, num_train_epochs: int = 1) -> List[Dict]:
+    def run(self, arch_configs: List[Dict], user_type_prefs, item_type, num_train_epochs: int = 1, eval_split: str = "val", time_budget_sec: float = 0.0, search_start_time: float = None) -> List[Dict]:
         if ray is None:
             raise ImportError("ray is required for execution_mode=ray_pipeline")
 
@@ -782,8 +968,6 @@ class RayPipelineExecutor:
 
         num_stages = int(self.base_config.get("num_pipeline_stages", 1))
         train_groups = self._group_partitions("train", num_stages)
-        # prefer "test" split if available (final evaluation), fall back to "val"
-        eval_split = "test" if self.partition_plan.get_split_partitions("test") else "val"
         eval_groups = self._group_partitions(eval_split, num_stages)
         stage_total = len(train_groups)
 
@@ -866,9 +1050,18 @@ class RayPipelineExecutor:
         train_stage_workers = []
         eval_stage_workers = []
         try:
+            # Create workers with all partitions (train+eval) so they can be reused for eval
+            # without teardown/rebuild, eliminating the GPU reallocation gap between train and eval.
+            all_partitions_per_stage = []
+            for idx in range(len(train_groups)):
+                train_parts = train_groups[idx] if idx < len(train_groups) else []
+                eval_parts = eval_groups[idx] if idx < len(eval_groups) else []
+                combined = list({p.partition_id: p for p in train_parts + eval_parts}.values())
+                all_partitions_per_stage.append(combined)
+
             train_stage_workers = [
-                [create_ray_worker(partitions, self.base_config) for _ in range(train_worker_counts[idx])]
-                for idx, partitions in enumerate(train_groups)
+                [create_ray_worker(all_partitions_per_stage[idx], self.base_config) for _ in range(train_worker_counts[idx])]
+                for idx in range(len(train_groups))
             ]
 
             print(
@@ -876,35 +1069,24 @@ class RayPipelineExecutor:
                 flush=True,
             )
 
-            payloads = self._run_train_pipeline(
+            print(f"[RayPipeline] running unified train+eval pipeline (no global sync point)", flush=True)
+            eval_scores = self._run_train_eval_pipeline(
                 payloads,
                 train_groups,
+                eval_groups,
                 train_stage_workers,
                 use_bpr=use_bpr,
                 num_train_epochs=train_epochs,
-            )
-
-            # Free train actors first to avoid GPU resource contention when scheduling eval actors.
-            self._shutdown_worker_pool(train_stage_workers)
-            train_stage_workers = []
-
-            eval_stage_workers = [
-                [create_ray_worker(partitions, self.base_config) for _ in range(eval_worker_counts[idx])]
-                for idx, partitions in enumerate(eval_groups)
-            ] if eval_groups else []
-            print(
-                f"[RayPipeline] created eval worker pools={[len(pool) for pool in eval_stage_workers]}",
-                flush=True,
-            )
-            eval_scores = self._run_eval_pipeline(
-                payloads,
-                eval_groups,
-                eval_stage_workers,
                 item_type=item_type,
                 user_type_prefs=user_type_prefs,
                 k=k,
                 synthetic_mode=synthetic_mode,
+                time_budget_sec=time_budget_sec,
+                search_start_time=search_start_time,
             )
+            # payloads order preserved for result assembly below
+            eval_stage_workers = train_stage_workers
+            train_stage_workers = []
         finally:
             self._shutdown_worker_pool(train_stage_workers)
             self._shutdown_worker_pool(eval_stage_workers)

@@ -31,6 +31,9 @@ class GraphNASTrainer:
     def __init__(self, base_config: Dict):
         self.base_config = base_config
 
+    def _time_budget_reached(self, search_start_time: Optional[float], time_budget_sec: float) -> bool:
+        return bool(time_budget_sec > 0 and search_start_time is not None and (time.time() - search_start_time) >= time_budget_sec)
+
     def _set_seed(self, seed: int) -> None:
         random.seed(seed)
         np.random.seed(seed)
@@ -381,16 +384,26 @@ class GraphNASTrainer:
         phase: str,
         eval_split: str,
         epochs: int,
+        executor=None,
+        time_budget_sec: float = 0.0,
+        search_start_time: float = None,
     ) -> List[Dict]:
-        executor = RayPipelineExecutor(self.base_config, partition_plan)
+        own_executor = executor is None
+        if own_executor:
+            executor = RayPipelineExecutor(self.base_config, partition_plan)
         start = time.time()
         pipeline_results = executor.run(
             arch_configs,
             user_type_prefs=user_type_prefs,
             item_type=item_type,
             num_train_epochs=epochs,
+            eval_split=eval_split,
+            time_budget_sec=time_budget_sec,
+            search_start_time=search_start_time,
         )
         elapsed = time.time() - start
+        if own_executor:
+            executor.shutdown()
 
         formatted = []
         for row in pipeline_results:
@@ -425,12 +438,54 @@ class GraphNASTrainer:
         rerank_epochs: int = 1,
         family_balanced_rerank: bool = False,
         family_balance_per_model: int = 1,
+        time_budget_sec: float = 0.0,
     ) -> Tuple[Dict, List[Dict]]:
         print(f"\n{'='*70}", flush=True)
         print(f"[GraphNAS] Starting search pipeline", flush=True)
         print(f"[GraphNAS] Coarse trials: {coarse_trials}, epochs: {coarse_epochs}", flush=True)
         print(f"[GraphNAS] Rerank top-k: {rerank_top_k}, epochs: {rerank_epochs}", flush=True)
         print(f"{'='*70}\n", flush=True)
+        
+        # ──── 阶段 1: 初始自动化配置（快速启发式） ────
+        cost_model = None
+        if self.base_config.get("enable_auto_pipeline_config", False):
+            from nas.config_optimizer import ConfigOptimizer
+            
+            gpu_list = self.base_config.get("gpu_list", "0,1,2")
+            gpu_count = len(ConfigOptimizer.parse_gpu_list(gpu_list))
+            
+            # 预计数据大小（需要快速估计，不能完整加载）
+            max_events = self.base_config.get("max_events", 0)
+            if max_events <= 0:
+                dataset_name = self.base_config.get("dataset", "synthetic")
+                if dataset_name == "synthetic":
+                    num_interactions = self.base_config.get("num_interactions", 3000)
+                    estimated_events = num_interactions * 5  # 粗略估计
+                else:
+                    estimated_events = 50000  # 保守估计
+            else:
+                estimated_events = max_events
+            
+            # 调用启发式优化器
+            auto_config = ConfigOptimizer.auto_allocate_config_advanced(
+                gpu_count=gpu_count,
+                num_events=estimated_events,
+                num_partitions=0,
+                architectures_per_step=architectures_per_step,
+                coarse_trials=coarse_trials,
+                epochs=coarse_epochs,
+            )
+            
+            print(f"\n[Auto-Config Phase 1] 启发式配置 (GPU数={gpu_count}):")
+            print(auto_config['info'])
+            print()
+            
+            self.base_config["num_pipeline_stages"] = auto_config["num_pipeline_stages"]
+            self.base_config["pipeline_stage_train_workers"] = auto_config["pipeline_stage_train_workers"]
+            self.base_config["pipeline_stage_eval_workers"] = auto_config["pipeline_stage_eval_workers"]
+            if auto_config["partition_size"] > 0:
+                self.base_config["partition_size"] = auto_config["partition_size"]
+            architectures_per_step = auto_config["architectures_per_step"]
         
         # 启动效率监控（如果启用）
         monitor_process = None
@@ -458,6 +513,69 @@ class GraphNASTrainer:
         total_generated = 0
         seen_signatures: Set[str] = set()
 
+        # ──── 阶段 2: 成本感知的 DP 优化（基于实际 partition 数据） ────
+        if self.base_config.get("enable_auto_pipeline_config", False) and partition_plan:
+            try:
+                from nas.config_optimizer import ConfigOptimizer, CostModel
+                
+                # 估计每个 partition 的成本
+                gpu_list = self.base_config.get("gpu_list", "0,1,2")
+                gpu_count = len(ConfigOptimizer.parse_gpu_list(gpu_list))
+                
+                # 收集 partition 成本信息
+                train_partitions = partition_plan.get_split_partitions("train")
+                if train_partitions:
+                    partition_costs = []
+                    seen_users = set()
+                    seen_items = set()
+                    
+                    for partition in sorted(train_partitions, key=lambda p: (float(p.start_ts), p.partition_id)):
+                        interactions = partition.interactions
+                        if not interactions:
+                            partition_costs.append(1.0)
+                            continue
+                        
+                        unique_users = {inter.user_id for inter in interactions}
+                        unique_items = {inter.item_id for inter in interactions}
+                        new_users = unique_users.difference(seen_users)
+                        new_items = unique_items.difference(seen_items)
+                        span = max(float(partition.end_ts) - float(partition.start_ts), 0.0)
+                        
+                        cost = float(len(interactions))
+                        cost += self.base_config.get("stage_balance_user_weight", 0.25) * float(len(unique_users) + len(new_users))
+                        cost += self.base_config.get("stage_balance_item_weight", 0.25) * float(len(unique_items) + len(new_items))
+                        cost += self.base_config.get("stage_balance_span_weight", 0.0) * span
+                        partition_costs.append(max(cost, 1.0))
+                        
+                        seen_users.update(unique_users)
+                        seen_items.update(unique_items)
+                    
+                    # 使用 DP 优化得到更好的 stage 配置
+                    num_stages = self.base_config.get("num_pipeline_stages", 2)
+                    cost_model = CostModel(
+                        user_weight=self.base_config.get("stage_balance_user_weight", 0.25),
+                        item_weight=self.base_config.get("stage_balance_item_weight", 0.25),
+                        span_weight=self.base_config.get("stage_balance_span_weight", 0.0),
+                    )
+                    
+                    grouping = cost_model.optimize_partition_grouping(partition_costs, num_stages)
+                    if grouping:
+                        print(f"\n[Auto-Config Phase 2] 成本感知 DP 优化:")
+                        print(f"  Total partitions: {len(partition_costs)}")
+                        print(f"  Total cost: {sum(partition_costs):.0f}")
+                        print(f"  Optimized grouping:")
+                        imbalance_info = []
+                        for i, (start_idx, end_idx) in enumerate(grouping):
+                            stage_cost = sum(partition_costs[start_idx:end_idx])
+                            imbalance_info.append(f"    Stage {i+1}: partitions {start_idx}-{end_idx-1} (cost={stage_cost:.0f})")
+                        print('\n'.join(imbalance_info))
+                        print()
+            except Exception as e:
+                print(f"\n[Auto-Config Phase 2] ⚠️ DP 优化失败: {e}", flush=True)
+
+        # Create pipeline executor once for entire search (reuse across batches)
+        pipeline_executor = RayPipelineExecutor(self.base_config, partition_plan)
+
         # 计时日志初始化
         search_start_time = time.time()
         output_dir = self.base_config.get("output_dir", "outputs")
@@ -473,6 +591,9 @@ class GraphNASTrainer:
         cumulative_best = 0.0
 
         while total_generated < coarse_trials:
+            if time_budget_sec > 0 and (time.time() - search_start_time) >= time_budget_sec:
+                print(f"[Coarse Phase] Time budget {time_budget_sec:.0f}s reached after {total_generated} trials, stopping.", flush=True)
+                break
             batch_size = min(architectures_per_step, coarse_trials - total_generated)
             print(f"[Coarse Phase] Sampling batch {total_generated//batch_size + 1}: {batch_size} architectures", flush=True)
 
@@ -494,6 +615,9 @@ class GraphNASTrainer:
                 phase="coarse_pipeline",
                 eval_split="val",
                 epochs=coarse_epochs,
+                executor=pipeline_executor,
+                time_budget_sec=time_budget_sec,
+                search_start_time=search_start_time,
             )
             batch_end = time.time()
             results.extend(batch_results)
@@ -525,15 +649,45 @@ class GraphNASTrainer:
             if batch_samples and hasattr(controller, "reinforce_step_batch"):
                 controller.reinforce_step_batch(batch_samples)
             else:
-                for logprob, result in batch_samples:
+                for logprob, score in batch_samples:
                     if hasattr(controller, "reinforce_step"):
-                        controller.reinforce_step(logprob, result["score"])
+                        controller.reinforce_step(logprob, score)
 
             total_generated += len(batch_results)
             print(f"[Coarse Phase] Progress: {total_generated}/{coarse_trials} trials completed", flush=True)
 
         coarse_sorted = sorted(results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)
         selected = coarse_sorted[0]
+
+        if self._time_budget_reached(search_start_time, time_budget_sec):
+            print(f"[Coarse Phase] Time budget {time_budget_sec:.0f}s reached before rerank/final test, returning best coarse result.", flush=True)
+            best = selected
+            best["distribution_metadata"] = self._distribution_metadata(train_data, val_data, test_data)
+
+            if monitor_process is not None:
+                try:
+                    monitor_process.terminate()
+                    monitor_process.wait(timeout=5)
+                    print(f"[Efficiency Monitor] Monitor process stopped", flush=True)
+
+                    trace_file = self.base_config.get("pipeline_trace_log_path")
+                    if trace_file:
+                        efficiency_log = trace_file.replace("pipeline_trace_", "efficiency_log_").replace(".log", ".csv")
+                        report_file = efficiency_log.replace(".csv", "_report.txt")
+                        try:
+                            subprocess.run(
+                                ["python", "tools/visualize_efficiency_log.py", efficiency_log, "--export", report_file],
+                                timeout=10,
+                                check=False,
+                            )
+                            print(f"[Efficiency Monitor] Report saved to: {report_file}", flush=True)
+                        except Exception as e:
+                            print(f"[Efficiency Monitor] ⚠️ Failed to generate report: {e}", flush=True)
+                except Exception as e:
+                    print(f"[Efficiency Monitor] ⚠️ Error stopping monitor: {e}", flush=True)
+
+            pipeline_executor.shutdown()
+            return best, results
 
         if rerank_top_k > 0:
             if family_balanced_rerank:
@@ -555,11 +709,43 @@ class GraphNASTrainer:
                 phase="rerank_pipeline",
                 eval_split="val",
                 epochs=rerank_epochs,
+                time_budget_sec=time_budget_sec,
+                search_start_time=search_start_time,
             )
             results.extend(rerank_results)
             selected = sorted(rerank_results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)[0]
 
         # Final evaluation on test set (train on train+val, evaluate on test) — matches JODIE paper protocol
+        if self._time_budget_reached(search_start_time, time_budget_sec):
+            print(f"[Coarse Phase] Time budget {time_budget_sec:.0f}s reached before final test, returning best available result.", flush=True)
+            best = selected
+            best["distribution_metadata"] = self._distribution_metadata(train_data, val_data, test_data)
+
+            if monitor_process is not None:
+                try:
+                    monitor_process.terminate()
+                    monitor_process.wait(timeout=5)
+                    print(f"[Efficiency Monitor] Monitor process stopped", flush=True)
+
+                    trace_file = self.base_config.get("pipeline_trace_log_path")
+                    if trace_file:
+                        efficiency_log = trace_file.replace("pipeline_trace_", "efficiency_log_").replace(".log", ".csv")
+                        report_file = efficiency_log.replace(".csv", "_report.txt")
+                        try:
+                            subprocess.run(
+                                ["python", "tools/visualize_efficiency_log.py", efficiency_log, "--export", report_file],
+                                timeout=10,
+                                check=False,
+                            )
+                            print(f"[Efficiency Monitor] Report saved to: {report_file}", flush=True)
+                        except Exception as e:
+                            print(f"[Efficiency Monitor] ⚠️ Failed to generate report: {e}", flush=True)
+                except Exception as e:
+                    print(f"[Efficiency Monitor] ⚠️ Error stopping monitor: {e}", flush=True)
+
+            pipeline_executor.shutdown()
+            return best, results
+
         final_train_data = train_data + val_data
         final_partition_plan = build_partition_plan(
             train_interactions=final_train_data,
@@ -578,12 +764,18 @@ class GraphNASTrainer:
             phase="final_pipeline",
             eval_split="test",
             epochs=final_epochs,
+            executor=pipeline_executor,
+            time_budget_sec=0.0,
+            search_start_time=None,
         )[0]
         selected["selected_val_score"] = float(selected["score"])
-        selected["score"] = float(final_test_result["score"])
-        selected["mrr"] = float(final_test_result["mrr"])
-        selected["recall_at_k"] = float(final_test_result["recall_at_k"])
+        selected["val_score"] = float(selected["score"])
+        selected["val_mrr"] = float(selected.get("mrr", selected["score"]))
+        selected["val_recall_at_k"] = float(selected.get("recall_at_k", 0.0))
         selected["test_score"] = float(final_test_result["score"])
+        selected["test_mrr"] = float(final_test_result["mrr"])
+        selected["test_recall_at_k"] = float(final_test_result["recall_at_k"])
+        # score/mrr/recall_at_k stay as val scores for fair NAS comparison
 
         best = selected
         best["distribution_metadata"] = self._distribution_metadata(train_data, val_data, test_data)
@@ -611,7 +803,10 @@ class GraphNASTrainer:
                         print(f"[Efficiency Monitor] ⚠️ Failed to generate report: {e}", flush=True)
             except Exception as e:
                 print(f"[Efficiency Monitor] ⚠️ Error stopping monitor: {e}", flush=True)
-        
+
+        # Shutdown pipeline executor
+        pipeline_executor.shutdown()
+
         return best, results
 
     def search(
@@ -624,6 +819,7 @@ class GraphNASTrainer:
         eval_seeds: Optional[List[int]] = None,
         family_balanced_rerank: bool = False,
         family_balance_per_model: int = 1,
+        time_budget_sec: float = 0.0,
     ) -> Tuple[Dict, List[Dict]]:
         train_data, val_data, test_data, user_type_prefs, item_type, graph_template, partition_plan = self._prepare_data()
         results: List[Dict] = []
@@ -644,6 +840,9 @@ class GraphNASTrainer:
         cumulative_best = 0.0
 
         for trial in range(coarse_trials):
+            if time_budget_sec > 0 and (time.time() - search_start_time) >= time_budget_sec:
+                print(f"[Coarse] Time budget {time_budget_sec:.0f}s reached after {trial} trials, stopping.", flush=True)
+                break
             arch, logprob = self._sample_unique_arch(
                 controller=controller,
                 seen_signatures=seen_signatures,
@@ -699,6 +898,16 @@ class GraphNASTrainer:
         coarse_sorted = sorted(results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)
         selected = coarse_sorted[0]
 
+        if self._time_budget_reached(search_start_time, time_budget_sec):
+            print(f"[Coarse] Time budget {time_budget_sec:.0f}s reached before rerank/final test, returning best coarse result.", flush=True)
+            final_result = dict(selected)
+            final_result["selected_val_score"] = float(selected["score"])
+            final_result["val_score"] = float(selected["score"])
+            final_result["test_score"] = None
+            final_result["distribution_metadata"] = self._distribution_metadata(train_data, val_data, test_data)
+            results.append(final_result)
+            return final_result, results
+
         if rerank_top_k > 0:
             if family_balanced_rerank:
                 rerank_candidates = self._family_balanced_candidates(
@@ -751,6 +960,11 @@ class GraphNASTrainer:
         )
 
         final_result["selected_val_score"] = float(selected["score"])
+        final_result["val_score"] = float(selected["score"])
+        final_result["test_score"] = float(final_result["score"])
+        final_result["score"] = float(selected["score"])
+        final_result["mrr"] = float(selected.get("mrr", selected["score"]))
+        final_result["recall_at_k"] = float(selected.get("recall_at_k", 0.0))
         final_result["distribution_metadata"] = self._distribution_metadata(train_data, val_data, test_data)
         results.append(final_result)
         return final_result, results
@@ -761,6 +975,7 @@ class GraphNASTrainer:
         coarse_trials: int,
         coarse_epochs: int,
         num_workers: int = 3,
+        time_budget_sec: float = 0.0,
     ) -> Tuple[Dict, List[Dict]]:
         print(f"\n{'='*70}", flush=True)
         print(f"[GraphNAS] Starting data-parallel search", flush=True)
@@ -787,6 +1002,9 @@ class GraphNASTrainer:
         search_start = time.time()
 
         for trial_idx in range(coarse_trials):
+            if time_budget_sec > 0 and (time.time() - search_start_time) >= time_budget_sec:
+                print(f"[DataParallel] Time budget {time_budget_sec:.0f}s reached after {trial_idx} trials, stopping.", flush=True)
+                break
             # Sample THEN evaluate THEN update RL — same order as serial search to avoid
             # inplace-modification of the controller's computation graph between sample and backward.
             arch, logprob = self._sample_unique_arch(
@@ -852,6 +1070,16 @@ class GraphNASTrainer:
         coarse_sorted = sorted(results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)
         selected = coarse_sorted[0]
 
+        if self._time_budget_reached(search_start_time, time_budget_sec):
+            print(f"[DataParallel] Time budget {time_budget_sec:.0f}s reached before final test, returning best coarse result.", flush=True)
+            final_result = dict(selected)
+            final_result["selected_val_score"] = float(selected["score"])
+            final_result["val_score"] = float(selected["score"])
+            final_result["test_score"] = None
+            final_result["distribution_metadata"] = self._distribution_metadata(train_data, val_data, test_data)
+            results.append(final_result)
+            return final_result, results
+
         # Final evaluation on test set
         final_seed = int(self.base_config.get("seed", 42)) + 20000
         final_train_data = train_data + val_data
@@ -870,6 +1098,11 @@ class GraphNASTrainer:
         )
 
         final_result["selected_val_score"] = float(selected["score"])
+        final_result["val_score"] = float(selected["score"])
+        final_result["test_score"] = float(final_result["score"])
+        final_result["score"] = float(selected["score"])
+        final_result["mrr"] = float(selected.get("mrr", selected["score"]))
+        final_result["recall_at_k"] = float(selected.get("recall_at_k", 0.0))
         final_result["distribution_metadata"] = self._distribution_metadata(train_data, val_data, test_data)
         results.append(final_result)
         return final_result, results

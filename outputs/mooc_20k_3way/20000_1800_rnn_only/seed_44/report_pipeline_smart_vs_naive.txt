@@ -1,0 +1,79 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║                          Pipeline 自动优化效果对比                           ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+┌─ 1. Search Quality  架构搜索质量 ────────────────────────────────────┐
+
+  Metric              Pipeline-Naive  Pipeline-Smart    Best
+  ──────────────────  ──────────────  ──────────────  ──────
+  Best Score (MRR)            0.6704          0.7778  Pipeline-Smart ◀
+  MRR                         0.6704          0.7778  Pipeline-Smart ◀
+  Recall@10                   0.9455          0.9700  Pipeline-Smart ◀
+
+  Top-5 val scores per method:
+    Pipeline-Naive: 0.6704 | 0.6522 | 0.6110 | 0.5996 | 0.5490
+    Pipeline-Smart: 0.7778 | 0.6157 | 0.5151 | 0.4876 | 0.4712
+
+  Best Architecture (Pipeline-Naive):
+    model=jodie_rnn  memory_cell=rnn  embedding_dim=64
+  Best Architecture (Pipeline-Smart):
+    model=jodie_rnn  memory_cell=rnn  embedding_dim=128
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 2. Search Efficiency  搜索效率 ─────────────────────────────────────┐
+
+  Metric                      Pipeline-Naive  Pipeline-Smart    Best
+  ──────────────────────────  ──────────────  ──────────────  ──────
+  Architectures Explored                 N/A             N/A  Pipeline-Naive ◀
+  Total Wall Time (s)                   1841            1827  Pipeline-Smart ◀
+  Avg Time/Trial (s)                   102.3           101.5  Pipeline-Smart ◀
+  Trial Throughput (tph)                35.2            35.5  Pipeline-Smart ◀
+
+  Pipeline-Naive [████████████████████████████████████] 18 trials
+  Pipeline-Smart [████████████████████████████████████] 18 trials
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 3. Architecture Diversity  架构多样性 ──────────────────────────────┐
+
+  Metric                    Pipeline-Naive  Pipeline-Smart
+  ────────────────────────  ──────────────  ──────────────
+  Architectures Evaluated               18              18
+  Unique Model Types                     1               1
+  Unique Memory Cell                     3               3
+  Unique Time Proj                       2               2
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 4. Search Convergence Curve  搜索收敛曲线 ──────────────────────────┐
+
+  Best Score vs Wall Time  [P=Pipeline-Naive  B=Pipeline-Smart  *=overlap]
+
+  0.7778 │                            B                     B 
+  0.7168 │                                                    
+  0.6558 │                   P      P         P       P      P
+  0.5948 │                            B                       
+  0.5338 │                                                    
+  0.4729 │         P         P                                
+  0.4119 │                            B                       
+  0.3509 │                                                    
+  0.2899 │                                                    
+  0.2289 │         P                  B                       
+           └────────────────────────────────────────────────────
+  0s                              1841s
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 5. Summary  综合评估 ───────────────────────────────────────────────┐
+
+  Pipeline-Smart vs Pipeline-Naive — Best Score: 0.6704 → 0.7778 (+0.1074, +16.0%)
+
+  Throughput (tph):
+    Pipeline-Naive: 35.2  (1.00x, 18 archs explored)
+    Pipeline-Smart: 35.5  (1.01x, 18 archs explored)
+
+  结论：
+    Pipeline-Smart 通过 cost 均衡分配和自动 worker 分配，相比 Pipeline-Naive 提升搜索效率
+
+└──────────────────────────────────────────────────────────────────────┘

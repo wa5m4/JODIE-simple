@@ -218,6 +218,14 @@ def generate_report(
     if pipeline_time is None and p_timing:
         pipeline_time = max(r["end_time_s"] for r in p_timing)
 
+    # Use actual trial counts from timing logs when available (time-budget mode)
+    if s_timing:
+        serial_trials = len(s_timing)
+    if d_timing:
+        dp_trials = len(d_timing)
+    if p_timing:
+        pipeline_trials = len(p_timing)
+
     s_tph = (3600 / serial_time * serial_trials) if serial_time else None
     d_tph = (3600 / dp_time * dp_trials)          if dp_time     else None
     p_tph = (3600 / pipeline_time * pipeline_trials) if pipeline_time else None
@@ -292,9 +300,12 @@ def generate_report(
         L.append(f"  {label} [{bar(cnt, max_tc, 40)}] {cnt} trials")
     L.append("")
     L.append("  核心洞察：")
-    L.append("    Data-Parallel 加速了每个 trial 的训练速度（~3x per-trial），")
-    L.append("    但相同时间内评估的架构数量与 Serial 相同（均为 15）。")
-    L.append("    Pipeline 通过架构级并行，在相同时间内探索了 2x 更多架构（30 个）。")
+    if serial_trials and dp_trials and pipeline_trials:
+        dp_ratio = dp_trials / serial_trials if serial_trials else 0
+        p_ratio  = pipeline_trials / serial_trials if serial_trials else 0
+        L.append(f"    相同时间预算内：Serial={serial_trials} trials, DataParallel={dp_trials} trials ({dp_ratio:.1f}x), Pipeline={pipeline_trials} trials ({p_ratio:.1f}x).")
+    L.append("    Data-Parallel 加速了每个 trial 的训练速度（数据内并行），")
+    L.append("    Pipeline 通过架构级并行在相同时间内探索了更多架构。")
     L.append("    NAS 的核心瓶颈是搜索覆盖度，而非单个架构的训练速度。")
     L.append("")
     L.append("└" + "─"*70 + "┘")
@@ -351,14 +362,16 @@ def generate_report(
         pipe_speedup = p_tph / s_tph if s_tph > 0 else 1
         L.append(f"  Throughput (tph):")
         L.append(f"    Serial      : {s_tph:.1f}  (1.00x)")
-        L.append(f"    DataParallel: {d_tph:.1f}  ({dp_speedup:.2f}x — same arch count, faster per-trial)")
-        L.append(f"    Pipeline    : {p_tph:.1f}  ({pipe_speedup:.2f}x — 2x arch coverage)")
+        L.append(f"    DataParallel: {d_tph:.1f}  ({dp_speedup:.2f}x — faster per-trial, {dp_trials} archs explored)")
+        L.append(f"    Pipeline    : {p_tph:.1f}  ({pipe_speedup:.2f}x — {pipeline_trials} archs explored)")
         L.append("")
 
     L.append("  结论：")
     L.append("    Data-Parallel 每个 trial 更快（数据内部并行），但 NAS 需要的是")
     L.append("    更广的架构搜索覆盖，不是更快的单个训练。")
-    L.append("    Pipeline 通过架构级并发在相同时间内探索了 2x 更多架构，")
+    if serial_trials and pipeline_trials:
+        p_cov = pipeline_trials / serial_trials if serial_trials else 0
+        L.append(f"    Pipeline 通过架构级并发在相同时间内探索了 {p_cov:.1f}x 更多架构（{pipeline_trials} vs {serial_trials}），")
     L.append("    在搜索质量和覆盖度上均优于 Data-Parallel。")
     L.append("")
     L.append("└" + "─"*70 + "┘")

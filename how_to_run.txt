@@ -1,10 +1,35 @@
-好的，我用最通俗的方式给你讲，从最简单的到生产用的。
 
-一句话理解
-这个项目的命令行就是：选数据 → 选搜索方式 → 选运行模式 → 设定预算 → 开始跑。
 
-第一级：冒烟测试（确认环境没问题）
-只用 CPU，跑合成假数据，2 个架构，每个训练 1 轮，2 分钟内跑完：
+
+
+bash scripts/run_comparison_3way.sh \
+  --gpu-list 0,1,2 \
+  --space rnn_only \
+  --max-events 20000 \
+  --time-budget 1800 \
+  --epochs 3 \
+  --seeds 44 \
+  --output-dir outputs/mooc_20k_3way/20000_1800_rnn_only
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 python search.py \

@@ -13,17 +13,18 @@ cd "$ROOT_DIR"
 # -------- 可调参数 --------
 DATASET="public_csv"
 DATA_FILE="data/public/mooc.csv"
-MAX_EVENTS=20000       # 5% MOOC，时序特征真实，单 trial ~50s
-SERIAL_TRIALS=15       # 串行：15 trials/seed
-PIPELINE_TRIALS=30     # Pipeline：30 trials/seed（2x 吞吐）
-EPOCHS=3               # 3 epoch/trial，评估更稳定
-SEEDS=(42 43 44)       # 3 个种子，用于 mean±std 统计
+MAX_EVENTS=20000
+TIME_BUDGET=1800       # 统一时间预算（秒），两方在相同时间内尽量多跑 trials
+SERIAL_TRIALS=999      # 上限，实际由 TIME_BUDGET 控制
+PIPELINE_TRIALS=999
+EPOCHS=3
+SEEDS=(42 43 44)
 K=10
 METRIC="mrr"
 
 # Pipeline 并行参数
 ARCH_PER_STEP=3
-NUM_STAGES=3
+NUM_STAGES=1
 WORKER_GPUS=1.0        # 每个 stage worker 独占 1 块 GPU
 PARTITION_SIZE=500
 VISIBLE_GPUS="0,1,2"   # 限制使用 GPU 0、1、2
@@ -80,10 +81,12 @@ for SEED in "${SEEDS[@]}"; do
         --dataset         "$DATASET" \
         --local-data-path "$DATA_FILE" \
         --max-events      "$MAX_EVENTS" \
+        --space           rnn_only \
         --search-mode     rl \
         --execution-mode  serial \
         --trials          "$SERIAL_TRIALS" \
         --epochs-per-trial "$EPOCHS" \
+        --time-budget-sec "$TIME_BUDGET" \
         --seed            "$SEED" \
         --k               "$K" \
         --selection-metric "$METRIC" \
@@ -103,10 +106,12 @@ for SEED in "${SEEDS[@]}"; do
         --dataset               "$DATASET" \
         --local-data-path       "$DATA_FILE" \
         --max-events            "$MAX_EVENTS" \
+        --space                 rnn_only \
         --search-mode           rl \
         --execution-mode        ray_pipeline \
         --trials                "$PIPELINE_TRIALS" \
         --epochs-per-trial      "$EPOCHS" \
+        --time-budget-sec       "$TIME_BUDGET" \
         --architectures-per-step "$ARCH_PER_STEP" \
         --num-pipeline-stages   "$NUM_STAGES" \
         --pipeline-worker-gpus  "$WORKER_GPUS" \
@@ -132,8 +137,6 @@ for SEED in "${SEEDS[@]}"; do
         --pipeline-dir    "$OUTPUT_PIPELINE" \
         --serial-time     "$SERIAL_SEC" \
         --pipeline-time   "$PIPELINE_SEC" \
-        --serial-trials   "$SERIAL_TRIALS" \
-        --pipeline-trials "$PIPELINE_TRIALS" \
         --output          "${SEED_DIR}/report.txt"
 
     # 记录本 seed 计时，供汇总脚本读取

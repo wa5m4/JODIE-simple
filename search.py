@@ -15,12 +15,14 @@ from nas.trainer import GraphNASTrainer
 
 def parse_args():
     parser = argparse.ArgumentParser(description="GraphNAS search for event-level temporal GNN JODIE")
-    parser.add_argument("--space", choices=["small", "paper_compare"], default="small", help="Search space name.")
+    parser.add_argument("--space", choices=["small", "paper_compare", "rnn_only"], default="small", help="Search space name.")
     parser.add_argument("--search-mode", choices=["random", "rl"], default="rl", help="Architecture search mode.")
     parser.add_argument("--execution-mode", choices=["serial", "ray_pipeline", "data_parallel"], default="serial", help="Execution backend.")
     parser.add_argument("--data-parallel-workers", type=int, default=3, help="Number of Ray workers for data-parallel intra-trial parallelism.")
     parser.add_argument("--data-parallel-worker-gpus", type=float, default=1.0, help="GPU fraction for each data-parallel worker.")
     parser.add_argument("--data-parallel-visible-gpus", type=str, default="0,1,2", help="CUDA_VISIBLE_DEVICES for data-parallel Ray workers.")
+    parser.add_argument("--data-parallel-sync-level", choices=["partition", "tbatch", "micro_batch"], default="micro_batch", help="Sync granularity: partition (fast), micro_batch (balanced), or tbatch (per-interaction, slow but accurate).")
+    parser.add_argument("--data-parallel-micro-batch-size", type=int, default=0, help="Micro-batch size. 0=auto (total_events/100).")
     parser.add_argument("--controller-lr", type=float, default=1e-2, help="Learning rate for RL controller.")
     parser.add_argument(
         "--dataset",
@@ -123,6 +125,9 @@ def parse_args():
     parser.add_argument("--output-dir", type=str, default="outputs", help="Directory for search outputs.")
     parser.add_argument("--enable-efficiency-monitor", action="store_true", help="Enable real-time efficiency monitoring during pipeline execution.")
     parser.add_argument("--efficiency-monitor-interval", type=int, default=10, help="Efficiency monitoring sampling interval in seconds (when enabled).")
+    parser.add_argument("--time-budget-sec", type=float, default=0.0, help="Wall-clock time budget in seconds. 0 means no limit (use --trials).")
+    parser.add_argument("--gpu-list", type=str, default="0,1,2", help="Available GPU list for ray_pipeline mode (e.g. '0,1,2'). Used for auto-allocation.")
+    parser.add_argument("--enable-auto-pipeline-config", action="store_true", help="Enable automatic pipeline configuration (stages, workers, partitions) based on GPU count and data size.")
     return parser.parse_args()
 
 
@@ -222,6 +227,10 @@ def main():
         "data_parallel_workers": args.data_parallel_workers,
         "data_parallel_worker_gpus": args.data_parallel_worker_gpus,
         "data_parallel_visible_gpus": args.data_parallel_visible_gpus,
+        "data_parallel_sync_level": args.data_parallel_sync_level,
+        "data_parallel_micro_batch_size": args.data_parallel_micro_batch_size if args.data_parallel_micro_batch_size > 0 else max(1, args.max_events // 100),
+        "gpu_list": args.gpu_list,
+        "enable_auto_pipeline_config": args.enable_auto_pipeline_config,
     }
 
     trainer = GraphNASTrainer(base_config)
@@ -240,6 +249,7 @@ def main():
             rerank_epochs=rerank_epochs,
             family_balanced_rerank=args.family_balanced_rerank,
             family_balance_per_model=args.family_balance_per_model,
+            time_budget_sec=args.time_budget_sec,
         )
     elif args.execution_mode == "data_parallel":
         best, results = trainer.search_data_parallel(
@@ -247,6 +257,7 @@ def main():
             coarse_trials=coarse_trials,
             coarse_epochs=coarse_epochs,
             num_workers=args.data_parallel_workers,
+            time_budget_sec=args.time_budget_sec,
         )
     else:
         best, results = trainer.search(
@@ -258,6 +269,7 @@ def main():
             eval_seeds=eval_seeds,
             family_balanced_rerank=args.family_balanced_rerank,
             family_balance_per_model=args.family_balance_per_model,
+            time_budget_sec=args.time_budget_sec,
         )
 
     save_results(best, results, args.output_dir)

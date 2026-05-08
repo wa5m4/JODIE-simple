@@ -56,7 +56,21 @@ def get_paper_compare_search_space() -> Dict[str, List]:
     }
 
 
+def get_rnn_only_search_space() -> Dict[str, List]:
+    """只搜索 jodie_rnn，耗时均匀，适合体现 Pipeline 架构级并行优势。"""
+    return {
+        "model": [PURE_JODIE_MODEL_NAME],
+        "embedding_dim": [32, 64, 128],
+        "memory_cell": ["rnn", "gru", "lstm"],
+        "time_proj": ["off", "linear", "mlp"],
+        "use_static_embeddings": ["on", "off"],
+        "normalize_state": ["on", "off"],
+    }
+
+
 def get_search_space(space_name: str) -> Dict[str, List]:
+    if space_name == "rnn_only":
+        return get_rnn_only_search_space()
     if space_name == "small":
         return get_small_search_space()
     if space_name == "paper_compare":

@@ -22,7 +22,7 @@ import torch.optim as optim
 from data.synthetic import Interaction, clone_graph_state_template, init_dynamic_graph_state
 from data.temporal_partition import TemporalPartition, split_partition_interactions
 from models.factory import build_model
-from models.training import evaluate_ranking_metrics, _model_device
+from models.training import BPRLoss, _item_embeddings_for_loss, _num_items, evaluate_ranking_metrics, _model_device
 
 
 # ---------------------------------------------------------------------------
@@ -31,7 +31,17 @@ from models.training import evaluate_ranking_metrics, _model_device
 
 @ray.remote
 class _DataParallelWorker:
-    """Trains one chunk of a partition; accumulates gradients without stepping."""
+    """Trains one chunk of a partition using BPR loss; returns updated weights and state."""
+
+    def train_single_interaction(
+        self,
+        model_state_dict: Dict[str, Any],
+        runtime_state: Optional[Dict[str, Any]],
+        interaction: Interaction,
+        arch_config: Dict[str, Any],
+        base_config: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        return self.train_chunk(model_state_dict, runtime_state, [interaction], arch_config, base_config)
 
     def train_chunk(
         self,
@@ -41,13 +51,11 @@ class _DataParallelWorker:
         arch_config: Dict[str, Any],
         base_config: Dict[str, Any],
     ) -> Dict[str, Any]:
-        import torch
+        import numpy as np
 
         if not interactions:
-            return {"gradients": {}, "runtime_state": None, "loss": 0.0, "num_interactions": 0}
+            return {"gradients": {}, "runtime_state": runtime_state, "loss": 0.0, "num_interactions": 0}
 
-        # Ray sets CUDA_VISIBLE_DEVICES per worker when num_gpus>0, so
-        # "cuda:0" always refers to THIS worker's allocated GPU.
         config = dict(base_config)
         config.update(arch_config)
         device = torch.device(config.get("device", "cpu"))
@@ -56,45 +64,46 @@ class _DataParallelWorker:
         model.to(device)
         model.load_state_dict({k: v.to(device) for k, v in model_state_dict.items()})
         if runtime_state is not None and hasattr(model, "import_runtime_state"):
-            rs = {k: v.to(device) for k, v in runtime_state.items()}
-            model.import_runtime_state(rs)
+            model.import_runtime_state({k: v.to(device) for k, v in runtime_state.items()})
 
-        # Build graph context for GNN models
         model_name = config.get("model", "jodie_rnn")
-        if model_name == "jodie_rnn":
-            graph_ctx = None
-        else:
-            graph_ctx = init_dynamic_graph_state(
-                num_users=config.get("num_users", 1),
-                num_items=config.get("num_items", 1),
-                max_neighbors=config.get("max_neighbors", 20),
-            )
+        graph_ctx = None if model_name == "jodie_rnn" else init_dynamic_graph_state(
+            num_users=config.get("num_users", 1),
+            num_items=config.get("num_items", 1),
+            max_neighbors=config.get("max_neighbors", 20),
+        )
 
         model.train()
         optimizer = optim.Adam(model.parameters(), lr=config.get("lr", 1e-3))
         optimizer.zero_grad()
-
+        criterion = BPRLoss()
+        neg_sample_size = config.get("neg_sample_size", 5)
+        num_items = _num_items(model)
+        rng = np.random.default_rng(None)
         total_loss = 0.0
+
+        # Accumulate gradients across all interactions without stepping
         for interaction in interactions:
             uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
             iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
             t   = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
             f   = interaction.features.unsqueeze(0).to(device)
 
+            neg_items = []
+            while len(neg_items) < neg_sample_size:
+                neg = int(rng.integers(0, num_items))
+                if neg != interaction.item_id:
+                    neg_items.append(neg)
+            neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
+
             pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
-
-            if hasattr(model, "item_embeddings"):
-                target_emb = model.item_embeddings[iid].to(device)
-            elif hasattr(model, "item_base"):
-                target_emb = model.item_base(iid).to(device)
-            else:
-                target_emb = pred_emb.detach()
-
-            loss = ((pred_emb - target_emb) ** 2).sum(dim=-1).mean()
+            pos_emb = _item_embeddings_for_loss(model, iid).detach().to(device)
+            neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().to(device).unsqueeze(0)
+            loss = criterion(pred_emb, pos_emb, neg_emb)
             loss.backward(retain_graph=True)
             total_loss += loss.item()
 
-        # Collect gradients as CPU tensors for Ray object store (do NOT call optimizer.step())
+        # Collect accumulated gradients
         grads = {}
         for name, param in model.named_parameters():
             if param.grad is not None:
@@ -102,8 +111,7 @@ class _DataParallelWorker:
 
         runtime_out = None
         if hasattr(model, "export_runtime_state"):
-            rs = model.export_runtime_state()
-            runtime_out = {k: v.cpu() for k, v in rs.items()}
+            runtime_out = {k: v.cpu() for k, v in model.export_runtime_state().items()}
 
         return {
             "gradients": grads,
@@ -275,6 +283,9 @@ class DataParallelExecutor:
 
         t_start = time.time()
 
+        sync_level = self.base_config.get("data_parallel_sync_level", "partition")
+        micro_batch_size = int(self.base_config.get("data_parallel_micro_batch_size", 50))
+
         for _epoch in range(num_train_epochs):
             runtime_state: Optional[Dict] = None  # reset at epoch boundary
 
@@ -282,12 +293,90 @@ class DataParallelExecutor:
                 if not partition.interactions:
                     continue
 
+                if sync_level == "tbatch":
+                    total_interactions = len(partition.interactions)
+                    for tbatch_idx, interaction in enumerate(partition.interactions):
+                        refs = [
+                            self._workers[i].train_single_interaction.remote(
+                                model_state_dict,
+                                runtime_state,
+                                interaction,
+                                arch_config,
+                                self.base_config,
+                            )
+                            for i in range(self.num_workers)
+                        ]
+                        worker_results = ray.get(refs)
+                        avg_grads = {}
+                        for r in worker_results:
+                            for name, g in r["gradients"].items():
+                                avg_grads[name] = avg_grads.get(name, 0) + g
+                        for name in avg_grads:
+                            avg_grads[name] /= self.num_workers
+                        model_state_dict, optimizer_state = _apply_averaged_gradients(
+                            model_state_dict, avg_grads, arch_config,
+                            self.base_config, runtime_state, optimizer_state,
+                        )
+                        runtime_state = _merge_runtime_states([r["runtime_state"] for r in worker_results])
+                        if (tbatch_idx + 1) % 100 == 0 or tbatch_idx + 1 == total_interactions:
+                            print(
+                                f"[DataParallel tbatch] trial={trial_id} epoch={_epoch+1} "
+                                f"partition={partition.partition_id} "
+                                f"interactions={tbatch_idx+1}/{total_interactions}",
+                                flush=True,
+                            )
+                    continue
+
+                if sync_level == "micro_batch":
+                    interactions = partition.interactions
+                    total = len(interactions)
+                    for start_idx in range(0, total, micro_batch_size):
+                        end_idx = min(start_idx + micro_batch_size, total)
+                        micro_batch = interactions[start_idx:end_idx]
+                        chunks = split_partition_interactions(
+                            TemporalPartition(partition.partition_id, partition.split, partition.start_ts, partition.end_ts, micro_batch),
+                            self.num_workers
+                        )
+                        while len(chunks) < self.num_workers:
+                            chunks.append([])
+
+                        refs = [
+                            self._workers[i].train_chunk.remote(
+                                model_state_dict, runtime_state, chunks[i],
+                                arch_config, self.base_config,
+                            )
+                            for i in range(self.num_workers)
+                        ]
+                        worker_results = ray.get(refs)
+
+                        total_interactions = sum(r["num_interactions"] for r in worker_results)
+                        if total_interactions == 0:
+                            continue
+
+                        avg_grads = {}
+                        for r in worker_results:
+                            w = r["num_interactions"] / total_interactions
+                            for name, g in r["gradients"].items():
+                                avg_grads[name] = avg_grads.get(name, 0) + g * w
+
+                        model_state_dict, optimizer_state = _apply_averaged_gradients(
+                            model_state_dict, avg_grads, arch_config,
+                            self.base_config, runtime_state, optimizer_state,
+                        )
+                        runtime_state = _merge_runtime_states([r["runtime_state"] for r in worker_results])
+
+                        if (end_idx % 100 == 0) or (end_idx == total):
+                            print(
+                                f"[DataParallel micro_batch] trial={trial_id} epoch={_epoch+1} "
+                                f"partition={partition.partition_id} interactions={end_idx}/{total}",
+                                flush=True,
+                            )
+                    continue
+
                 chunks = split_partition_interactions(partition, self.num_workers)
-                # pad chunks list to num_workers (some may be empty for tiny partitions)
                 while len(chunks) < self.num_workers:
                     chunks.append([])
 
-                # Dispatch to workers in parallel
                 refs = [
                     self._workers[i].train_chunk.remote(
                         model_state_dict,
@@ -300,34 +389,22 @@ class DataParallelExecutor:
                 ]
                 worker_results = ray.get(refs)
 
-                # AllReduce: average gradients weighted by chunk size
                 total_interactions = sum(r["num_interactions"] for r in worker_results)
                 if total_interactions == 0:
                     continue
 
-                avg_grads: Dict[str, torch.Tensor] = {}
+                # AllReduce: average gradients weighted by chunk size
+                avg_grads = {}
                 for r in worker_results:
                     w = r["num_interactions"] / total_interactions
                     for name, g in r["gradients"].items():
-                        if name in avg_grads:
-                            avg_grads[name] += g * w
-                        else:
-                            avg_grads[name] = g * w
+                        avg_grads[name] = avg_grads.get(name, 0) + g * w
 
-                # Apply averaged gradients
                 model_state_dict, optimizer_state = _apply_averaged_gradients(
-                    model_state_dict,
-                    avg_grads,
-                    arch_config,
-                    self.base_config,
-                    runtime_state,
-                    optimizer_state,
+                    model_state_dict, avg_grads, arch_config,
+                    self.base_config, runtime_state, optimizer_state,
                 )
-
-                # Merge user/item state (strict: max-timestamp wins)
-                runtime_state = _merge_runtime_states(
-                    [r["runtime_state"] for r in worker_results]
-                )
+                runtime_state = _merge_runtime_states([r["runtime_state"] for r in worker_results])
 
         # Evaluation (sequential to preserve temporal order)
         # Evaluation runs in the executor process (no GPU assigned by Ray here), use CPU.

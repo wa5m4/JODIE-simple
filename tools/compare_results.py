@@ -231,6 +231,12 @@ def generate_report(
     if pipeline_time is None and p_timing:
         pipeline_time = max(r["end_time_s"] for r in p_timing)
 
+    # Override trial counts from timing logs (time-budget mode)
+    if s_timing:
+        serial_trials = len(s_timing)
+    if p_timing:
+        pipeline_trials = len(p_timing)
+
     L = []
 
     # ══════════════════════════════════════════

@@ -52,12 +52,15 @@ def load_seed_times(root: str) -> Dict[int, Tuple]:
                     times[int(parts[0])] = (float(parts[1]), float(parts[2]), float(parts[3]))
                 except ValueError:
                     pass
-            elif len(parts) == 3:
-                try:
-                    times[int(parts[0])] = (float(parts[1]), None, float(parts[2]))
-                except ValueError:
-                    pass
     return times
+
+
+def load_timing_log_count(d: str) -> int:
+    p = os.path.join(d, "timing_log.csv")
+    if not os.path.exists(p):
+        return 0
+    with open(p) as f:
+        return max(0, sum(1 for _ in f) - 1)  # subtract header
 
 
 def generate_aggregate_report(
@@ -70,6 +73,7 @@ def generate_aggregate_report(
     seed_times = load_seed_times(root)
 
     records = []
+    s_trial_counts, d_trial_counts, p_trial_counts = [], [], []
     for seed in seeds:
         seed_dir = os.path.join(root, f"seed_{seed}")
         sb = load_best_arch(os.path.join(seed_dir, "serial"))
@@ -79,6 +83,13 @@ def generate_aggregate_report(
         s_time = times[0] if len(times) > 0 else None
         d_time = times[1] if len(times) > 1 else None
         p_time = times[2] if len(times) > 2 else None
+
+        sc = load_timing_log_count(os.path.join(seed_dir, "serial"))
+        dc = load_timing_log_count(os.path.join(seed_dir, "data_parallel"))
+        pc = load_timing_log_count(os.path.join(seed_dir, "pipeline"))
+        if sc: s_trial_counts.append(sc)
+        if dc: d_trial_counts.append(dc)
+        if pc: p_trial_counts.append(pc)
         records.append({
             "seed":    seed,
             "s_score": sb.get("score") or sb.get("mrr"),
@@ -105,6 +116,11 @@ def generate_aggregate_report(
             return "?"
         return max(valid, key=lambda k: valid[k])
 
+    # Use actual trial counts from timing logs if available
+    avg_s = int(sum(s_trial_counts) / len(s_trial_counts)) if s_trial_counts else serial_trials
+    avg_d = int(sum(d_trial_counts) / len(d_trial_counts)) if d_trial_counts else dp_trials
+    avg_p = int(sum(p_trial_counts) / len(p_trial_counts)) if p_trial_counts else pipeline_trials
+
     L = []
 
     L.append("╔" + "═"*70 + "╗")
@@ -112,7 +128,7 @@ def generate_aggregate_report(
     L.append("╚" + "═"*70 + "╝")
     L.append("")
     L.append(f"  Seeds: {seeds}")
-    L.append(f"  Serial: {serial_trials} trials/seed  |  DataParallel: {dp_trials} trials/seed  |  Pipeline: {pipeline_trials} trials/seed")
+    L.append(f"  Serial: ~{avg_s} trials/seed  |  DataParallel: ~{avg_d} trials/seed  |  Pipeline: ~{avg_p} trials/seed")
     L.append("")
 
     # ── 1. Per-seed
@@ -173,9 +189,9 @@ def generate_aggregate_report(
 
     L.append("")
     if s_times and d_times and p_times:
-        s_tph_list = [3600 / t * serial_trials for t in s_times if t > 0]
-        d_tph_list = [3600 / t * dp_trials     for t in d_times if t > 0]
-        p_tph_list = [3600 / t * pipeline_trials for t in p_times if t > 0]
+        s_tph_list = [3600 / t * avg_s for t in s_times if t > 0]
+        d_tph_list = [3600 / t * avg_d for t in d_times if t > 0]
+        p_tph_list = [3600 / t * avg_p for t in p_times if t > 0]
         if s_tph_list and d_tph_list and p_tph_list:
             sm_tph, _ = mean_std(s_tph_list)
             dm_tph, ds_tph = mean_std(d_tph_list)
@@ -230,11 +246,13 @@ def generate_aggregate_report(
 
     L.append("  核心结论：")
     L.append("    Data-Parallel 并行化了单个架构的数据处理（partition 内并行），")
-    L.append("    每个 trial 的训练时间约为 Serial 的 1/N，")
-    L.append("    但相同时间预算内仍只评估了与 Serial 相同数量的架构。")
+    L.append("    每个 trial 的训练时间更短，但搜索覆盖取决于时间预算内完成的 trial 数。")
     L.append("")
-    L.append("    Pipeline 的优势不在于"更快地训练某个架构"，")
-    L.append("    而在于"同时评估更多架构"（架构级并发 = 2x 覆盖）。")
+    L.append("    Pipeline 的优势不在于'更快地训练某个架构'，")
+    L.append("    而在于'同时评估更多架构'（架构级并发）。")
+    if avg_s and avg_p:
+        p_cov = avg_p / avg_s if avg_s else 0
+        L.append(f"    相同时间预算内：Pipeline 探索了 {avg_p} 个架构（Serial {avg_s} 个，{p_cov:.1f}x 覆盖）。")
     L.append("    NAS 的核心挑战是在庞大搜索空间中找到最优架构，")
     L.append("    更广的搜索覆盖直接降低了遗漏最优架构的风险。")
     L.append("")

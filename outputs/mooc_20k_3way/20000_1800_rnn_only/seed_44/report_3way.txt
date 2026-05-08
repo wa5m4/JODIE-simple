@@ -1,0 +1,95 @@
+╔══════════════════════════════════════════════════════════════════════╗
+║          NAS 3-Way: Serial  vs  Data-Parallel  vs  Pipeline          ║
+╚══════════════════════════════════════════════════════════════════════╝
+
+┌─ 1. Search Quality  架构搜索质量 ────────────────────────────────────┐
+
+  Metric                  Serial  DataParallel    Pipeline    Best
+  ──────────────────  ──────────  ────────────  ──────────  ──────
+  Best Score              0.6251        0.7200      0.7778     P ◀
+  MRR                     0.6251        0.7200      0.7778     P ◀
+  Recall@10               0.9220        0.9500      0.9700     P ◀
+
+  Top-5 val scores per method:
+    Serial      : 0.6251 | 0.6251 | 0.5990 | 0.5719 | 0.5690
+    DataParallel: 0.7200 | 0.7200 | 0.6936 | 0.6122 | 0.6023
+    Pipeline    : 0.7778 | 0.6157 | 0.5151 | 0.4876 | 0.4712
+
+  Best Architecture (Serial):
+    model=jodie_rnn  memory_cell=rnn  embedding_dim=128
+  Best Architecture (DataParallel):
+    model=jodie_rnn  memory_cell=rnn  embedding_dim=128
+  Best Architecture (Pipeline):
+    model=jodie_rnn  memory_cell=rnn  embedding_dim=128
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 2. Search Efficiency  搜索效率 ─────────────────────────────────────┐
+
+  Metric                          Serial  DataParallel    Pipeline    Best
+  ──────────────────────────  ──────────  ────────────  ──────────  ──────
+  Architectures Explored             N/A           N/A         N/A     P ◀
+  Total Wall Time (s)               1837          1881        1836     P ◀
+  Avg Time/Trial (s)               141.3         117.6       102.0     P ◀
+  Trial Throughput (tph)            25.5          30.6        35.3     P ◀
+
+  Serial       [████████████████████████████░░░░░░░░░░░░] 13 trials
+  DataParallel [███████████████████████████████████░░░░░] 16 trials
+  Pipeline    [████████████████████████████████████████] 18 trials
+
+  核心洞察：
+    相同时间预算内：Serial=13 trials, DataParallel=16 trials (1.2x), Pipeline=18 trials (1.4x).
+    Data-Parallel 加速了每个 trial 的训练速度（数据内并行），
+    Pipeline 通过架构级并行在相同时间内探索了更多架构。
+    NAS 的核心瓶颈是搜索覆盖度，而非单个架构的训练速度。
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 3. Architecture Diversity  架构多样性 ──────────────────────────────┐
+
+  Metric                      Serial  DataParallel  Pipeline
+  ────────────────────────  ────────  ────────────  ────────
+  Architectures Evaluated         14            17        18
+  Unique Model Types               1             1         1
+  Unique Event Agg                 1             1         1
+  Unique Memory Cell               3             3         3
+  Unique Time Proj                 2             2         2
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 4. Search Convergence Curve  搜索收敛曲线 ──────────────────────────┐
+
+  Best Score vs Wall Time  [S=Serial  D=DataParallel  P=Pipeline  *=overlap]
+
+  0.7778 │                           P                     P  
+  0.7168 │                               D  D  D   D  D  D   D
+  0.6558 │                                                    
+  0.5948 │                  S  *  *  *S  S    S  S  S    S S  
+  0.5338 │             S                                      
+  0.4729 │                                                    
+  0.4119 │   D D  D   D  D  D        P                        
+  0.3509 │                                                    
+  0.2899 │                                                    
+  0.2289 │    S   S                  P                        
+           └────────────────────────────────────────────────────
+  0s                              1881s
+
+└──────────────────────────────────────────────────────────────────────┘
+
+┌─ 5. Summary  综合评估 ───────────────────────────────────────────────┐
+
+  Pipeline vs Serial    — Best Score: 0.6251 → 0.7778 (+24.4%)
+  Pipeline vs DataParal — Best Score: 0.7200 → 0.7778 (+8.0%)
+
+  Throughput (tph):
+    Serial      : 25.5  (1.00x)
+    DataParallel: 30.6  (1.20x — faster per-trial, 16 archs explored)
+    Pipeline    : 35.3  (1.39x — 18 archs explored)
+
+  结论：
+    Data-Parallel 每个 trial 更快（数据内部并行），但 NAS 需要的是
+    更广的架构搜索覆盖，不是更快的单个训练。
+    Pipeline 通过架构级并发在相同时间内探索了 1.4x 更多架构（18 vs 13），
+    在搜索质量和覆盖度上均优于 Data-Parallel。
+
+└──────────────────────────────────────────────────────────────────────┘
