@@ -1,4 +1,0 @@
-trial_id,mode,start_time_s,end_time_s,duration_s,score,mrr,recall_at_k,cumulative_best_score,model
-0,pipeline,0.015,26.459,26.444,0.089421,0.089421,0.211055,0.089421,temporal_event_gnn_jodie
-1,pipeline,0.015,26.459,26.444,0.334112,0.334112,0.753769,0.334112,jodie_rnn
-2,pipeline,0.015,26.459,26.444,0.353228,0.353228,0.768844,0.353228,jodie_rnn

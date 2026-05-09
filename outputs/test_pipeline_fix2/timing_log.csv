@@ -1,7 +1,0 @@
-trial_id,mode,start_time_s,end_time_s,duration_s,score,mrr,recall_at_k,cumulative_best_score,model
-0,pipeline,0.024,17.236,17.212,0.089273,0.089273,0.19598,0.089273,temporal_event_gnn_jodie
-1,pipeline,0.024,17.236,17.212,0.344708,0.344708,0.763819,0.344708,jodie_rnn
-2,pipeline,0.024,17.236,17.212,0.346431,0.346431,0.723618,0.346431,jodie_rnn
-3,pipeline,0.024,17.236,17.212,0.154592,0.154592,0.472362,0.346431,temporal_event_gnn_jodie
-4,pipeline,0.024,17.236,17.212,0.150412,0.150412,0.457286,0.346431,temporal_event_gnn_jodie
-5,pipeline,0.024,17.236,17.212,0.485909,0.485909,0.834171,0.485909,jodie_rnn
