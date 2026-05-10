@@ -70,7 +70,6 @@ class RLGraphNASController:
     def reinforce_step(self, logprob: torch.Tensor, reward: float):
         self.reward_baseline = 0.9 * self.reward_baseline + 0.1 * reward
         advantage = reward - self.reward_baseline
-
         loss = -(logprob * advantage)
         self.optimizer.zero_grad()
         loss.backward()

@@ -68,9 +68,36 @@ def get_rnn_only_search_space() -> Dict[str, List]:
     }
 
 
+def get_mixed_search_space() -> Dict[str, List]:
+    """混合搜索空间：jodie_rnn（轻量）+ 带轻量图更新的 temporal_event_gnn_jodie（重量）。
+
+    负载差距来源：
+    - jodie_rnn：无图操作，约 2-4s/partition
+    - temporal_event_gnn_jodie + enable_graph_update：图邻居维护，约 3-5s/partition
+    - temporal_event_gnn_jodie + enable_event_agg=mean：邻域聚合，约 4-6s/partition
+
+    搜索空间大小：约 432 个架构（4x rnn_only），batch 数量更多，Smart overhead 摊薄效果更明显。
+    """
+    return {
+        "model": [PURE_JODIE_MODEL_NAME, TEMPORAL_MODEL_NAME],
+        "embedding_dim": [32, 64, 128],
+        "memory_cell": ["rnn", "gru", "lstm"],
+        "time_proj": ["off", "linear"],
+        "use_static_embeddings": ["on", "off"],
+        "normalize_state": ["on", "off"],
+        # 图操作参数（仅对 temporal_event_gnn_jodie 生效）
+        "enable_graph_update": ["on", "off"],
+        "enable_event_agg": ["off", "on"],   # off=只图更新, on=邻域聚合
+        "event_agg": ["mean", "sum"],         # 轻量聚合，不用 attn
+        "max_neighbors": [5, 10],
+    }
+
+
 def get_search_space(space_name: str) -> Dict[str, List]:
     if space_name == "rnn_only":
         return get_rnn_only_search_space()
+    if space_name == "mixed":
+        return get_mixed_search_space()
     if space_name == "small":
         return get_small_search_space()
     if space_name == "paper_compare":

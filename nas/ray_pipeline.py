@@ -265,8 +265,8 @@ def create_ray_worker(partitions: List[TemporalPartition], base_config: Dict):
 
 class RayPipelineExecutor:
     def __init__(self, base_config: Dict, partition_plan: TemporalPartitionPlan):
-        self.base_config = dict(base_config)    
-        
+        self.base_config = dict(base_config)
+
         self.partition_plan = partition_plan
         self.pipeline_trace = bool(self.base_config.get("pipeline_trace", False))
         self.pipeline_trace_log_path = str(self.base_config.get("pipeline_trace_log_path", "")).strip()
@@ -277,6 +277,17 @@ class RayPipelineExecutor:
         self._trace_start = time.perf_counter()
         self._stage_dispatch_times: Dict[str, float] = {}
         self._trace_scan_pos = 0
+        # persistent pool for async mode
+        self._pool_workers = None          # List[List[ray_actor]]
+        self._pool_train_groups = None
+        self._pool_eval_groups = None
+        self._pool_idle: List[Deque] = []
+        self._pool_train_pending: List[Deque] = []
+        self._pool_eval_pending: List[Deque] = []
+        self._pool_in_flight: Dict = {}    # ref → (phase, trial_id, si, widx)
+        self._pool_scores: Dict[int, Dict] = {}
+        self._pool_trial_counter = 0
+        self._pool_eval_kwargs: Dict = {}
 
     def _scan_worker_progress_events(self) -> Tuple[int, Optional[str]]:
         if not self.pipeline_trace_log_path:
@@ -894,7 +905,168 @@ class RayPipelineExecutor:
                     pass
 
     def shutdown(self) -> None:
-        pass  # workers are created/destroyed within run(); nothing persistent to clean up
+        self.shutdown_persistent_pool()
+
+    def start_persistent_pool(self, eval_kwargs: Dict) -> None:
+        """初始化持久化 worker pool（异步模式专用，只调用一次）。"""
+        if self._pool_workers is not None:
+            return
+        if ray is None:
+            raise ImportError("ray is required")
+        if not ray.is_initialized():
+            ray_address = str(self.base_config.get("ray_address", "")).strip()
+            ray.init(address=ray_address if ray_address else None, ignore_reinit_error=True)
+
+        num_stages = int(self.base_config.get("num_pipeline_stages", 1))
+        train_groups = self._group_partitions("train", num_stages)
+        eval_split = eval_kwargs.get("eval_split", "val")
+        eval_groups = self._group_partitions(eval_split, num_stages)
+        train_worker_counts = self._resolve_stage_worker_counts("pipeline_stage_train_workers", len(train_groups))
+
+        # 自动检测 GPU
+        try:
+            gpu_count = int(torch.cuda.device_count() if torch.cuda.is_available() else 0)
+        except Exception:
+            gpu_count = 0
+        if gpu_count > 0 and float(self.base_config.get("pipeline_worker_gpus", 0.0)) <= 0.0:
+            self.base_config["pipeline_worker_gpus"] = 1.0
+
+        all_parts = []
+        all_eval_parts = list({p.partition_id: p for g in eval_groups for p in g}.values())
+        for i in range(len(train_groups)):
+            tp = train_groups[i] if i < len(train_groups) else []
+            # 每个 stage 的 worker 都加载所有 eval partitions，使任意 worker 都能做 eval
+            combined = list({p.partition_id: p for p in list(tp) + all_eval_parts}.values())
+            all_parts.append(combined)
+
+        self._pool_workers = [
+            [create_ray_worker(all_parts[i], self.base_config) for _ in range(train_worker_counts[i])]
+            for i in range(len(train_groups))
+        ]
+        self._pool_train_groups = train_groups
+        self._pool_eval_groups = eval_groups
+        self._pool_idle = [deque(range(len(pool))) for pool in self._pool_workers]
+        self._pool_train_pending = [deque() for _ in train_groups]
+        self._pool_eval_pending = [deque() for _ in eval_groups]
+        self._pool_eval_kwargs = eval_kwargs
+        print(f"[AsyncPool] started: {len(train_groups)} stages, workers={train_worker_counts}", flush=True)
+
+    def submit_arch(self, arch_config: Dict) -> int:
+        """提交一个架构到异步 pipeline，返回 trial_id。"""
+        trial_id = self._pool_trial_counter
+        self._pool_trial_counter += 1
+        seed = int(self.base_config.get("seed", 42)) + trial_id
+        payload = self._make_payload(arch_config, trial_id, seed)
+        self._pool_scores[trial_id] = {"hits": 0, "total": 0, "mrr_sum": 0.0, "config": arch_config}
+        self._pool_train_pending[0].append(payload)
+        self._drain_pool()
+        return trial_id
+
+    def _drain_pool(self) -> None:
+        """非阻塞地把 pending train/eval 任务调度到空闲 worker。"""
+        num_train = len(self._pool_train_groups)
+        synthetic_mode = self.base_config.get("dataset", "synthetic") == "synthetic"
+
+        for si in range(num_train):
+            while self._pool_train_pending[si] and self._pool_idle[si]:
+                payload = self._pool_train_pending[si].popleft()
+                widx = self._pool_idle[si].popleft()
+                pids = [p.partition_id for p in self._pool_train_groups[si]]
+                ref = self._pool_workers[si][widx].run_train_stage_batch.remote(
+                    payload, pids, use_bpr=synthetic_mode, num_epochs=1)
+                self._pool_in_flight[ref] = ("train", payload.trial_id, si, widx)
+
+        # eval 可以在任意 stage 的 worker 上运行（所有 worker 都已加载 eval partitions）
+        # 优先用最后一个 train stage 的 worker，避免和 stage 0 竞争
+        last_si = len(self._pool_train_groups) - 1
+        kw = self._pool_eval_kwargs
+        while self._pool_eval_pending[0] and self._pool_idle[last_si]:
+            payload = self._pool_eval_pending[0].popleft()
+            widx = self._pool_idle[last_si].popleft()
+            all_eval_pids = [p.partition_id for g in self._pool_eval_groups for p in g]
+            ref = self._pool_workers[last_si][widx].run_eval_stage_batch.remote(
+                payload, all_eval_pids,
+                item_type=kw["item_type"],
+                user_type_prefs=kw["user_type_prefs"],
+                k=kw["k"],
+                synthetic_mode=synthetic_mode,
+            )
+            self._pool_in_flight[ref] = ("eval", payload.trial_id, last_si, widx)
+
+    def _submit_eval(self, payload, si: int, widx: int) -> None:
+        """在 worker[si][widx] 上提交 eval（所有 worker 都已加载 eval partitions）。"""
+        kw = self._pool_eval_kwargs
+        synthetic_mode = self.base_config.get("dataset", "synthetic") == "synthetic"
+        all_eval_pids = [p.partition_id for g in self._pool_eval_groups for p in g]
+        ref = self._pool_workers[si][widx].run_eval_stage_batch.remote(
+            payload, all_eval_pids,
+            item_type=kw["item_type"],
+            user_type_prefs=kw["user_type_prefs"],
+            k=kw["k"],
+            synthetic_mode=synthetic_mode,
+        )
+        self._pool_in_flight[ref] = ("eval", payload.trial_id, si, widx)
+
+    def poll_completed(self, timeout: float = 0.05) -> List[Dict]:
+        """非阻塞轮询，返回本次新完成的 trial 结果列表。"""
+        if not self._pool_in_flight:
+            return []
+        done_refs, _ = ray.wait(list(self._pool_in_flight.keys()), num_returns=1, timeout=timeout)
+        results = []
+        for ref in done_refs:
+            phase, trial_id, si, widx = self._pool_in_flight.pop(ref)
+            num_train = len(self._pool_train_groups)
+            if phase == "train":
+                try:
+                    updated = ray.get(ref)
+                except Exception as e:
+                    print(f"[AsyncPool] train task failed trial={trial_id}: {e}", flush=True)
+                    self._pool_idle[si].append(widx)
+                    self._drain_pool()
+                    continue
+                if si < num_train - 1:
+                    # 传给下一个 train stage，释放当前 worker
+                    self._pool_idle[si].append(widx)
+                    self._pool_train_pending[si + 1].append(updated)
+                else:
+                    # 最后一个 train stage：直接在同一个 worker 上提交 eval，不释放 worker
+                    self._submit_eval(updated, si, widx)
+            else:
+                try:
+                    stage_result = ray.get(ref)
+                except Exception as e:
+                    print(f"[AsyncPool] eval task failed trial={trial_id}: {e}", flush=True)
+                    self._pool_idle[si].append(widx)
+                    self._drain_pool()
+                    continue
+                self._pool_idle[si].append(widx)
+                metrics = self._pool_scores.pop(trial_id)
+                metrics["hits"] += int(stage_result["hits"])
+                metrics["total"] += int(stage_result["total"])
+                metrics["mrr_sum"] += float(stage_result["mrr_sum"])
+                denom = max(metrics["total"], 1)
+                synthetic_mode = self.base_config.get("dataset", "synthetic") == "synthetic"
+                score = metrics["hits"] / denom if synthetic_mode else metrics["mrr_sum"] / denom
+                results.append({
+                    "trial_id": trial_id,
+                    "config": metrics["config"],
+                    "recall_at_k": metrics["hits"] / denom,
+                    "mrr": metrics["mrr_sum"] / denom,
+                    "score": score,
+                    "params": sum(p.numel() for p in build_model({**self.base_config, **metrics["config"]}).parameters()),
+                    "time_sec": 0.0,
+                    "phase": "coarse_pipeline",
+                    "eval_split": "val",
+                })
+            self._drain_pool()
+        return results
+
+    def shutdown_persistent_pool(self) -> None:
+        if self._pool_workers is not None:
+            self._shutdown_worker_pool(self._pool_workers)
+            self._pool_workers = None
+            self._pool_in_flight.clear()
+            self._pool_scores.clear()
 
     def _make_payload(self, arch_config: Dict, trial_id: int, seed: int) -> PipelineModelPayload:
         config = dict(self.base_config)

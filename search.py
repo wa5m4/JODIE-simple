@@ -15,7 +15,7 @@ from nas.trainer import GraphNASTrainer
 
 def parse_args():
     parser = argparse.ArgumentParser(description="GraphNAS search for event-level temporal GNN JODIE")
-    parser.add_argument("--space", choices=["small", "paper_compare", "rnn_only"], default="small", help="Search space name.")
+    parser.add_argument("--space", choices=["small", "paper_compare", "rnn_only", "mixed"], default="small", help="Search space name.")
     parser.add_argument("--search-mode", choices=["random", "rl"], default="rl", help="Architecture search mode.")
     parser.add_argument("--execution-mode", choices=["serial", "ray_pipeline", "data_parallel"], default="serial", help="Execution backend.")
     parser.add_argument("--data-parallel-workers", type=int, default=3, help="Number of Ray workers for data-parallel intra-trial parallelism.")
@@ -128,6 +128,7 @@ def parse_args():
     parser.add_argument("--time-budget-sec", type=float, default=0.0, help="Wall-clock time budget in seconds. 0 means no limit (use --trials).")
     parser.add_argument("--gpu-list", type=str, default="0,1,2", help="Available GPU list for ray_pipeline mode (e.g. '0,1,2'). Used for auto-allocation.")
     parser.add_argument("--enable-auto-pipeline-config", action="store_true", help="Enable automatic pipeline configuration (stages, workers, partitions) based on GPU count and data size.")
+    parser.add_argument("--pipeline-mode", type=str, default="naive", choices=["naive", "smart"], help="naive: sync batch mode; smart: async controller+pipeline with optimal allocation.")
     return parser.parse_args()
 
 
@@ -231,6 +232,7 @@ def main():
         "data_parallel_micro_batch_size": args.data_parallel_micro_batch_size if args.data_parallel_micro_batch_size > 0 else max(1, args.max_events // 100),
         "gpu_list": args.gpu_list,
         "enable_auto_pipeline_config": args.enable_auto_pipeline_config,
+        "pipeline_mode": args.pipeline_mode,
     }
 
     trainer = GraphNASTrainer(base_config)

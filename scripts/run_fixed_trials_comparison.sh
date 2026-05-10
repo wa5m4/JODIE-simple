@@ -148,6 +148,7 @@ for SEED in "${SEEDS_ARRAY[@]}"; do
         --stage-balance-strategy count \
         --seed "$SEED" --k "$K" --selection-metric "$METRIC" \
         --device cuda --gpu-list "$GPU_LIST" \
+        --pipeline-mode naive \
         --output-dir "${SEED_DIR}/pipeline_naive"
     T1=$(date +%s%N)
     NAIVE_SEC=$(( (T1 - T0) / 1000000000 ))
@@ -165,10 +166,9 @@ for SEED in "${SEEDS_ARRAY[@]}"; do
         --search-mode rl --execution-mode ray_pipeline \
         --trials "$TRIALS" --epochs-per-trial     "$EPOCHS" \
         --pipeline-worker-gpus 0.0 \
-        --stage-balance-strategy cost \
         --seed "$SEED" --k "$K" --selection-metric "$METRIC" \
         --device cuda --gpu-list "$GPU_LIST" \
-        --enable-auto-pipeline-config \
+        --pipeline-mode smart \
         --output-dir "${SEED_DIR}/pipeline_smart"
     T1=$(date +%s%N)
     SMART_SEC=$(( (T1 - T0) / 1000000000 ))
@@ -188,47 +188,41 @@ for SEED in "${SEEDS_ARRAY[@]}"; do
 
     # ── 生成 seed 级报告
     echo "  [5/5] 生成 seed=${SEED} 报告"
-    python tools/compare_results_3way.py \
+    python tools/compare_fixed_trials.py \
         --serial-dir    "${SEED_DIR}/serial" \
         --dp-dir        "${SEED_DIR}/data_parallel" \
-        --pipeline-dir  "${SEED_DIR}/pipeline_smart" \
+        --naive-dir     "${SEED_DIR}/pipeline_naive" \
+        --smart-dir     "${SEED_DIR}/pipeline_smart" \
         --serial-time   "$SERIAL_SEC" \
         --dp-time       "$DP_SEC" \
-        --pipeline-time "$SMART_SEC" \
-        --serial-trials   "$TRIALS" \
-        --dp-trials       "$TRIALS" \
-        --pipeline-trials "$TRIALS" \
-        --output        "${SEED_DIR}/report_3way.txt"
-
-    python tools/compare_results_2way.py \
-        --a-dir    "${SEED_DIR}/pipeline_naive" \
-        --b-dir    "${SEED_DIR}/pipeline_smart" \
-        --a-label  "Pipeline-Naive" \
-        --b-label  "Pipeline-Smart" \
-        --a-time   "$NAIVE_SEC" \
-        --b-time   "$SMART_SEC" \
-        --title    "固定 Trial 数：Pipeline 自动优化效果对比" \
-        --conclusion "相同 trial 数下，Pipeline-Smart 通过自动分配策略提升搜索效率" \
-        --output   "${SEED_DIR}/report_naive_vs_smart.txt"
+        --naive-time    "$NAIVE_SEC" \
+        --smart-time    "$SMART_SEC" \
+        --trials        "$TRIALS" \
+        --output        "${SEED_DIR}/report_fixed_trials.txt"
     echo ""
 done
 
 # ── 多种子汇总
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "▶  生成多种子汇总报告"
+echo "▶  多种子汇总（见 summary.csv）"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-
-python tools/aggregate_seeds_3way.py \
-    --root            "$OUTPUT_DIR" \
-    --seeds           "${SEEDS_ARRAY[*]}" \
-    --serial-trials   "$TRIALS" \
-    --dp-trials       "$TRIALS" \
-    --pipeline-trials "$TRIALS" \
-    --output          "${OUTPUT_DIR}/aggregate_report_3way.txt"
+python3 -c "
+import csv, sys
+rows = list(csv.DictReader(open('${OUTPUT_DIR}/summary.csv')))
+methods = ['serial','data_parallel','pipeline_naive','pipeline_smart']
+labels  = ['Serial','DataParallel','Pipeline-Naive','Pipeline-Smart']
+print(f'  {\"方法\":<20} {\"平均时间(s)\":>12}  {\"平均best_score\":>14}')
+print(f'  {\"─\"*20}  {\"─\"*12}  {\"─\"*14}')
+for m, l in zip(methods, labels):
+    mrows = [r for r in rows if r['method']==m]
+    if not mrows: continue
+    avg_t = sum(float(r['wall_time_s']) for r in mrows)/len(mrows)
+    avg_s = sum(float(r['best_score']) for r in mrows)/len(mrows)
+    print(f'  {l:<20} {avg_t:>12.0f}  {avg_s:>14.4f}')
+"
 
 echo "╔══════════════════════════════════════════════════════════════════════╗"
 echo "║  完成！"
 echo "║  CSV 汇总  : $SUMMARY"
-echo "║  3-Way 报告: ${OUTPUT_DIR}/aggregate_report_3way.txt"
-echo "║  各 seed   : ${OUTPUT_DIR}/seed_*/report_3way.txt"
+echo "║  各 seed   : ${OUTPUT_DIR}/seed_*/report_fixed_trials.txt"
 echo "╚══════════════════════════════════════════════════════════════════════╝"

@@ -1,0 +1,54 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║     固定 Trial 数对比：Serial vs DP vs Pipeline-Naive vs Pipeline-Smart      ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+┌─ 1. Search Quality  搜索质量（相同 trial 数下谁找到更好的架构）─────────┐
+
+  Metric                  Serial  DataParallel  Pipeline-Naive  Pipeline-Smart  Best
+  ────────────────  ────────────  ────────────  ──────────────  ──────────────  ──────
+  Best Score (MRR)        0.6010        0.7190          0.7294          0.6491  Pipeline-Naive ◀
+
+  Top-5 val scores per method:
+    Serial          : 0.6010 | 0.6010 | 0.5676 | 0.5334 | 0.5055
+    DataParallel    : 0.7190 | 0.7190 | 0.6641 | 0.5512 | 0.5388
+    Pipeline-Naive  : 0.7294 | 0.6649 | 0.6618 | 0.5349 | 0.4744
+    Pipeline-Smart  : 0.6491 | 0.6414 | 0.5953 | 0.4500 | 0.4090
+
+  Best Architecture:
+    Serial          : model=jodie_rnn  memory_cell=lstm  embedding_dim=128
+    DataParallel    : model=jodie_rnn  memory_cell=rnn  embedding_dim=128
+    Pipeline-Naive  : model=jodie_rnn  memory_cell=rnn  embedding_dim=128
+    Pipeline-Smart  : model=jodie_rnn  memory_cell=rnn  embedding_dim=32
+
+└────────────────────────────────────────────────────────────────────────┘
+
+┌─ 2. Search Efficiency  搜索效率（相同架构数下谁更快）──────────────────┐
+
+  Metric                            Serial  DataParallel  Pipeline-Naive  Pipeline-Smart  Best
+  ──────────────────────────  ────────────  ────────────  ──────────────  ──────────────  ──────
+  Total Wall Time (s)                3,529         2,642           2,727             627  Pipeline-Smart ◀
+  Speedup vs Serial                  1.00x         1.34x           1.29x           5.63x
+  Avg Time/Trial (s)                 130.7          97.9           101.0            23.2
+
+  Trials completed: 27 / 27 / 27 / 27  (target=27)
+
+  Serial           [████████████████████████████████████] 3,529s
+  DataParallel     [██████████████████████████░░░░░░░░░░] 2,642s
+  Pipeline-Naive   [███████████████████████████░░░░░░░░░] 2,727s
+  Pipeline-Smart   [██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 627s
+
+└────────────────────────────────────────────────────────────────────────┘
+
+┌─ 3. Summary  综合评估 ─────────────────────────────────────────────────┐
+
+  固定 27 个 trial，比较各方法的运行时间和搜索质量：
+
+    Serial          : 时间=3,529s (baseline),  best_score=0.6010
+    DataParallel    : 时间=2,642s (1.34x),  best_score=0.7190
+    Pipeline-Naive  : 时间=2,727s (1.29x),  best_score=0.7294
+    Pipeline-Smart  : 时间=627s (5.63x),  best_score=0.6491
+
+  最快方法: Pipeline-Smart (627s)
+  最高质量: Pipeline-Naive (MRR=0.7294)
+
+└────────────────────────────────────────────────────────────────────────┘

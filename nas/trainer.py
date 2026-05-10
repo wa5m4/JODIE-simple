@@ -428,6 +428,159 @@ class GraphNASTrainer:
             )
         return formatted
 
+    def _search_pipeline_async(
+        self,
+        controller,
+        pipeline_executor,
+        coarse_trials: int,
+        architectures_per_step: int,
+        coarse_epochs: int,
+        seen_signatures,
+        user_type_prefs,
+        item_type,
+        partition_plan,
+        timing_log_path: str,
+        search_start_time: float,
+        time_budget_sec: float,
+    ):
+        """
+        Smart 异步搜索循环：
+        - 先 profiling 1 个 trial，获取 partition costs，重新计算最优分配
+        - controller 持续采样，pipeline 持续训练，GPU 始终满载
+        - 累积 arch_per_step 个结果后更新 controller
+        """
+        from nas.config_optimizer import ConfigOptimizer, CostModel
+
+        # ── Profiling：跑 1 个 trial 获取 partition costs ──
+        print("[Smart] Profiling 1 trial to estimate partition costs...", flush=True)
+        profiling_samples = self._sample_unique_arch_batch(controller, 1, seen_signatures)
+        profiling_arch = [a for a, _ in profiling_samples]
+        profiling_result = self.evaluate_arch_pipeline(
+            arch_configs=profiling_arch,
+            partition_plan=partition_plan,
+            user_type_prefs=user_type_prefs,
+            item_type=item_type,
+            phase="coarse_pipeline",
+            eval_split="val",
+            epochs=coarse_epochs,
+            executor=pipeline_executor,
+        )
+
+        # 用 partition 交互数作为成本代理
+        train_partitions = partition_plan.get_split_partitions("train")
+        partition_costs = [float(len(p.interactions)) for p in train_partitions]
+
+        # 重新计算最优分配
+        gpu_list = self.base_config.get("gpu_list", "0,1,2")
+        gpu_count = len(ConfigOptimizer.parse_gpu_list(gpu_list))
+        num_events = int(self.base_config.get("max_events", sum(partition_costs)))
+        auto_cfg = ConfigOptimizer.auto_allocate_config_advanced(
+            gpu_count=gpu_count,
+            num_events=num_events,
+            num_partitions=len(partition_costs),
+            epochs=coarse_epochs,
+            partition_costs=partition_costs,
+        )
+        print(f"[Smart] Optimal allocation:\n{auto_cfg['info']}", flush=True)
+        for k in ("num_pipeline_stages", "pipeline_stage_train_workers",
+                  "pipeline_stage_eval_workers", "partition_size"):
+            self.base_config[k] = auto_cfg[k]
+        # 重建 executor 以应用新配置
+        pipeline_executor.__init__(self.base_config, partition_plan)
+
+        # ── 启动持久化 pool ──
+        eval_kwargs = {
+            "eval_split": "val",
+            "item_type": item_type,
+            "user_type_prefs": user_type_prefs,
+            "k": int(self.base_config.get("k", 10)),
+        }
+        pipeline_executor.start_persistent_pool(eval_kwargs)
+
+        results = list(profiling_result)
+        total_workers = sum(len(p) for p in pipeline_executor._pool_workers)
+        pending_logprobs = {}
+        update_buffer = []
+        total_submitted = 0
+        remaining = coarse_trials - len(profiling_result)  # 还需要完成的 trial 数
+        cumulative_best = max((r["score"] for r in results), default=0.0)
+
+        # 写 profiling trial 到 timing log
+        with open(timing_log_path, "a", newline="", encoding="utf-8") as f:
+            import csv as _csv
+            w = _csv.writer(f)
+            for i, r in enumerate(profiling_result):
+                cumulative_best = max(cumulative_best, r["score"])
+                w.writerow([i, "pipeline_smart", 0, round(time.time() - search_start_time, 3),
+                             0, round(r["score"], 6), round(r["mrr"], 6),
+                             round(r["recall_at_k"], 6), round(cumulative_best, 6),
+                             r["config"].get("model", "unknown")])
+
+        # 预填充：提交 2×arch_per_step 个架构
+        prefill = min(architectures_per_step * 2, remaining)
+        while total_submitted < prefill:
+            samples = self._sample_unique_arch_batch(controller, 1, seen_signatures)
+            arch, logprob = samples[0]
+            tid = pipeline_executor.submit_arch(arch)
+            pending_logprobs[tid] = logprob.clone() if logprob is not None else None
+            total_submitted += 1
+
+        # 主循环
+        while len(results) < coarse_trials:
+            if time_budget_sec > 0 and (time.time() - search_start_time) >= time_budget_sec:
+                print("[Smart] Time budget reached, draining pipeline...", flush=True)
+                break
+
+            completed = pipeline_executor.poll_completed(timeout=0.05)
+            # 如果 in_flight 为空但 pending 不为空，主动 drain
+            if not pipeline_executor._pool_in_flight:
+                pipeline_executor._drain_pool()
+            now = time.time()
+            for r in completed:
+                tid = r["trial_id"]
+                logprob = pending_logprobs.pop(tid, None)
+                results.append(r)
+                cumulative_best = max(cumulative_best, r["score"])
+                if logprob is not None:
+                    update_buffer.append((logprob, r["score"]))
+                with open(timing_log_path, "a", newline="", encoding="utf-8") as f:
+                    import csv as _csv
+                    _csv.writer(f).writerow([
+                        len(results) - 1, "pipeline_smart",
+                        round(search_start_time - search_start_time, 3),
+                        round(now - search_start_time, 3), 0,
+                        round(r["score"], 6), round(r["mrr"], 6),
+                        round(r["recall_at_k"], 6), round(cumulative_best, 6),
+                        r["config"].get("model", "unknown"),
+                    ])
+
+            # 累积够 arch_per_step 个结果后更新 controller baseline（异步模式不做 gradient）
+            if len(update_buffer) >= architectures_per_step:
+                for _, sc in update_buffer:
+                    controller.reward_baseline = 0.9 * controller.reward_baseline + 0.1 * sc
+                update_buffer.clear()
+
+            # 补充提交新架构，保持 pipeline 满载
+            in_flight = len(pipeline_executor._pool_in_flight)
+            headroom = total_workers - in_flight
+            while headroom > 0 and total_submitted < remaining:
+                s = self._sample_unique_arch_batch(controller, 1, seen_signatures)
+                arch, logprob = s[0]
+                tid = pipeline_executor.submit_arch(arch)
+                pending_logprobs[tid] = logprob.clone() if logprob is not None else None
+                total_submitted += 1
+                headroom -= 1
+
+            print(f"[Smart] Progress: {len(results)}/{coarse_trials} completed, "
+                  f"in_flight={in_flight}, submitted={total_submitted}", flush=True)
+
+        # flush 剩余 update_buffer
+        for _, sc in update_buffer:
+            controller.reward_baseline = 0.9 * controller.reward_baseline + 0.1 * sc
+
+        pipeline_executor.shutdown_persistent_pool()
+        return results
+
     def search_pipeline(
         self,
         controller,
@@ -589,72 +742,90 @@ class GraphNASTrainer:
         print(f"[Timing] Timing log: {timing_log_path}", flush=True)
 
         cumulative_best = 0.0
+        pipeline_mode = str(self.base_config.get("pipeline_mode", "naive")).strip().lower()
 
-        while total_generated < coarse_trials:
-            if time_budget_sec > 0 and (time.time() - search_start_time) >= time_budget_sec:
-                print(f"[Coarse Phase] Time budget {time_budget_sec:.0f}s reached after {total_generated} trials, stopping.", flush=True)
-                break
-            batch_size = min(architectures_per_step, coarse_trials - total_generated)
-            print(f"[Coarse Phase] Sampling batch {total_generated//batch_size + 1}: {batch_size} architectures", flush=True)
-
-            samples = self._sample_unique_arch_batch(
+        if pipeline_mode == "smart":
+            # ── Smart 模式：异步 controller + pipeline，先 profiling 再最优分配 ──
+            results = self._search_pipeline_async(
                 controller=controller,
-                batch_size=batch_size,
+                pipeline_executor=pipeline_executor,
+                coarse_trials=coarse_trials,
+                architectures_per_step=architectures_per_step,
+                coarse_epochs=coarse_epochs,
                 seen_signatures=seen_signatures,
-            )
-            arch_batch = [arch for arch, _ in samples]
-            logprobs = [logprob for _, logprob in samples]
-
-            print(f"[Coarse Phase] Evaluating architectures {total_generated+1}-{total_generated+len(arch_batch)}/{coarse_trials}", flush=True)
-            batch_start = time.time()
-            batch_results = self.evaluate_arch_pipeline(
-                arch_configs=arch_batch,
-                partition_plan=partition_plan,
                 user_type_prefs=user_type_prefs,
                 item_type=item_type,
-                phase="coarse_pipeline",
-                eval_split="val",
-                epochs=coarse_epochs,
-                executor=pipeline_executor,
-                time_budget_sec=time_budget_sec,
+                partition_plan=partition_plan,
+                timing_log_path=timing_log_path,
                 search_start_time=search_start_time,
+                time_budget_sec=time_budget_sec,
             )
-            batch_end = time.time()
-            results.extend(batch_results)
+            total_generated = len(results)
+        else:
+            while total_generated < coarse_trials:
+                if time_budget_sec > 0 and (time.time() - search_start_time) >= time_budget_sec:
+                    print(f"[Coarse Phase] Time budget {time_budget_sec:.0f}s reached after {total_generated} trials, stopping.", flush=True)
+                    break
+                batch_size = min(architectures_per_step, coarse_trials - total_generated)
+                print(f"[Coarse Phase] Sampling batch {total_generated//batch_size + 1}: {batch_size} architectures", flush=True)
 
-            # 写计时日志
-            with open(timing_log_path, "a", newline="", encoding="utf-8") as f:
-                writer = csv.writer(f)
-                for i, result in enumerate(batch_results):
-                    trial_id = total_generated + i
-                    cumulative_best = max(cumulative_best, result["score"])
-                    writer.writerow([
-                        trial_id,
-                        "pipeline",
-                        round(batch_start - search_start_time, 3),
-                        round(batch_end - search_start_time, 3),
-                        round(batch_end - batch_start, 3),
-                        round(result["score"], 6),
-                        round(result["mrr"], 6),
-                        round(result["recall_at_k"], 6),
-                        round(cumulative_best, 6),
-                        result["config"].get("model", "unknown"),
-                    ])
+                samples = self._sample_unique_arch_batch(
+                    controller=controller,
+                    batch_size=batch_size,
+                    seen_signatures=seen_signatures,
+                )
+                arch_batch = [arch for arch, _ in samples]
+                logprobs = [logprob for _, logprob in samples]
 
-            batch_samples = [
-                (logprob, result["score"])
-                for logprob, result in zip(logprobs, batch_results)
-                if logprob is not None
-            ]
-            if batch_samples and hasattr(controller, "reinforce_step_batch"):
-                controller.reinforce_step_batch(batch_samples)
-            else:
-                for logprob, score in batch_samples:
-                    if hasattr(controller, "reinforce_step"):
-                        controller.reinforce_step(logprob, score)
+                print(f"[Coarse Phase] Evaluating architectures {total_generated+1}-{total_generated+len(arch_batch)}/{coarse_trials}", flush=True)
+                batch_start = time.time()
+                batch_results = self.evaluate_arch_pipeline(
+                    arch_configs=arch_batch,
+                    partition_plan=partition_plan,
+                    user_type_prefs=user_type_prefs,
+                    item_type=item_type,
+                    phase="coarse_pipeline",
+                    eval_split="val",
+                    epochs=coarse_epochs,
+                    executor=pipeline_executor,
+                    time_budget_sec=time_budget_sec,
+                    search_start_time=search_start_time,
+                )
+                batch_end = time.time()
+                results.extend(batch_results)
 
-            total_generated += len(batch_results)
-            print(f"[Coarse Phase] Progress: {total_generated}/{coarse_trials} trials completed", flush=True)
+                with open(timing_log_path, "a", newline="", encoding="utf-8") as f:
+                    writer = csv.writer(f)
+                    for i, result in enumerate(batch_results):
+                        trial_id = total_generated + i
+                        cumulative_best = max(cumulative_best, result["score"])
+                        writer.writerow([
+                            trial_id,
+                            "pipeline",
+                            round(batch_start - search_start_time, 3),
+                            round(batch_end - search_start_time, 3),
+                            round(batch_end - batch_start, 3),
+                            round(result["score"], 6),
+                            round(result["mrr"], 6),
+                            round(result["recall_at_k"], 6),
+                            round(cumulative_best, 6),
+                            result["config"].get("model", "unknown"),
+                        ])
+
+                batch_samples = [
+                    (logprob, result["score"])
+                    for logprob, result in zip(logprobs, batch_results)
+                    if logprob is not None
+                ]
+                if batch_samples and hasattr(controller, "reinforce_step_batch"):
+                    controller.reinforce_step_batch(batch_samples)
+                else:
+                    for logprob, score in batch_samples:
+                        if hasattr(controller, "reinforce_step"):
+                            controller.reinforce_step(logprob, score)
+
+                total_generated += len(batch_results)
+                print(f"[Coarse Phase] Progress: {total_generated}/{coarse_trials} trials completed", flush=True)
 
         coarse_sorted = sorted(results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)
         selected = coarse_sorted[0]

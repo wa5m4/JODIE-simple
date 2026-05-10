@@ -358,7 +358,7 @@ for SEED in "${SEEDS_ARRAY[@]}"; do
             --k                     "$K" \
             --selection-metric      "$METRIC" \
             --gpu-list              "$GPU_LIST" \
-            --enable-auto-pipeline-config \
+            --pipeline-mode         smart \
             --pipeline-trace \
             --output-dir            "$OUTPUT_PIPELINE"
 
@@ -398,6 +398,7 @@ for SEED in "${SEEDS_ARRAY[@]}"; do
             --seed                  "$SEED" \
             --k                     "$K" \
             --selection-metric      "$METRIC" \
+            --pipeline-mode         naive \
             --output-dir            "$OUTPUT_PIPELINE_NAIVE"
 
         PIPELINE_NAIVE_END=$(date +%s%N)

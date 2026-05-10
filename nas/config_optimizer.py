@@ -313,6 +313,42 @@ class ConfigOptimizer:
         }
 
     @staticmethod
+    def _optimal_worker_allocation(stage_costs: List[float], gpu_count: int) -> List[int]:
+        """
+        最优 worker 分配：w_i* = m * T_i / sum(T_j)
+
+        数学推导：pipeline 吞吐 = min_i(w_i/T_i)，最大化该值等价于令所有 stage 吞吐相等。
+        令 w_i/T_i = λ* 对所有 i，则 w_i = λ*·T_i，代入 Σw_i=m 得 λ*=m/ΣT_j，
+        故 w_i* = m·T_i/ΣT_j。此解在 T_i 已知时为全局最优（Lagrange 乘数法可证）。
+        """
+        m = max(int(gpu_count), 1)
+        S = len(stage_costs)
+        if S == 0:
+            return []
+        if S == 1:
+            return [m]
+        T_sum = sum(stage_costs)
+        if T_sum <= 0:
+            # 均匀分配
+            base, rem = divmod(m, S)
+            return [base + (1 if i < rem else 0) for i in range(S)]
+        # 按比例分配，每 stage 至少 1 个 worker
+        raw = [m * t / T_sum for t in stage_costs]
+        workers = [max(1, int(x)) for x in raw]
+        leftover = m - sum(workers)
+        if leftover > 0:
+            order = sorted(range(S), key=lambda i: raw[i] - int(raw[i]), reverse=True)
+            for i in order[:leftover]:
+                workers[i] += 1
+        elif leftover < 0:
+            # 超出（因 max(1,...) 导致），从最小 stage 减
+            order = sorted(range(S), key=lambda i: workers[i], reverse=True)
+            for i in order[:-leftover]:
+                if workers[i] > 1:
+                    workers[i] -= 1
+        return workers
+
+    @staticmethod
     def auto_allocate_config_advanced(
         gpu_count: int,
         num_events: int,
@@ -320,34 +356,64 @@ class ConfigOptimizer:
         architectures_per_step: int = 2,
         coarse_trials: int = 6,
         epochs: int = 1,
+        partition_costs: Optional[List[float]] = None,
     ) -> Dict:
-        """高级自动化配置：更复杂的启发式算法。"""
+        """
+        严谨的智慧分配策略：
+        1. 选 S：基于 events_per_gpu，约束 S ≤ m//2（保证每 stage ≥ 2 workers）
+        2. 估算各 stage 成本 T_i（有 partition_costs 时用 DP 分组，否则均匀）
+        3. 按 w_i* = m·T_i/ΣT_j 分配 worker（全局最优）
+        4. partition_size：每 stage 至少 5 个 partition，保持流水线满载
+        """
+        m = max(int(gpu_count), 1)
         info_lines = []
 
-        events_per_gpu = num_events / max(1, gpu_count)
-        info_lines.append(f"Events/GPU: {events_per_gpu:.0f}")
+        # Step 1: 选 stage 数
+        events_per_gpu = num_events / m
+        if m <= 2:
+            S = m
+        else:
+            if events_per_gpu < 5000:
+                S_preferred = 2
+            elif events_per_gpu < 20000:
+                S_preferred = 3
+            elif events_per_gpu < 100000:
+                S_preferred = 4
+            else:
+                S_preferred = max(2, int(math.log2(m)) + 1)
+            # 每 stage 至少 2 workers → S ≤ m//2
+            S = min(S_preferred, m // 2)
+            S = max(S, 1)
+        info_lines.append(f"GPUs: {m}, Stages: {S} (events/GPU={events_per_gpu:.0f}, constraint S≤m//2={m//2})")
 
-        num_stages = ConfigOptimizer._choose_stage_count(gpu_count, num_events, 8)
+        # Step 2: 估算各 stage 成本
+        if partition_costs and len(partition_costs) >= S:
+            cost_model = CostModel()
+            grouping = cost_model.optimize_partition_grouping(partition_costs, S)
+            stage_costs = [sum(partition_costs[a:b]) for a, b in grouping]
+            info_lines.append(f"Stage costs from profiling: {[round(c) for c in stage_costs]}")
+        else:
+            stage_costs = [1.0] * S  # 无 profiling 数据时均匀分配
+            info_lines.append("Stage costs: uniform (no profiling data)")
 
-        info_lines.append(f"Stages: {num_stages} (based on events_per_gpu)")
+        # Step 3: 最优 worker 分配
+        workers = ConfigOptimizer._optimal_worker_allocation(stage_costs, m)
+        T_sum = sum(stage_costs)
+        ratios = [round(t / T_sum, 3) for t in stage_costs]
+        info_lines.append(f"Workers: {workers} (optimal w_i*=m·T_i/ΣT_j, ratios={ratios})")
 
-        train_workers = ConfigOptimizer._allocate_stage_workers(num_stages, gpu_count)
-        eval_workers = ConfigOptimizer._allocate_stage_workers(num_stages, gpu_count)
-        info_lines.append(f"Train workers per stage: {train_workers}")
-        info_lines.append(f"Eval workers per stage: {eval_workers}")
-
-        # target: each stage gets at least 5 partitions per epoch to keep pipeline full
-        target_partitions = num_stages * 5 * max(1, (epochs + 1) // 2)
+        # Step 4: partition_size（每 stage 至少 5 个 partition × epochs 因子）
+        target_partitions = S * 5 * max(1, (epochs + 1) // 2)
         partition_size = max(200, num_events // max(1, target_partitions)) if num_events > 0 else 500
-        info_lines.append(f"Partition size: {partition_size} (target_partitions={target_partitions}, stages={num_stages}, epochs={epochs})")
+        info_lines.append(f"Partition size: {partition_size} (target={target_partitions} partitions, epochs={epochs})")
 
-        auto_arch_per_step = gpu_count * 3
+        auto_arch_per_step = m * 3
         info_lines.append(f"Architectures per step: {auto_arch_per_step}")
 
         return {
-            'num_pipeline_stages': num_stages,
-            'pipeline_stage_train_workers': ','.join(str(count) for count in train_workers),
-            'pipeline_stage_eval_workers': ','.join(str(count) for count in eval_workers),
+            'num_pipeline_stages': S,
+            'pipeline_stage_train_workers': ','.join(str(w) for w in workers),
+            'pipeline_stage_eval_workers': ','.join(str(w) for w in workers),
             'partition_size': partition_size,
             'architectures_per_step': auto_arch_per_step,
             'info': '\n'.join(info_lines),
