@@ -357,55 +357,57 @@ class ConfigOptimizer:
         coarse_trials: int = 6,
         epochs: int = 1,
         partition_costs: Optional[List[float]] = None,
+        num_users: int = 0,
+        num_items: int = 0,
+        max_embedding_dim: int = 128,
+        max_neighbors: int = 10,
+        gpu_memory_mb: int = 0,
     ) -> Dict:
         """
-        严谨的智慧分配策略：
-        1. 选 S：基于 events_per_gpu，约束 S ≤ m//2（保证每 stage ≥ 2 workers）
-        2. 估算各 stage 成本 T_i（有 partition_costs 时用 DP 分组，否则均匀）
-        3. 按 w_i* = m·T_i/ΣT_j 分配 worker（全局最优）
-        4. partition_size：每 stage 至少 5 个 partition，保持流水线满载
+        智慧分配策略：
+        1. S：基于 events_per_gpu（overhead 占比），数据量大时多 stage 形成流水线
+        2. worker：均等分配
+        3. partition_size：每 stage 至少 5 个 partition
+        4. max_batch_size：基于显存估算批处理的最大 batch 大小
         """
         m = max(int(gpu_count), 1)
         info_lines = []
 
-        # Step 1: 选 stage 数
-        events_per_gpu = num_events / m
-        if m <= 2:
-            S = m
+        # Step 1: stage 数（基于 events_per_gpu）
+        events_per_gpu = num_events / m if m > 0 else num_events
+        if m <= 1 or events_per_gpu < 10000:
+            S = 1
+        elif events_per_gpu < 50000:
+            S = min(2, m)
+        elif events_per_gpu < 200000:
+            S = min(3, m)
         else:
-            if events_per_gpu < 5000:
-                S_preferred = 2
-            elif events_per_gpu < 20000:
-                S_preferred = 3
-            elif events_per_gpu < 100000:
-                S_preferred = 4
-            else:
-                S_preferred = max(2, int(math.log2(m)) + 1)
-            # 每 stage 至少 2 workers → S ≤ m//2
-            S = min(S_preferred, m // 2)
-            S = max(S, 1)
-        info_lines.append(f"GPUs: {m}, Stages: {S} (events/GPU={events_per_gpu:.0f}, constraint S≤m//2={m//2})")
+            S = min(max(2, int(math.log2(m)) + 1), m)
+        info_lines.append(f"GPUs: {m}, Stages: {S} (events/GPU={events_per_gpu:.0f})")
 
-        # Step 2: 估算各 stage 成本
-        if partition_costs and len(partition_costs) >= S:
-            cost_model = CostModel()
-            grouping = cost_model.optimize_partition_grouping(partition_costs, S)
-            stage_costs = [sum(partition_costs[a:b]) for a, b in grouping]
-            info_lines.append(f"Stage costs from profiling: {[round(c) for c in stage_costs]}")
-        else:
-            stage_costs = [1.0] * S  # 无 profiling 数据时均匀分配
-            info_lines.append("Stage costs: uniform (no profiling data)")
+        # Step 2: 均等分配 worker
+        workers = ConfigOptimizer._optimal_worker_allocation([1.0] * S, m)
+        info_lines.append(f"Workers: {workers}")
 
-        # Step 3: 最优 worker 分配
-        workers = ConfigOptimizer._optimal_worker_allocation(stage_costs, m)
-        T_sum = sum(stage_costs)
-        ratios = [round(t / T_sum, 3) for t in stage_costs]
-        info_lines.append(f"Workers: {workers} (optimal w_i*=m·T_i/ΣT_j, ratios={ratios})")
-
-        # Step 4: partition_size（每 stage 至少 5 个 partition × epochs 因子）
+        # Step 3: partition_size
         target_partitions = S * 5 * max(1, (epochs + 1) // 2)
         partition_size = max(200, num_events // max(1, target_partitions)) if num_events > 0 else 500
-        info_lines.append(f"Partition size: {partition_size} (target={target_partitions} partitions, epochs={epochs})")
+        info_lines.append(f"Partition size: {partition_size} (target={target_partitions}, epochs={epochs})")
+
+        # Step 4: max_batch_size（显存估算）
+        if gpu_memory_mb <= 0:
+            try:
+                import torch
+                gpu_memory_mb = torch.cuda.get_device_properties(0).total_memory // (1024**2) if torch.cuda.is_available() else 16000
+            except Exception:
+                gpu_memory_mb = 16000
+        usable_mb = gpu_memory_mb * 0.8
+        model_params_est = max_embedding_dim ** 2 * 4 + (num_users + num_items) * max_embedding_dim
+        static_mem_mb = (model_params_est * 4 * 4 + (num_users + num_items) * max_neighbors * max_embedding_dim * 4) / 1024**2
+        event_mem_bytes = max_embedding_dim * 6 * 4
+        remaining_mb = max(0.0, usable_mb - static_mem_mb)
+        max_batch_size = max(1, int(remaining_mb * 1024**2 / event_mem_bytes)) if event_mem_bytes > 0 else 1024
+        info_lines.append(f"Max batch_size: {max_batch_size} (static_mem≈{static_mem_mb:.0f}MB)")
 
         auto_arch_per_step = m * 3
         info_lines.append(f"Architectures per step: {auto_arch_per_step}")
@@ -416,5 +418,6 @@ class ConfigOptimizer:
             'pipeline_stage_eval_workers': ','.join(str(w) for w in workers),
             'partition_size': partition_size,
             'architectures_per_step': auto_arch_per_step,
+            'max_batch_size': max_batch_size,
             'info': '\n'.join(info_lines),
         }

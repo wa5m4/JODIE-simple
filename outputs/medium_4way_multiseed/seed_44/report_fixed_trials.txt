@@ -6,19 +6,19 @@
 
   Metric                  Serial  DataParallel  Pipeline-Naive  Pipeline-Smart  Best
   ────────────────  ────────────  ────────────  ──────────────  ──────────────  ──────
-  Best Score (MRR)        0.7643        0.7358          0.7008          0.7150  Serial ◀
+  Best Score (MRR)        0.7643        0.7358          0.7008          0.7040  Serial ◀
 
   Top-5 val scores per method:
     Serial          : 0.7643 | 0.7643 | 0.7181 | 0.5931 | 0.5744
     DataParallel    : 0.7358 | 0.7358 | 0.7120 | 0.5993 | 0.4608
     Pipeline-Naive  : 0.7008 | 0.6533 | 0.6406 | 0.6405 | 0.5915
-    Pipeline-Smart  : 0.7150 | 0.5777 | 0.5513 | 0.5171 | 0.5098
+    Pipeline-Smart  : 0.7040 | 0.6636 | 0.6587 | 0.6547 | 0.5406
 
   Best Architecture:
     Serial          : model=jodie_rnn  memory_cell=rnn  embedding_dim=128
     DataParallel    : model=jodie_rnn  memory_cell=rnn  embedding_dim=128
     Pipeline-Naive  : model=jodie_rnn  memory_cell=rnn  embedding_dim=128
-    Pipeline-Smart  : model=jodie_rnn  memory_cell=gru  embedding_dim=128
+    Pipeline-Smart  : model=jodie_rnn  memory_cell=rnn  embedding_dim=64
 
 └────────────────────────────────────────────────────────────────────────┘
 
@@ -26,16 +26,16 @@
 
   Metric                            Serial  DataParallel  Pipeline-Naive  Pipeline-Smart  Best
   ──────────────────────────  ────────────  ────────────  ──────────────  ──────────────  ──────
-  Total Wall Time (s)                3,476         3,702           2,547             671  Pipeline-Smart ◀
-  Speedup vs Serial                  1.00x         0.94x           1.37x           5.18x
-  Avg Time/Trial (s)                 128.8         137.1            94.3            24.9
+  Total Wall Time (s)                3,476         3,702           2,547             480  Pipeline-Smart ◀
+  Speedup vs Serial                  1.00x         0.94x           1.37x           7.24x
+  Avg Time/Trial (s)                 128.8         137.1            94.3            17.8
 
   Trials completed: 27 / 27 / 27 / 27  (target=27)
 
   Serial           [█████████████████████████████████░░░] 3,476s
   DataParallel     [████████████████████████████████████] 3,702s
   Pipeline-Naive   [████████████████████████░░░░░░░░░░░░] 2,547s
-  Pipeline-Smart   [██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 671s
+  Pipeline-Smart   [████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 480s
 
 └────────────────────────────────────────────────────────────────────────┘
 
@@ -46,9 +46,9 @@
     Serial          : 时间=3,476s (baseline),  best_score=0.7643
     DataParallel    : 时间=3,702s (0.94x),  best_score=0.7358
     Pipeline-Naive  : 时间=2,547s (1.37x),  best_score=0.7008
-    Pipeline-Smart  : 时间=671s (5.18x),  best_score=0.7150
+    Pipeline-Smart  : 时间=480s (7.24x),  best_score=0.7040
 
-  最快方法: Pipeline-Smart (671s)
+  最快方法: Pipeline-Smart (480s)
   最高质量: Serial (MRR=0.7643)
 
 └────────────────────────────────────────────────────────────────────────┘

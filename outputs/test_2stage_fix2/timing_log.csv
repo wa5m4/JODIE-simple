@@ -1,0 +1,7 @@
+trial_id,mode,start_time_s,end_time_s,duration_s,score,mrr,recall_at_k,cumulative_best_score,model
+0,pipeline_smart,0.0,23.042,0,0.106769,0.106769,0.338677,0.106769,jodie_rnn
+1,pipeline_smart,0.0,26.331,0,0.561264,0.561264,0.871743,0.561264,jodie_rnn
+2,pipeline_smart,0.0,33.38,0,0.342759,0.342759,0.765531,0.561264,jodie_rnn
+3,pipeline_smart,0.0,41.116,0,0.218091,0.218091,0.707415,0.561264,jodie_rnn
+4,pipeline_smart,0.0,50.069,0,0.382659,0.382659,0.737475,0.561264,jodie_rnn
+5,pipeline_smart,0.0,53.484,0,0.226868,0.226868,0.703407,0.561264,jodie_rnn

@@ -34,6 +34,7 @@ SEEDS="42"
 K=10
 METRIC="mrr"
 OUTPUT_DIR=""
+RESUME_EXISTING=false
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -44,6 +45,7 @@ while [[ $# -gt 0 ]]; do
         --epochs)     EPOCHS="$2";     shift 2 ;;
         --seeds)      SEEDS="$2";      shift 2 ;;
         --output-dir) OUTPUT_DIR="$2"; shift 2 ;;
+        --resume-existing) RESUME_EXISTING=true; shift ;;
         *) echo "未知参数: $1"; exit 1 ;;
     esac
 done
@@ -93,67 +95,85 @@ for SEED in "${SEEDS_ARRAY[@]}"; do
 
     # ── [1/4] Serial
     echo "  [1/4] Serial"
-    export CUDA_VISIBLE_DEVICES="0"
-    T0=$(date +%s%N)
-    python search.py \
-        --dataset "$DATASET" --local-data-path "$DATA_FILE" \
-        --max-events "$MAX_EVENTS" --space "$SEARCH_SPACE" \
-        --search-mode rl --execution-mode serial \
-        --trials "$TRIALS" --epochs-per-trial "$EPOCHS" \
-        --partition-size "$PARTITION_SIZE" \
-        --seed "$SEED" --k "$K" --selection-metric "$METRIC" \
-        --device cuda --output-dir "${SEED_DIR}/serial"
-    T1=$(date +%s%N)
-    SERIAL_SEC=$(( (T1 - T0) / 1000000000 ))
-    SERIAL_SCORE=$(python -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/serial/leaderboard.csv'))); print(rows[0]['score'] if rows else 0)")
+    if [[ "$RESUME_EXISTING" == true ]] && [[ -f "${SEED_DIR}/serial/leaderboard.csv" ]]; then
+        echo "  ↪ 已存在，跳过"
+        SERIAL_SEC=$(python3 -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/serial/timing_log.csv'))); print(int(float(rows[-1]['end_time_s']))) if rows else print(0)" 2>/dev/null || echo 0)
+        SERIAL_SCORE=$(python -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/serial/leaderboard.csv'))); print(rows[0]['score'] if rows else 0)")
+    else
+        export CUDA_VISIBLE_DEVICES="0"
+        T0=$(date +%s%N)
+        python search.py \
+            --dataset "$DATASET" --local-data-path "$DATA_FILE" \
+            --max-events "$MAX_EVENTS" --space "$SEARCH_SPACE" \
+            --search-mode rl --execution-mode serial \
+            --trials "$TRIALS" --epochs-per-trial "$EPOCHS" \
+            --partition-size "$PARTITION_SIZE" \
+            --seed "$SEED" --k "$K" --selection-metric "$METRIC" \
+            --device cuda --output-dir "${SEED_DIR}/serial"
+        T1=$(date +%s%N)
+        SERIAL_SEC=$(( (T1 - T0) / 1000000000 ))
+        SERIAL_SCORE=$(python -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/serial/leaderboard.csv'))); print(rows[0]['score'] if rows else 0)")
+    fi
     echo "  ✅ Serial: ${SERIAL_SEC}s  best=${SERIAL_SCORE}"
     echo "$SEED,serial,$TRIALS,$SERIAL_SEC,$SERIAL_SCORE,$(( SERIAL_SEC / TRIALS ))" >> "$SUMMARY"
 
     # ── [2/4] Data-Parallel
     echo "  [2/4] Data-Parallel"
-    export CUDA_VISIBLE_DEVICES="$GPU_LIST"
-    T0=$(date +%s%N)
-    python search.py \
-        --dataset "$DATASET" --local-data-path "$DATA_FILE" \
-        --max-events "$MAX_EVENTS" --space "$SEARCH_SPACE" \
-        --search-mode rl --execution-mode data_parallel \
-        --trials "$TRIALS" --epochs-per-trial "$EPOCHS" \
-        --partition-size "$PARTITION_SIZE" \
-        --data-parallel-workers "$DP_WORKERS" \
-        --data-parallel-worker-gpus 1.0 \
-        --data-parallel-visible-gpus "$GPU_LIST" \
-        --data-parallel-sync-level micro_batch \
-        --seed "$SEED" --k "$K" --selection-metric "$METRIC" \
-        --device cuda --output-dir "${SEED_DIR}/data_parallel"
-    T1=$(date +%s%N)
-    DP_SEC=$(( (T1 - T0) / 1000000000 ))
-    DP_SCORE=$(python -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/data_parallel/leaderboard.csv'))); print(rows[0]['score'] if rows else 0)")
+    if [[ "$RESUME_EXISTING" == true ]] && [[ -f "${SEED_DIR}/data_parallel/leaderboard.csv" ]]; then
+        echo "  ↪ 已存在，跳过"
+        DP_SEC=$(python3 -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/data_parallel/timing_log.csv'))); print(int(float(rows[-1]['end_time_s']))) if rows else print(0)" 2>/dev/null || echo 0)
+        DP_SCORE=$(python -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/data_parallel/leaderboard.csv'))); print(rows[0]['score'] if rows else 0)")
+    else
+        export CUDA_VISIBLE_DEVICES="$GPU_LIST"
+        T0=$(date +%s%N)
+        python search.py \
+            --dataset "$DATASET" --local-data-path "$DATA_FILE" \
+            --max-events "$MAX_EVENTS" --space "$SEARCH_SPACE" \
+            --search-mode rl --execution-mode data_parallel \
+            --trials "$TRIALS" --epochs-per-trial "$EPOCHS" \
+            --partition-size "$PARTITION_SIZE" \
+            --data-parallel-workers "$DP_WORKERS" \
+            --data-parallel-worker-gpus 1.0 \
+            --data-parallel-visible-gpus "$GPU_LIST" \
+            --data-parallel-sync-level micro_batch \
+            --seed "$SEED" --k "$K" --selection-metric "$METRIC" \
+            --device cuda --output-dir "${SEED_DIR}/data_parallel"
+        T1=$(date +%s%N)
+        DP_SEC=$(( (T1 - T0) / 1000000000 ))
+        DP_SCORE=$(python -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/data_parallel/leaderboard.csv'))); print(rows[0]['score'] if rows else 0)")
+    fi
     echo "  ✅ Data-Parallel: ${DP_SEC}s  best=${DP_SCORE}"
     echo "$SEED,data_parallel,$TRIALS,$DP_SEC,$DP_SCORE,$(( DP_SEC / TRIALS ))" >> "$SUMMARY"
 
     # ── [3/4] Pipeline-Naive
     echo "  [3/4] Pipeline-Naive"
-    export CUDA_VISIBLE_DEVICES="$GPU_LIST"
-    T0=$(date +%s%N)
-    python search.py \
-        --dataset "$DATASET" --local-data-path "$DATA_FILE" \
-        --max-events "$MAX_EVENTS" --space "$SEARCH_SPACE" \
-        --search-mode rl --execution-mode ray_pipeline \
-        --trials "$TRIALS" --epochs-per-trial "$EPOCHS" \
-        --architectures-per-step "$NUM_STAGES" \
-        --num-pipeline-stages "$NUM_STAGES" \
-        --pipeline-worker-gpus 1.0 \
-        --pipeline-stage-train-workers 1 \
-        --partition-size "$PARTITION_SIZE" \
-        --stage-balance-strategy count \
-        --seed "$SEED" --k "$K" --selection-metric "$METRIC" \
-        --device cuda --gpu-list "$GPU_LIST" \
-        --pipeline-mode naive \
-        --output-dir "${SEED_DIR}/pipeline_naive"
-    T1=$(date +%s%N)
-    NAIVE_SEC=$(( (T1 - T0) / 1000000000 ))
-    NAIVE_SCORE=$(python -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/pipeline_naive/leaderboard.csv'))); print(rows[0]['score'] if rows else 0)")
-    echo "  ✅ Pipeline-Naive: ${NAIVE_SEC}s      =${NAIVE_SCORE}"
+    if [[ "$RESUME_EXISTING" == true ]] && [[ -f "${SEED_DIR}/pipeline_naive/leaderboard.csv" ]]; then
+        echo "  ↪ 已存在，跳过"
+        NAIVE_SEC=$(python3 -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/pipeline_naive/timing_log.csv'))); print(int(float(rows[-1]['end_time_s']))) if rows else print(0)" 2>/dev/null || echo 0)
+        NAIVE_SCORE=$(python -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/pipeline_naive/leaderboard.csv'))); print(rows[0]['score'] if rows else 0)")
+    else
+        export CUDA_VISIBLE_DEVICES="$GPU_LIST"
+        T0=$(date +%s%N)
+        python search.py \
+            --dataset "$DATASET" --local-data-path "$DATA_FILE" \
+            --max-events "$MAX_EVENTS" --space "$SEARCH_SPACE" \
+            --search-mode rl --execution-mode ray_pipeline \
+            --trials "$TRIALS" --epochs-per-trial "$EPOCHS" \
+            --architectures-per-step "$NUM_STAGES" \
+            --num-pipeline-stages "$NUM_STAGES" \
+            --pipeline-worker-gpus 1.0 \
+            --pipeline-stage-train-workers 1 \
+            --partition-size "$PARTITION_SIZE" \
+            --stage-balance-strategy count \
+            --seed "$SEED" --k "$K" --selection-metric "$METRIC" \
+            --device cuda --gpu-list "$GPU_LIST" \
+            --pipeline-mode naive \
+            --output-dir "${SEED_DIR}/pipeline_naive"
+        T1=$(date +%s%N)
+        NAIVE_SEC=$(( (T1 - T0) / 1000000000 ))
+        NAIVE_SCORE=$(python -c "import csv; rows=list(csv.DictReader(open('${SEED_DIR}/pipeline_naive/leaderboard.csv'))); print(rows[0]['score'] if rows else 0)")
+    fi
+    echo "  ✅ Pipeline-Naive: ${NAIVE_SEC}s  best=${NAIVE_SCORE}"
     echo "$SEED,pipeline_naive,$TRIALS,$NAIVE_SEC,$NAIVE_SCORE,$(( NAIVE_SEC / TRIALS ))" >> "$SUMMARY"
 
     # ── [4/4] Pipeline-Smart

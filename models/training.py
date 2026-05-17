@@ -372,3 +372,163 @@ def evaluate_recall_by_type(model, test_interactions, item_type, user_type_prefs
         total += int(metrics["total"])
 
     return hits / max(total, 1)
+
+
+def train_partition_bpr_batch(
+    model,
+    partition: TemporalPartition,
+    optimizer,
+    neg_sample_size: int = 5,
+    batch_size: int = 32,
+    seed: Optional[int] = None,
+    graph_ctx=None,
+) -> float:
+    """
+    TGN 风格批处理训练（BPR loss）：
+    批内所有交互用批开始时的旧嵌入做 forward（deferred=True），
+    批结束后统一写回新嵌入。
+    近似时序依赖，换取批处理并行性。
+    """
+    device = _model_device(model)
+    rng = np.random.default_rng(seed)
+    criterion = BPRLoss()
+    total_loss = 0.0
+    interactions = partition.interactions
+
+    for batch_start in range(0, len(interactions), batch_size):
+        batch = interactions[batch_start: batch_start + batch_size]
+
+        # 批内临时嵌入缓存：批内更新立刻对后续交互可见，但不写回全局缓冲区
+        temp_user_emb = {}  # user_id → tensor
+        temp_item_emb = {}  # item_id → tensor
+        temp_user_time = {}
+        temp_item_time = {}
+
+        batch_losses = []
+        deferred_updates = []
+
+        optimizer.zero_grad()
+        for interaction in batch:
+            uid_int = interaction.user_id
+            iid_int = interaction.item_id
+            uid = torch.tensor([uid_int], dtype=torch.long, device=device)
+            iid = torch.tensor([iid_int], dtype=torch.long, device=device)
+            t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
+            f = interaction.features.unsqueeze(0).to(device)
+
+            # 用批内临时嵌入覆盖全局嵌入（让批内时序可见）
+            if hasattr(model, 'user_embeddings'):
+                if uid_int in temp_user_emb:
+                    model.user_embeddings[uid_int] = temp_user_emb[uid_int]
+                    model.user_last_time[uid_int] = temp_user_time[uid_int]
+                if iid_int in temp_item_emb:
+                    model.item_embeddings[iid_int] = temp_item_emb[iid_int]
+                    model.item_last_time[iid_int] = temp_item_time[iid_int]
+
+            neg_items = []
+            while len(neg_items) < neg_sample_size:
+                neg = int(rng.integers(0, _num_items(model)))
+                if neg != iid_int:
+                    neg_items.append(neg)
+            neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
+
+            # deferred=True：不写回全局，由我们手动管理
+            pred_emb, new_user_emb, new_item_emb = model(uid, iid, t, f, interaction.timestamp,
+                                                          graph_ctx=graph_ctx, deferred=True)
+            pos_emb = _item_embeddings_for_loss(model, iid).detach().to(device)
+            neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().to(device).unsqueeze(0)
+            loss = criterion(pred_emb, pos_emb, neg_emb) / len(batch)
+            batch_losses.append(loss)
+            temp_user_emb[uid_int] = new_user_emb.detach()
+            temp_item_emb[iid_int] = new_item_emb.detach()
+            temp_user_time[uid_int] = interaction.timestamp
+            temp_item_time[iid_int] = interaction.timestamp
+            deferred_updates.append((uid_int, iid_int, interaction.timestamp,
+                                     new_user_emb, new_item_emb))
+
+        total_batch_loss = sum(batch_losses)
+        total_batch_loss.backward()
+        optimizer.step()
+        total_loss += total_batch_loss.item()
+
+        # 批结束后写回全局缓冲区
+        with torch.no_grad():
+            if hasattr(model, 'user_embeddings'):
+                for uid, iid, ts, new_u, new_i in deferred_updates:
+                    model.user_embeddings[uid] = new_u.detach()
+                    model.item_embeddings[iid] = new_i.detach()
+                    model.user_last_time[uid] = ts
+                    model.item_last_time[iid] = ts
+
+    return total_loss
+
+
+def train_partition_ce_batch(
+    model,
+    partition: TemporalPartition,
+    optimizer,
+    batch_size: int = 32,
+    seed: Optional[int] = None,
+    graph_ctx=None,
+) -> float:
+    """TGN 风格批处理训练（CE/L2 loss）：批内时序可见，批结束后统一写回。"""
+    device = _model_device(model)
+    total_loss = 0.0
+    interactions = partition.interactions
+
+    for batch_start in range(0, len(interactions), batch_size):
+        batch = interactions[batch_start: batch_start + batch_size]
+
+        temp_user_emb = {}
+        temp_item_emb = {}
+        temp_user_time = {}
+        temp_item_time = {}
+        batch_losses = []
+        deferred_updates = []
+
+        optimizer.zero_grad()
+        for interaction in batch:
+            uid_int = interaction.user_id
+            iid_int = interaction.item_id
+            uid = torch.tensor([uid_int], dtype=torch.long, device=device)
+            iid = torch.tensor([iid_int], dtype=torch.long, device=device)
+            t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
+            f = interaction.features.unsqueeze(0).to(device)
+
+            if hasattr(model, 'user_embeddings'):
+                if uid_int in temp_user_emb:
+                    model.user_embeddings[uid_int] = temp_user_emb[uid_int]
+                    model.user_last_time[uid_int] = temp_user_time[uid_int]
+                if iid_int in temp_item_emb:
+                    model.item_embeddings[iid_int] = temp_item_emb[iid_int]
+                    model.item_last_time[iid_int] = temp_item_time[iid_int]
+
+            pred_emb, new_user_emb, new_item_emb = model(uid, iid, t, f, interaction.timestamp,
+                                                          graph_ctx=graph_ctx, deferred=True)
+            target_emb = _item_embeddings_for_loss(model, iid).detach().to(device)
+            loss = ((pred_emb - target_emb) ** 2).sum(dim=-1).mean() / len(batch)
+            batch_losses.append(loss)
+
+            temp_user_emb[uid_int] = new_user_emb.detach()
+            temp_item_emb[iid_int] = new_item_emb.detach()
+            temp_user_time[uid_int] = interaction.timestamp
+            temp_item_time[iid_int] = interaction.timestamp
+            deferred_updates.append((uid_int, iid_int, interaction.timestamp,
+                                     new_user_emb, new_item_emb))
+
+        total_batch_loss = sum(batch_losses)
+        total_batch_loss.backward()
+        optimizer.step()
+        total_loss += total_batch_loss.item()
+
+        with torch.no_grad():
+            if hasattr(model, 'user_embeddings'):
+                for uid, iid, ts, new_u, new_i in deferred_updates:
+                    model.user_embeddings[uid] = new_u.detach()
+                    model.item_embeddings[iid] = new_i.detach()
+                    model.user_last_time[uid] = ts
+                    model.item_last_time[iid] = ts
+
+    return total_loss
+
+    return total_loss

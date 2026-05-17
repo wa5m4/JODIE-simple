@@ -148,7 +148,12 @@ class JODIERNN(nn.Module):
         item_ids: torch.Tensor,
         timestamps: torch.Tensor,
         features: torch.Tensor,
+        deferred: bool = False,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        deferred=False（默认，JODIE 严格逐条）：立刻写回嵌入缓冲区
+        deferred=True（TGN 批处理）：不写回，由调用方统一写回
+        """
         user_emb = self.user_embeddings[user_ids].detach().clone()
         item_emb = self.item_embeddings[item_ids].detach().clone()
 
@@ -184,21 +189,22 @@ class JODIERNN(nn.Module):
             item_c = self.item_cell_state[item_ids].detach().clone()
             new_user_emb, new_user_c = self.user_cell(user_rnn_input, (user_emb, user_c))
             new_item_emb, new_item_c = self.item_cell(item_rnn_input, (item_emb, item_c))
-            self.user_cell_state[user_ids] = new_user_c.detach()
-            self.item_cell_state[item_ids] = new_item_c.detach()
-
+            if not deferred:
+                self.user_cell_state[user_ids] = new_user_c.detach()
+                self.item_cell_state[item_ids] = new_item_c.detach()
         else:
             new_user_emb = self.user_cell(user_rnn_input, user_emb)
             new_item_emb = self.item_cell(item_rnn_input, item_emb)
+            new_user_c = new_item_c = None
 
         new_user_emb = self._normalize(new_user_emb)
         new_item_emb = self._normalize(new_item_emb)
 
-        self.user_embeddings[user_ids] = new_user_emb.detach()
-        self.item_embeddings[item_ids] = new_item_emb.detach()
-
-        self.user_last_time[user_ids] = timestamps
-        self.item_last_time[item_ids] = timestamps
+        if not deferred:
+            self.user_embeddings[user_ids] = new_user_emb.detach()
+            self.item_embeddings[item_ids] = new_item_emb.detach()
+            self.user_last_time[user_ids] = timestamps
+            self.item_last_time[item_ids] = timestamps
 
         return new_user_emb, new_item_emb
 
@@ -223,7 +229,9 @@ class JODIERNN(nn.Module):
         features: torch.Tensor,
         query_time: float,
         graph_ctx=None,
+        deferred: bool = False,
     ):
         pred_item_emb, _ = self.predict(user_ids, query_time)
-        new_user_emb, new_item_emb = self.process_interaction(user_ids, item_ids, timestamps, features)
+        new_user_emb, new_item_emb = self.process_interaction(
+            user_ids, item_ids, timestamps, features, deferred=deferred)
         return pred_item_emb, new_user_emb, new_item_emb

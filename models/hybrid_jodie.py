@@ -190,12 +190,13 @@ class TemporalEventGNNJODIE(nn.Module):
 
     def forward(
         self,
-        user_ids: torch.Tensor,     # 用户ID张量，形状为 (batch_size,)
-        item_ids: torch.Tensor,     # 商品ID张量，形状为 (batch_size,)
-        timestamps: torch.Tensor,   # 交互时间戳张量，形状为 (batch_size,)
-        features: torch.Tensor,     # 交互特征张量，形状为 (batch_size, feature_dim)
-        query_time: float,          # 查询时间
-        graph_ctx=None,             # 图状态上下文，包含动态图的状态信息
+        user_ids: torch.Tensor,
+        item_ids: torch.Tensor,
+        timestamps: torch.Tensor,
+        features: torch.Tensor,
+        query_time: float,
+        graph_ctx=None,
+        deferred: bool = False,
     ):
         if graph_ctx is None:
             raise ValueError("TemporalEventGNNJODIE requires graph_ctx dynamic state")

@@ -19,7 +19,9 @@ from models.training import (
     evaluate_partition_ranking,
     evaluate_partition_type_recall,
     train_partition_bpr,
+    train_partition_bpr_batch,
     train_partition_ce,
+    train_partition_ce_batch,
 )
 
 try:
@@ -98,30 +100,45 @@ class PartitionShardWorker:
 
             for partition_id in partition_ids:
                 partition = self.partitions[partition_id]
+                batch_training = bool(self.base_config.get("batch_training", False))
+                train_batch_size = int(self.base_config.get("train_batch_size", 32))
                 if use_bpr:
-                    criterion = BPRLoss()
-                    train_partition_bpr(
-                        model=model,
-                        partition=partition,
-                        optimizer=optimizer,
-                        criterion=criterion,
-                        neg_sample_size=config.get("neg_sample_size", 5),
-                        graph_ctx=epoch_graph_state,
-                        seed=payload.seed + epoch * 100000 + partition_id,
-                        progress_every=progress_every,
-                        progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
-                            f"phase=train event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=bpr epoch={epoch + 1}/{epochs}"
-                        ),
-                    )
+                    if batch_training:
+                        train_partition_bpr_batch(
+                            model=model, partition=partition, optimizer=optimizer,
+                            neg_sample_size=config.get("neg_sample_size", 5),
+                            batch_size=train_batch_size,
+                            graph_ctx=epoch_graph_state,
+                            seed=payload.seed + epoch * 100000 + partition_id,
+                        )
+                    else:
+                        criterion = BPRLoss()
+                        train_partition_bpr(
+                            model=model, partition=partition, optimizer=optimizer,
+                            criterion=criterion,
+                            neg_sample_size=config.get("neg_sample_size", 5),
+                            graph_ctx=epoch_graph_state,
+                            seed=payload.seed + epoch * 100000 + partition_id,
+                            progress_every=progress_every,
+                            progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
+                                f"phase=train event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=bpr epoch={epoch + 1}/{epochs}"
+                            ),
+                        )
                 else:
-                    train_partition_ce(
-                        model=model,
-                        partition=partition,
-                        optimizer=optimizer,
-                        graph_ctx=epoch_graph_state,
-                        progress_every=progress_every,
-                        progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
-                            f"phase=train event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=ce epoch={epoch + 1}/{epochs}"
+                    if batch_training:
+                        train_partition_ce_batch(
+                            model=model, partition=partition, optimizer=optimizer,
+                            batch_size=train_batch_size,
+                            graph_ctx=epoch_graph_state,
+                            seed=payload.seed + epoch * 100000 + partition_id,
+                        )
+                    else:
+                        train_partition_ce(
+                            model=model, partition=partition, optimizer=optimizer,
+                            graph_ctx=epoch_graph_state,
+                            progress_every=progress_every,
+                            progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
+                                f"phase=train event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=ce epoch={epoch + 1}/{epochs}"
                         ),
                     )
 
@@ -963,10 +980,33 @@ class RayPipelineExecutor:
         return trial_id
 
     def _drain_pool(self) -> None:
-        """非阻塞地把 pending train/eval 任务调度到空闲 worker。"""
+        """非阻塞地把 pending train/eval 任务调度到空闲 worker。eval 优先于 train。"""
         num_train = len(self._pool_train_groups)
         synthetic_mode = self.base_config.get("dataset", "synthetic") == "synthetic"
+        kw = self._pool_eval_kwargs
+        all_eval_pids = [p.partition_id for g in self._pool_eval_groups for p in g]
 
+        # eval 优先：用任意空闲 worker（eval 时间短，优先完成避免积压）
+        while self._pool_eval_pending[0]:
+            dispatched = False
+            for si in range(num_train):
+                if self._pool_idle[si]:
+                    payload = self._pool_eval_pending[0].popleft()
+                    widx = self._pool_idle[si].popleft()
+                    ref = self._pool_workers[si][widx].run_eval_stage_batch.remote(
+                        payload, all_eval_pids,
+                        item_type=kw["item_type"],
+                        user_type_prefs=kw["user_type_prefs"],
+                        k=kw["k"],
+                        synthetic_mode=synthetic_mode,
+                    )
+                    self._pool_in_flight[ref] = ("eval", payload.trial_id, si, widx)
+                    dispatched = True
+                    break
+            if not dispatched:
+                break  # 没有空闲 worker，等下次
+
+        # train 调度
         for si in range(num_train):
             while self._pool_train_pending[si] and self._pool_idle[si]:
                 payload = self._pool_train_pending[si].popleft()
@@ -975,23 +1015,6 @@ class RayPipelineExecutor:
                 ref = self._pool_workers[si][widx].run_train_stage_batch.remote(
                     payload, pids, use_bpr=synthetic_mode, num_epochs=1)
                 self._pool_in_flight[ref] = ("train", payload.trial_id, si, widx)
-
-        # eval 可以在任意 stage 的 worker 上运行（所有 worker 都已加载 eval partitions）
-        # 优先用最后一个 train stage 的 worker，避免和 stage 0 竞争
-        last_si = len(self._pool_train_groups) - 1
-        kw = self._pool_eval_kwargs
-        while self._pool_eval_pending[0] and self._pool_idle[last_si]:
-            payload = self._pool_eval_pending[0].popleft()
-            widx = self._pool_idle[last_si].popleft()
-            all_eval_pids = [p.partition_id for g in self._pool_eval_groups for p in g]
-            ref = self._pool_workers[last_si][widx].run_eval_stage_batch.remote(
-                payload, all_eval_pids,
-                item_type=kw["item_type"],
-                user_type_prefs=kw["user_type_prefs"],
-                k=kw["k"],
-                synthetic_mode=synthetic_mode,
-            )
-            self._pool_in_flight[ref] = ("eval", payload.trial_id, last_si, widx)
 
     def _submit_eval(self, payload, si: int, widx: int) -> None:
         """在 worker[si][widx] 上提交 eval（所有 worker 都已加载 eval partitions）。"""
@@ -1029,8 +1052,10 @@ class RayPipelineExecutor:
                     self._pool_idle[si].append(widx)
                     self._pool_train_pending[si + 1].append(updated)
                 else:
-                    # 最后一个 train stage：直接在同一个 worker 上提交 eval，不释放 worker
-                    self._submit_eval(updated, si, widx)
+                    # 最后一个 train stage 完成：释放当前 worker，把 payload 放入 eval 队列
+                    # eval 用 stage 0 的 worker（stage 0 worker 数最多，最不容易成为瓶颈）
+                    self._pool_idle[si].append(widx)
+                    self._pool_eval_pending[0].append(updated)
             else:
                 try:
                     stage_result = ray.get(ref)

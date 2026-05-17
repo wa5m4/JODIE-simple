@@ -1,0 +1,327 @@
+# pipeline trace log
+# created_at=2026-05-12 10:45:16
+[pipeline-trace] wall=10:45:25 elapsed=1.133s phase=train event=interaction_progress trial=0 partition=0 processed=1 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:25 elapsed=1.161s phase=train event=interaction_progress trial=1 partition=0 processed=1 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:25 elapsed=1.574s phase=train event=interaction_progress trial=0 partition=0 processed=100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:26 elapsed=1.834s phase=train event=interaction_progress trial=0 partition=0 processed=200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:26 elapsed=1.731s phase=train event=interaction_progress trial=1 partition=0 processed=100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:26 elapsed=2.095s phase=train event=interaction_progress trial=0 partition=0 processed=300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:26 elapsed=2.095s phase=train event=interaction_progress trial=1 partition=0 processed=200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:26 elapsed=2.360s phase=train event=interaction_progress trial=0 partition=0 processed=400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:26 elapsed=2.423s phase=train event=interaction_progress trial=1 partition=0 processed=300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:26 elapsed=2.644s phase=train event=interaction_progress trial=0 partition=0 processed=500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:27 elapsed=2.931s phase=train event=interaction_progress trial=0 partition=0 processed=600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:27 elapsed=2.735s phase=train event=interaction_progress trial=1 partition=0 processed=400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:27 elapsed=3.202s phase=train event=interaction_progress trial=0 partition=0 processed=700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:27 elapsed=3.050s phase=train event=interaction_progress trial=1 partition=0 processed=500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:27 elapsed=3.456s phase=train event=interaction_progress trial=0 partition=0 processed=800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:27 elapsed=3.388s phase=train event=interaction_progress trial=1 partition=0 processed=600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:27 elapsed=3.707s phase=train event=interaction_progress trial=0 partition=0 processed=900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:28 elapsed=3.954s phase=train event=interaction_progress trial=0 partition=0 processed=1000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:28 elapsed=3.758s phase=train event=interaction_progress trial=1 partition=0 processed=700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:28 elapsed=4.212s phase=train event=interaction_progress trial=0 partition=0 processed=1100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:28 elapsed=4.104s phase=train event=interaction_progress trial=1 partition=0 processed=800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:28 elapsed=4.471s phase=train event=interaction_progress trial=0 partition=0 processed=1200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:28 elapsed=4.436s phase=train event=interaction_progress trial=1 partition=0 processed=900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:28 elapsed=4.733s phase=train event=interaction_progress trial=0 partition=0 processed=1300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:29 elapsed=4.761s phase=train event=interaction_progress trial=1 partition=0 processed=1000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:29 elapsed=4.999s phase=train event=interaction_progress trial=0 partition=0 processed=1400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:29 elapsed=5.268s phase=train event=interaction_progress trial=0 partition=0 processed=1500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:29 elapsed=5.084s phase=train event=interaction_progress trial=1 partition=0 processed=1100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:29 elapsed=5.554s phase=train event=interaction_progress trial=0 partition=0 processed=1600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:29 elapsed=5.410s phase=train event=interaction_progress trial=1 partition=0 processed=1200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:30 elapsed=5.828s phase=train event=interaction_progress trial=0 partition=0 processed=1700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:30 elapsed=5.735s phase=train event=interaction_progress trial=1 partition=0 processed=1300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:30 elapsed=6.101s phase=train event=interaction_progress trial=0 partition=0 processed=1800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:30 elapsed=6.076s phase=train event=interaction_progress trial=1 partition=0 processed=1400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:30 elapsed=6.387s phase=train event=interaction_progress trial=0 partition=0 processed=1900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:30 elapsed=6.438s phase=train event=interaction_progress trial=1 partition=0 processed=1500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:30 elapsed=6.662s phase=train event=interaction_progress trial=0 partition=0 processed=2000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:31 elapsed=6.941s phase=train event=interaction_progress trial=0 partition=0 processed=2100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:31 elapsed=6.825s phase=train event=interaction_progress trial=1 partition=0 processed=1600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:31 elapsed=7.186s phase=train event=interaction_progress trial=0 partition=0 processed=2200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:31 elapsed=7.206s phase=train event=interaction_progress trial=1 partition=0 processed=1700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:31 elapsed=7.460s phase=train event=interaction_progress trial=0 partition=0 processed=2300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:31 elapsed=7.744s phase=train event=interaction_progress trial=0 partition=0 processed=2400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:32 elapsed=7.581s phase=train event=interaction_progress trial=1 partition=0 processed=1800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:32 elapsed=8.037s phase=train event=interaction_progress trial=0 partition=0 processed=2500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:32 elapsed=7.979s phase=train event=interaction_progress trial=1 partition=0 processed=1900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:32 elapsed=8.319s phase=train event=interaction_progress trial=0 partition=0 processed=2600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:32 elapsed=8.371s phase=train event=interaction_progress trial=1 partition=0 processed=2000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:32 elapsed=8.595s phase=train event=interaction_progress trial=0 partition=0 processed=2700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:33 elapsed=8.884s phase=train event=interaction_progress trial=0 partition=0 processed=2800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:33 elapsed=8.771s phase=train event=interaction_progress trial=1 partition=0 processed=2100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:33 elapsed=9.169s phase=train event=interaction_progress trial=0 partition=0 processed=2900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:33 elapsed=9.180s phase=train event=interaction_progress trial=1 partition=0 processed=2200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:33 elapsed=9.449s phase=train event=interaction_progress trial=0 partition=0 processed=3000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:33 elapsed=9.725s phase=train event=interaction_progress trial=0 partition=0 processed=3100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:34 elapsed=9.565s phase=train event=interaction_progress trial=1 partition=0 processed=2300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:34 elapsed=10.016s phase=train event=interaction_progress trial=0 partition=0 processed=3200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:34 elapsed=9.961s phase=train event=interaction_progress trial=1 partition=0 processed=2400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:34 elapsed=10.297s phase=train event=interaction_progress trial=0 partition=0 processed=3300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:34 elapsed=10.580s phase=train event=interaction_progress trial=0 partition=0 processed=3400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:34 elapsed=10.368s phase=train event=interaction_progress trial=1 partition=0 processed=2500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:35 elapsed=10.829s phase=train event=interaction_progress trial=0 partition=0 processed=3500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:35 elapsed=10.710s phase=train event=interaction_progress trial=1 partition=0 processed=2600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:35 elapsed=11.056s phase=train event=interaction_progress trial=2 partition=0 processed=1 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:35 elapsed=11.096s phase=train event=interaction_progress trial=1 partition=0 processed=2700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:35 elapsed=11.451s phase=train event=interaction_progress trial=2 partition=0 processed=100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:35 elapsed=11.504s phase=train event=interaction_progress trial=1 partition=0 processed=2800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:35 elapsed=11.732s phase=train event=interaction_progress trial=2 partition=0 processed=200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:36 elapsed=11.991s phase=train event=interaction_progress trial=2 partition=0 processed=300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:36 elapsed=12.195s phase=train event=interaction_progress trial=2 partition=0 processed=400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:36 elapsed=11.999s phase=train event=interaction_progress trial=1 partition=0 processed=2900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:36 elapsed=12.461s phase=train event=interaction_progress trial=2 partition=0 processed=500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:36 elapsed=12.429s phase=train event=interaction_progress trial=1 partition=0 processed=3000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:36 elapsed=12.743s phase=train event=interaction_progress trial=2 partition=0 processed=600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:37 elapsed=13.041s phase=train event=interaction_progress trial=2 partition=0 processed=700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:37 elapsed=12.830s phase=train event=interaction_progress trial=1 partition=0 processed=3100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:37 elapsed=13.323s phase=train event=interaction_progress trial=2 partition=0 processed=800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:37 elapsed=13.210s phase=train event=interaction_progress trial=1 partition=0 processed=3200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:37 elapsed=13.600s phase=train event=interaction_progress trial=2 partition=0 processed=900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:38 elapsed=13.568s phase=train event=interaction_progress trial=1 partition=0 processed=3300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:38 elapsed=13.889s phase=train event=interaction_progress trial=2 partition=0 processed=1000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:38 elapsed=14.004s phase=train event=interaction_progress trial=1 partition=0 processed=3400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:38 elapsed=14.243s phase=train event=interaction_progress trial=2 partition=0 processed=1100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:38 elapsed=14.531s phase=train event=interaction_progress trial=2 partition=0 processed=1200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:38 elapsed=14.466s phase=train event=interaction_progress trial=1 partition=0 processed=3500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:38 elapsed=14.527s phase=train event=interaction_progress trial=3 partition=0 processed=1 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:39 elapsed=14.816s phase=train event=interaction_progress trial=2 partition=0 processed=1300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:39 elapsed=15.077s phase=train event=interaction_progress trial=2 partition=0 processed=1400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:39 elapsed=14.949s phase=train event=interaction_progress trial=3 partition=0 processed=100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:39 elapsed=15.350s phase=train event=interaction_progress trial=2 partition=0 processed=1500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:39 elapsed=15.310s phase=train event=interaction_progress trial=3 partition=0 processed=200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:39 elapsed=15.603s phase=train event=interaction_progress trial=2 partition=0 processed=1600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:40 elapsed=15.880s phase=train event=interaction_progress trial=2 partition=0 processed=1700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:40 elapsed=15.721s phase=train event=interaction_progress trial=3 partition=0 processed=300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:40 elapsed=16.152s phase=train event=interaction_progress trial=2 partition=0 processed=1800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:40 elapsed=16.177s phase=train event=interaction_progress trial=3 partition=0 processed=400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:40 elapsed=16.414s phase=train event=interaction_progress trial=2 partition=0 processed=1900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:40 elapsed=16.686s phase=train event=interaction_progress trial=2 partition=0 processed=2000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:41 elapsed=16.696s phase=train event=interaction_progress trial=3 partition=0 processed=500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:41 elapsed=16.969s phase=train event=interaction_progress trial=2 partition=0 processed=2100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:41 elapsed=17.232s phase=train event=interaction_progress trial=2 partition=0 processed=2200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:41 elapsed=17.176s phase=train event=interaction_progress trial=3 partition=0 processed=600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:41 elapsed=17.495s phase=train event=interaction_progress trial=2 partition=0 processed=2300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:41 elapsed=17.763s phase=train event=interaction_progress trial=2 partition=0 processed=2400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:42 elapsed=17.701s phase=train event=interaction_progress trial=3 partition=0 processed=700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:42 elapsed=18.045s phase=train event=interaction_progress trial=2 partition=0 processed=2500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:42 elapsed=18.328s phase=train event=interaction_progress trial=2 partition=0 processed=2600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:42 elapsed=18.135s phase=train event=interaction_progress trial=3 partition=0 processed=800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:42 elapsed=18.582s phase=train event=interaction_progress trial=2 partition=0 processed=2700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:43 elapsed=18.622s phase=train event=interaction_progress trial=3 partition=0 processed=900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:43 elapsed=18.844s phase=train event=interaction_progress trial=2 partition=0 processed=2800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:43 elapsed=19.127s phase=train event=interaction_progress trial=2 partition=0 processed=2900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:43 elapsed=19.124s phase=train event=interaction_progress trial=3 partition=0 processed=1000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:43 elapsed=19.397s phase=train event=interaction_progress trial=2 partition=0 processed=3000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:43 elapsed=19.673s phase=train event=interaction_progress trial=2 partition=0 processed=3100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:44 elapsed=19.647s phase=train event=interaction_progress trial=3 partition=0 processed=1100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:44 elapsed=19.928s phase=train event=interaction_progress trial=2 partition=0 processed=3200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:44 elapsed=20.204s phase=train event=interaction_progress trial=2 partition=0 processed=3300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:44 elapsed=20.171s phase=train event=interaction_progress trial=3 partition=0 processed=1200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:44 elapsed=20.474s phase=train event=interaction_progress trial=2 partition=0 processed=3400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:44 elapsed=20.750s phase=train event=interaction_progress trial=2 partition=0 processed=3500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:45 elapsed=20.810s phase=eval event=batch_start trial=0 partitions=[1] synthetic=False
+[pipeline-trace] wall=10:45:45 elapsed=20.810s phase=eval event=partition_start trial=0 partition=1 interactions=499
+[pipeline-trace] wall=10:45:45 elapsed=20.810s phase=eval event=interaction_progress trial=0 partition=1 processed=1 total=499 metric=ranking
+[pipeline-trace] wall=10:45:45 elapsed=20.699s phase=train event=interaction_progress trial=3 partition=0 processed=1300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:45 elapsed=21.017s phase=eval event=interaction_progress trial=0 partition=1 processed=100 total=499 metric=ranking
+[pipeline-trace] wall=10:45:45 elapsed=21.150s phase=eval event=interaction_progress trial=0 partition=1 processed=200 total=499 metric=ranking
+[pipeline-trace] wall=10:45:45 elapsed=21.293s phase=eval event=interaction_progress trial=0 partition=1 processed=300 total=499 metric=ranking
+[pipeline-trace] wall=10:45:45 elapsed=21.440s phase=eval event=interaction_progress trial=0 partition=1 processed=400 total=499 metric=ranking
+[pipeline-trace] wall=10:45:45 elapsed=21.257s phase=train event=interaction_progress trial=3 partition=0 processed=1400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:45 elapsed=21.570s phase=eval event=interaction_progress trial=0 partition=1 processed=499 total=499 metric=ranking
+[pipeline-trace] wall=10:45:45 elapsed=21.572s phase=eval event=partition_complete trial=0 partition=1 elapsed_sec=0.762 hits=424 total=499
+[pipeline-trace] wall=10:45:45 elapsed=21.615s phase=eval event=batch_start trial=1 partitions=[1] synthetic=False
+[pipeline-trace] wall=10:45:45 elapsed=21.615s phase=eval event=partition_start trial=1 partition=1 interactions=499
+[pipeline-trace] wall=10:45:45 elapsed=21.615s phase=eval event=interaction_progress trial=1 partition=1 processed=1 total=499 metric=ranking
+[pipeline-trace] wall=10:45:46 elapsed=21.767s phase=eval event=interaction_progress trial=1 partition=1 processed=100 total=499 metric=ranking
+[pipeline-trace] wall=10:45:46 elapsed=21.665s phase=train event=interaction_progress trial=3 partition=0 processed=1500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:46 elapsed=21.920s phase=eval event=interaction_progress trial=1 partition=1 processed=200 total=499 metric=ranking
+[pipeline-trace] wall=10:45:46 elapsed=22.072s phase=eval event=interaction_progress trial=1 partition=1 processed=300 total=499 metric=ranking
+[pipeline-trace] wall=10:45:46 elapsed=22.201s phase=eval event=interaction_progress trial=1 partition=1 processed=400 total=499 metric=ranking
+[pipeline-trace] wall=10:45:46 elapsed=22.093s phase=train event=interaction_progress trial=3 partition=0 processed=1600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:46 elapsed=22.323s phase=eval event=interaction_progress trial=1 partition=1 processed=499 total=499 metric=ranking
+[pipeline-trace] wall=10:45:46 elapsed=22.325s phase=eval event=partition_complete trial=1 partition=1 elapsed_sec=0.709 hits=402 total=499
+[pipeline-trace] wall=10:45:46 elapsed=22.374s phase=eval event=batch_start trial=2 partitions=[1] synthetic=False
+[pipeline-trace] wall=10:45:46 elapsed=22.374s phase=eval event=partition_start trial=2 partition=1 interactions=499
+[pipeline-trace] wall=10:45:46 elapsed=22.374s phase=eval event=interaction_progress trial=2 partition=1 processed=1 total=499 metric=ranking
+[pipeline-trace] wall=10:45:46 elapsed=22.476s phase=eval event=interaction_progress trial=2 partition=1 processed=100 total=499 metric=ranking
+[pipeline-trace] wall=10:45:46 elapsed=22.578s phase=eval event=interaction_progress trial=2 partition=1 processed=200 total=499 metric=ranking
+[pipeline-trace] wall=10:45:46 elapsed=22.680s phase=eval event=interaction_progress trial=2 partition=1 processed=300 total=499 metric=ranking
+[pipeline-trace] wall=10:45:46 elapsed=22.538s phase=train event=interaction_progress trial=3 partition=0 processed=1700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:47 elapsed=22.782s phase=eval event=interaction_progress trial=2 partition=1 processed=400 total=499 metric=ranking
+[pipeline-trace] wall=10:45:47 elapsed=22.884s phase=eval event=interaction_progress trial=2 partition=1 processed=499 total=499 metric=ranking
+[pipeline-trace] wall=10:45:47 elapsed=22.885s phase=eval event=partition_complete trial=2 partition=1 elapsed_sec=0.511 hits=407 total=499
+[pipeline-trace] wall=10:45:47 elapsed=22.942s phase=train event=interaction_progress trial=4 partition=0 processed=1 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:47 elapsed=22.994s phase=train event=interaction_progress trial=3 partition=0 processed=1800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:47 elapsed=23.213s phase=train event=interaction_progress trial=4 partition=0 processed=100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:47 elapsed=23.465s phase=train event=interaction_progress trial=4 partition=0 processed=200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:47 elapsed=23.349s phase=train event=interaction_progress trial=3 partition=0 processed=1900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:47 elapsed=23.759s phase=train event=interaction_progress trial=4 partition=0 processed=300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:48 elapsed=23.777s phase=train event=interaction_progress trial=3 partition=0 processed=2000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:48 elapsed=24.046s phase=train event=interaction_progress trial=4 partition=0 processed=400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:48 elapsed=24.341s phase=train event=interaction_progress trial=4 partition=0 processed=500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:48 elapsed=24.215s phase=train event=interaction_progress trial=3 partition=0 processed=2100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:48 elapsed=24.639s phase=train event=interaction_progress trial=4 partition=0 processed=600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:49 elapsed=24.634s phase=train event=interaction_progress trial=3 partition=0 processed=2200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:49 elapsed=24.941s phase=train event=interaction_progress trial=4 partition=0 processed=700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:49 elapsed=25.240s phase=train event=interaction_progress trial=4 partition=0 processed=800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:49 elapsed=25.055s phase=train event=interaction_progress trial=3 partition=0 processed=2300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:49 elapsed=25.515s phase=train event=interaction_progress trial=4 partition=0 processed=900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:49 elapsed=25.484s phase=train event=interaction_progress trial=3 partition=0 processed=2400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:50 elapsed=25.797s phase=train event=interaction_progress trial=4 partition=0 processed=1000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:50 elapsed=26.090s phase=train event=interaction_progress trial=4 partition=0 processed=1100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:50 elapsed=25.922s phase=train event=interaction_progress trial=3 partition=0 processed=2500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:50 elapsed=26.379s phase=train event=interaction_progress trial=4 partition=0 processed=1200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:50 elapsed=26.363s phase=train event=interaction_progress trial=3 partition=0 processed=2600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:50 elapsed=26.681s phase=train event=interaction_progress trial=4 partition=0 processed=1300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:51 elapsed=26.986s phase=train event=interaction_progress trial=4 partition=0 processed=1400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:51 elapsed=26.818s phase=train event=interaction_progress trial=3 partition=0 processed=2700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:51 elapsed=27.283s phase=train event=interaction_progress trial=4 partition=0 processed=1500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:51 elapsed=27.238s phase=train event=interaction_progress trial=3 partition=0 processed=2800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:51 elapsed=27.563s phase=train event=interaction_progress trial=4 partition=0 processed=1600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:52 elapsed=27.860s phase=train event=interaction_progress trial=4 partition=0 processed=1700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:52 elapsed=27.652s phase=train event=interaction_progress trial=3 partition=0 processed=2900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:52 elapsed=28.162s phase=train event=interaction_progress trial=4 partition=0 processed=1800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:52 elapsed=28.076s phase=train event=interaction_progress trial=3 partition=0 processed=3000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:52 elapsed=28.457s phase=train event=interaction_progress trial=4 partition=0 processed=1900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:52 elapsed=28.504s phase=train event=interaction_progress trial=3 partition=0 processed=3100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:52 elapsed=28.759s phase=train event=interaction_progress trial=4 partition=0 processed=2000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:53 elapsed=29.061s phase=train event=interaction_progress trial=4 partition=0 processed=2100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:53 elapsed=28.935s phase=train event=interaction_progress trial=3 partition=0 processed=3200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:53 elapsed=29.360s phase=train event=interaction_progress trial=4 partition=0 processed=2200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:53 elapsed=29.348s phase=train event=interaction_progress trial=3 partition=0 processed=3300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:53 elapsed=29.659s phase=train event=interaction_progress trial=4 partition=0 processed=2300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:54 elapsed=29.968s phase=train event=interaction_progress trial=4 partition=0 processed=2400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:54 elapsed=29.782s phase=train event=interaction_progress trial=3 partition=0 processed=3400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:54 elapsed=30.269s phase=train event=interaction_progress trial=4 partition=0 processed=2500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:54 elapsed=30.216s phase=train event=interaction_progress trial=3 partition=0 processed=3500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:54 elapsed=30.282s phase=eval event=batch_start trial=3 partitions=[1] synthetic=False
+[pipeline-trace] wall=10:45:54 elapsed=30.282s phase=eval event=partition_start trial=3 partition=1 interactions=499
+[pipeline-trace] wall=10:45:54 elapsed=30.282s phase=eval event=interaction_progress trial=3 partition=1 processed=1 total=499 metric=ranking
+[pipeline-trace] wall=10:45:54 elapsed=30.570s phase=train event=interaction_progress trial=4 partition=0 processed=2600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:54 elapsed=30.474s phase=eval event=interaction_progress trial=3 partition=1 processed=100 total=499 metric=ranking
+[pipeline-trace] wall=10:45:55 elapsed=30.637s phase=eval event=interaction_progress trial=3 partition=1 processed=200 total=499 metric=ranking
+[pipeline-trace] wall=10:45:55 elapsed=30.878s phase=train event=interaction_progress trial=4 partition=0 processed=2700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:55 elapsed=30.800s phase=eval event=interaction_progress trial=3 partition=1 processed=300 total=499 metric=ranking
+[pipeline-trace] wall=10:45:55 elapsed=30.963s phase=eval event=interaction_progress trial=3 partition=1 processed=400 total=499 metric=ranking
+[pipeline-trace] wall=10:45:55 elapsed=31.187s phase=train event=interaction_progress trial=4 partition=0 processed=2800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:55 elapsed=31.123s phase=eval event=interaction_progress trial=3 partition=1 processed=499 total=499 metric=ranking
+[pipeline-trace] wall=10:45:55 elapsed=31.125s phase=eval event=partition_complete trial=3 partition=1 elapsed_sec=0.843 hits=407 total=499
+[pipeline-trace] wall=10:45:55 elapsed=31.187s phase=train event=interaction_progress trial=5 partition=0 processed=1 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:55 elapsed=31.486s phase=train event=interaction_progress trial=4 partition=0 processed=2900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:55 elapsed=31.511s phase=train event=interaction_progress trial=5 partition=0 processed=100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:56 elapsed=31.792s phase=train event=interaction_progress trial=4 partition=0 processed=3000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:56 elapsed=31.829s phase=train event=interaction_progress trial=5 partition=0 processed=200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:56 elapsed=32.092s phase=train event=interaction_progress trial=4 partition=0 processed=3100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:56 elapsed=32.160s phase=train event=interaction_progress trial=5 partition=0 processed=300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:56 elapsed=32.400s phase=train event=interaction_progress trial=4 partition=0 processed=3200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:56 elapsed=32.703s phase=train event=interaction_progress trial=4 partition=0 processed=3300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:56 elapsed=32.496s phase=train event=interaction_progress trial=5 partition=0 processed=400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:57 elapsed=33.008s phase=train event=interaction_progress trial=4 partition=0 processed=3400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:57 elapsed=32.840s phase=train event=interaction_progress trial=5 partition=0 processed=500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:57 elapsed=33.313s phase=train event=interaction_progress trial=4 partition=0 processed=3500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:57 elapsed=33.370s phase=eval event=batch_start trial=4 partitions=[1] synthetic=False
+[pipeline-trace] wall=10:45:57 elapsed=33.370s phase=eval event=partition_start trial=4 partition=1 interactions=499
+[pipeline-trace] wall=10:45:57 elapsed=33.370s phase=eval event=interaction_progress trial=4 partition=1 processed=1 total=499 metric=ranking
+[pipeline-trace] wall=10:45:57 elapsed=33.182s phase=train event=interaction_progress trial=5 partition=0 processed=600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:57 elapsed=33.537s phase=eval event=interaction_progress trial=4 partition=1 processed=100 total=499 metric=ranking
+[pipeline-trace] wall=10:45:57 elapsed=33.681s phase=eval event=interaction_progress trial=4 partition=1 processed=200 total=499 metric=ranking
+[pipeline-trace] wall=10:45:57 elapsed=33.541s phase=train event=interaction_progress trial=5 partition=0 processed=700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:58 elapsed=33.825s phase=eval event=interaction_progress trial=4 partition=1 processed=300 total=499 metric=ranking
+[pipeline-trace] wall=10:45:58 elapsed=33.971s phase=eval event=interaction_progress trial=4 partition=1 processed=400 total=499 metric=ranking
+[pipeline-trace] wall=10:45:58 elapsed=33.877s phase=train event=interaction_progress trial=5 partition=0 processed=800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:58 elapsed=34.116s phase=eval event=interaction_progress trial=4 partition=1 processed=499 total=499 metric=ranking
+[pipeline-trace] wall=10:45:58 elapsed=34.118s phase=eval event=partition_complete trial=4 partition=1 elapsed_sec=0.748 hits=323 total=499
+[pipeline-trace] wall=10:45:58 elapsed=34.223s phase=train event=interaction_progress trial=5 partition=0 processed=900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:59 elapsed=34.567s phase=train event=interaction_progress trial=5 partition=0 processed=1000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:59 elapsed=34.885s phase=train event=interaction_progress trial=5 partition=0 processed=1100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:45:59 elapsed=35.229s phase=train event=interaction_progress trial=5 partition=0 processed=1200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:00 elapsed=35.606s phase=train event=interaction_progress trial=5 partition=0 processed=1300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:00 elapsed=35.933s phase=train event=interaction_progress trial=5 partition=0 processed=1400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:00 elapsed=36.274s phase=train event=interaction_progress trial=5 partition=0 processed=1500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:01 elapsed=36.692s phase=train event=interaction_progress trial=5 partition=0 processed=1600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:01 elapsed=37.115s phase=train event=interaction_progress trial=5 partition=0 processed=1700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:01 elapsed=37.504s phase=train event=interaction_progress trial=5 partition=0 processed=1800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:02 elapsed=37.830s phase=train event=interaction_progress trial=5 partition=0 processed=1900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:02 elapsed=38.194s phase=train event=interaction_progress trial=5 partition=0 processed=2000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:03 elapsed=38.608s phase=train event=interaction_progress trial=5 partition=0 processed=2100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:03 elapsed=39.025s phase=train event=interaction_progress trial=5 partition=0 processed=2200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:03 elapsed=39.443s phase=train event=interaction_progress trial=5 partition=0 processed=2300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:04 elapsed=39.858s phase=train event=interaction_progress trial=5 partition=0 processed=2400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:04 elapsed=40.250s phase=train event=interaction_progress trial=5 partition=0 processed=2500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:05 elapsed=40.615s phase=train event=interaction_progress trial=5 partition=0 processed=2600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:05 elapsed=41.035s phase=train event=interaction_progress trial=5 partition=0 processed=2700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:05 elapsed=41.451s phase=train event=interaction_progress trial=5 partition=0 processed=2800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:06 elapsed=41.889s phase=train event=interaction_progress trial=5 partition=0 processed=2900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:06 elapsed=42.316s phase=train event=interaction_progress trial=5 partition=0 processed=3000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:07 elapsed=42.753s phase=train event=interaction_progress trial=5 partition=0 processed=3100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:07 elapsed=43.196s phase=train event=interaction_progress trial=5 partition=0 processed=3200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:08 elapsed=43.636s phase=train event=interaction_progress trial=5 partition=0 processed=3300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:08 elapsed=44.078s phase=train event=interaction_progress trial=5 partition=0 processed=3400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:08 elapsed=44.512s phase=train event=interaction_progress trial=5 partition=0 processed=3500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:09 elapsed=44.765s phase=eval event=batch_start trial=5 partitions=[1] synthetic=False
+[pipeline-trace] wall=10:46:09 elapsed=44.765s phase=eval event=partition_start trial=5 partition=1 interactions=499
+[pipeline-trace] wall=10:46:09 elapsed=44.766s phase=eval event=interaction_progress trial=5 partition=1 processed=1 total=499 metric=ranking
+[pipeline-trace] wall=10:46:09 elapsed=44.914s phase=eval event=interaction_progress trial=5 partition=1 processed=100 total=499 metric=ranking
+[pipeline-trace] wall=10:46:09 elapsed=45.047s phase=eval event=interaction_progress trial=5 partition=1 processed=200 total=499 metric=ranking
+[pipeline-trace] wall=10:46:09 elapsed=45.180s phase=eval event=interaction_progress trial=5 partition=1 processed=300 total=499 metric=ranking
+[pipeline-trace] wall=10:46:09 elapsed=45.314s phase=eval event=interaction_progress trial=5 partition=1 processed=400 total=499 metric=ranking
+[pipeline-trace] wall=10:46:09 elapsed=45.445s phase=eval event=interaction_progress trial=5 partition=1 processed=499 total=499 metric=ranking
+[pipeline-trace] wall=10:46:09 elapsed=45.447s phase=eval event=partition_complete trial=5 partition=1 elapsed_sec=0.681 hits=343 total=499
+[pipeline-trace] wall=10:46:10 elapsed=51.551s phase=train event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=10:46:14 elapsed=1.327s phase=train event=interaction_progress trial=0 partition=0 processed=1 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:15 elapsed=2.155s phase=train event=interaction_progress trial=0 partition=0 processed=100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:16 elapsed=2.671s phase=train event=interaction_progress trial=0 partition=0 processed=200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:16 elapsed=3.179s phase=train event=interaction_progress trial=0 partition=0 processed=300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:17 elapsed=3.686s phase=train event=interaction_progress trial=0 partition=0 processed=400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:17 elapsed=4.189s phase=train event=interaction_progress trial=0 partition=0 processed=500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:18 elapsed=4.692s phase=train event=interaction_progress trial=0 partition=0 processed=600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:18 elapsed=5.195s phase=train event=interaction_progress trial=0 partition=0 processed=700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:19 elapsed=5.703s phase=train event=interaction_progress trial=0 partition=0 processed=800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:19 elapsed=6.217s phase=train event=interaction_progress trial=0 partition=0 processed=900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:20 elapsed=6.729s phase=train event=interaction_progress trial=0 partition=0 processed=1000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:20 elapsed=7.245s phase=train event=interaction_progress trial=0 partition=0 processed=1100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:21 elapsed=7.819s phase=train event=interaction_progress trial=0 partition=0 processed=1200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:21 elapsed=8.320s phase=train event=interaction_progress trial=0 partition=0 processed=1300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:22 elapsed=8.733s phase=train event=interaction_progress trial=0 partition=0 processed=1400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:22 elapsed=9.181s phase=train event=interaction_progress trial=0 partition=0 processed=1500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:23 elapsed=9.693s phase=train event=interaction_progress trial=0 partition=0 processed=1600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:23 elapsed=10.197s phase=train event=interaction_progress trial=0 partition=0 processed=1700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:24 elapsed=10.698s phase=train event=interaction_progress trial=0 partition=0 processed=1800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:24 elapsed=11.042s phase=train event=interaction_progress trial=0 partition=0 processed=1900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:24 elapsed=11.486s phase=train event=interaction_progress trial=0 partition=0 processed=2000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:25 elapsed=12.006s phase=train event=interaction_progress trial=0 partition=0 processed=2100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:26 elapsed=12.516s phase=train event=interaction_progress trial=0 partition=0 processed=2200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:26 elapsed=13.026s phase=train event=interaction_progress trial=0 partition=0 processed=2300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:27 elapsed=13.545s phase=train event=interaction_progress trial=0 partition=0 processed=2400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:27 elapsed=14.073s phase=train event=interaction_progress trial=0 partition=0 processed=2500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:28 elapsed=14.522s phase=train event=interaction_progress trial=0 partition=0 processed=2600 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:28 elapsed=14.960s phase=train event=interaction_progress trial=0 partition=0 processed=2700 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:28 elapsed=15.388s phase=train event=interaction_progress trial=0 partition=0 processed=2800 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:29 elapsed=15.819s phase=train event=interaction_progress trial=0 partition=0 processed=2900 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:29 elapsed=16.253s phase=train event=interaction_progress trial=0 partition=0 processed=3000 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:30 elapsed=16.676s phase=train event=interaction_progress trial=0 partition=0 processed=3100 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:30 elapsed=17.055s phase=train event=interaction_progress trial=0 partition=0 processed=3200 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:31 elapsed=17.530s phase=train event=interaction_progress trial=0 partition=0 processed=3300 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:31 elapsed=17.903s phase=train event=interaction_progress trial=0 partition=0 processed=3400 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:31 elapsed=18.321s phase=train event=interaction_progress trial=0 partition=0 processed=3500 total=3500 metric=ce epoch=1/1
+[pipeline-trace] wall=10:46:31 elapsed=73.019s phase=train event=complete trial=0 stage=1/2 stage_duration_sec=21.468
+[pipeline-trace] wall=10:46:31 elapsed=73.019s phase=eval event=dispatch trial=0 stage=1/2
+[pipeline-trace] wall=10:46:32 elapsed=18.530s phase=eval event=batch_start trial=0 partitions=[2] synthetic=False
+[pipeline-trace] wall=10:46:32 elapsed=18.530s phase=eval event=partition_start trial=0 partition=2 interactions=1001
+[pipeline-trace] wall=10:46:32 elapsed=18.530s phase=eval event=interaction_progress trial=0 partition=2 processed=1 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:32 elapsed=18.949s phase=eval event=interaction_progress trial=0 partition=2 processed=100 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:32 elapsed=19.136s phase=eval event=interaction_progress trial=0 partition=2 processed=200 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:33 elapsed=19.299s phase=eval event=interaction_progress trial=0 partition=2 processed=300 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:33 elapsed=19.463s phase=eval event=interaction_progress trial=0 partition=2 processed=400 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:33 elapsed=19.628s phase=eval event=interaction_progress trial=0 partition=2 processed=500 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:33 elapsed=19.792s phase=eval event=interaction_progress trial=0 partition=2 processed=600 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:33 elapsed=19.956s phase=eval event=interaction_progress trial=0 partition=2 processed=700 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:33 elapsed=20.120s phase=eval event=interaction_progress trial=0 partition=2 processed=800 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:34 elapsed=20.291s phase=eval event=interaction_progress trial=0 partition=2 processed=900 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:34 elapsed=20.454s phase=eval event=interaction_progress trial=0 partition=2 processed=1000 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:34 elapsed=20.456s phase=eval event=interaction_progress trial=0 partition=2 processed=1001 total=1001 metric=ranking
+[pipeline-trace] wall=10:46:34 elapsed=20.458s phase=eval event=partition_complete trial=0 partition=2 elapsed_sec=1.928 hits=784 total=1001
+[pipeline-trace] wall=10:46:34 elapsed=75.396s phase=eval event=complete trial=0 stage=1/2 stage_duration_sec=2.377

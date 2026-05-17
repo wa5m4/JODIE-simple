@@ -61,6 +61,18 @@ class RLGraphNASController:
         arch = sanitize_config(arch)
         return arch, logprob
 
+    def compute_logprob(self, arch_config: Dict) -> torch.Tensor:
+        """用当前 logits 重新计算给定架构的 logprob（off-policy 更新用）。"""
+        logprob = torch.tensor(0.0)
+        for k in self.keys:
+            v = arch_config.get(k)
+            if v not in self.search_space[k]:
+                continue
+            idx = self.search_space[k].index(v)
+            dist = torch.distributions.Categorical(logits=self.logits[k])
+            logprob = logprob + dist.log_prob(torch.tensor(idx))
+        return logprob
+
     def sample_arch_batch(self, batch_size: int) -> List[Dict]:
         return [self.sample_arch() for _ in range(batch_size)]
 

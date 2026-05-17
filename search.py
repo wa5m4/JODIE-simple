@@ -129,6 +129,8 @@ def parse_args():
     parser.add_argument("--gpu-list", type=str, default="0,1,2", help="Available GPU list for ray_pipeline mode (e.g. '0,1,2'). Used for auto-allocation.")
     parser.add_argument("--enable-auto-pipeline-config", action="store_true", help="Enable automatic pipeline configuration (stages, workers, partitions) based on GPU count and data size.")
     parser.add_argument("--pipeline-mode", type=str, default="naive", choices=["naive", "smart"], help="naive: sync batch mode; smart: async controller+pipeline with optimal allocation.")
+    parser.add_argument("--batch-training", action="store_true", help="Use TGN-style batch training (approximate temporal dependency, faster).")
+    parser.add_argument("--train-batch-size", type=int, default=32, help="Batch size for batch training mode.")
     return parser.parse_args()
 
 
@@ -233,6 +235,8 @@ def main():
         "gpu_list": args.gpu_list,
         "enable_auto_pipeline_config": args.enable_auto_pipeline_config,
         "pipeline_mode": args.pipeline_mode,
+        "batch_training": args.batch_training,
+        "train_batch_size": args.train_batch_size,
     }
 
     trainer = GraphNASTrainer(base_config)
