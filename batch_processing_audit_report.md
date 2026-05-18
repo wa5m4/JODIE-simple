@@ -624,3 +624,62 @@ if total_interactions > unique_users + unique_items:
 ---
 
 **报告生成完成。建议优先实施方案A（标准t-Batch），恢复准确率后再考虑性能优化。**
+
+---
+
+## 修复记录（2026-05-18）
+
+### 已完成修复
+
+**修复文件：** `models/training.py`
+
+#### 1. 新增 `_create_t_batches` 函数（第402行前）
+
+贪心切分算法，保证每个 batch 内 user 和 item 均不重复：
+
+```python
+def _create_t_batches(interactions, batch_size):
+    # 遇到重复节点或超出 batch_size 则开启新 batch
+    # 500条交互 → 50个 t-Batch（平均10条/batch）
+```
+
+#### 2. 重写 `train_partition_bpr_batch`（原402-527行）
+
+| 删除的错误逻辑 | 替换为 |
+|---|---|
+| `last_interaction` 筛选（丢弃中间交互） | 逐条 `model(uid, iid, t, f, ts)` forward |
+| `deferred=True` + `node_updates` 字典 | 直接使用 forward 返回的 `pred_emb` |
+| 阶段4延迟写回 | 无需写回（forward 已立即更新状态） |
+| `model.predict()` 读取旧 embedding | 使用 forward 返回的新 embedding |
+
+新逻辑：对每个 t-Batch，逐条 forward → 累积 loss → 统一 `backward` + `optimizer.step()`。
+
+#### 3. 同步重写 `train_partition_ce_batch`（原530-635行）
+
+与 BPR 版本相同的修复策略，CE/L2 loss 版本。
+
+#### 4. 同步修复 device 不一致 bug（`models/training.py`）
+
+所有 `_item_embeddings_for_loss()` 和 `_all_item_embeddings()` 调用处均添加 `.to(device)`，修复 `cuda:0 vs cpu` 的 RuntimeError。
+
+### 验证结果
+
+运行 `python -m models.training`，三项检查全部通过：
+
+```
+[验证1] t-Batch 节点唯一性: 50 batches, violations=0
+[验证2] 覆盖率: 500/500 交互全部覆盖
+[验证3] 相同参数下 forward 最大差异: 0.00e+00
+
+ALL CHECKS PASSED — t-Batch 实现正确
+```
+
+### 当前状态
+
+- ✅ 方案A（标准 t-Batch）已实施
+- ✅ 三个原始 bug 全部修复
+- ✅ 验证通过，forward 输出与逐条训练完全一致
+- ⚠️ 训练 loss 数值与逐条训练有 ~6% 差异（正常，原因：t-Batch 每批才 step 一次，梯度更新频率不同，属于方法本身的合理差异）
+
+
+**********************************************************************************************************************************
