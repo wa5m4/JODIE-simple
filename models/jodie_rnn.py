@@ -149,10 +149,12 @@ class JODIERNN(nn.Module):
         timestamps: torch.Tensor,
         features: torch.Tensor,
         deferred: bool = False,
+        return_cell_state: bool = False,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         deferred=False（默认，JODIE 严格逐条）：立刻写回嵌入缓冲区
         deferred=True（TGN 批处理）：不写回，由调用方统一写回
+        return_cell_state=True：返回 (new_user_emb, new_item_emb, new_user_c, new_item_c)
         """
         user_emb = self.user_embeddings[user_ids].detach().clone()
         item_emb = self.item_embeddings[item_ids].detach().clone()
@@ -206,6 +208,8 @@ class JODIERNN(nn.Module):
             self.user_last_time[user_ids] = timestamps
             self.item_last_time[item_ids] = timestamps
 
+        if return_cell_state and self.cell_type == "lstm":
+            return new_user_emb, new_item_emb, new_user_c, new_item_c
         return new_user_emb, new_item_emb
 
     def predict(self, user_ids: torch.Tensor, query_time: float) -> Tuple[torch.Tensor, torch.Tensor]:

@@ -82,26 +82,122 @@ class _DataParallelWorker:
         rng = np.random.default_rng(None)
         total_loss = 0.0
 
-        # Accumulate gradients across all interactions without stepping
-        for interaction in interactions:
-            uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
-            iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
-            t   = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
-            f   = interaction.features.unsqueeze(0).to(device)
+        # 检查是否使用批处理
+        batch_training = bool(config.get("batch_training", False))
+        batch_size = int(config.get("train_batch_size", 32))
 
-            neg_items = []
-            while len(neg_items) < neg_sample_size:
-                neg = int(rng.integers(0, num_items))
-                if neg != interaction.item_id:
-                    neg_items.append(neg)
-            neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
+        if batch_training:
+            # 检查模型是否支持process_interaction
+            has_process_interaction = hasattr(model, 'process_interaction')
 
-            pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
-            pos_emb = _item_embeddings_for_loss(model, iid).detach().to(device)
-            neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().to(device).unsqueeze(0)
-            loss = criterion(pred_emb, pos_emb, neg_emb)
-            loss.backward(retain_graph=True)
-            total_loss += loss.item()
+            if not has_process_interaction:
+                # 模型不支持批处理，回退到逐交互训练
+                for interaction in interactions:
+                    uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+                    iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+                    t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
+                    f = interaction.features.unsqueeze(0).to(device)
+
+                    neg_items = []
+                    while len(neg_items) < neg_sample_size:
+                        neg = int(rng.integers(0, num_items))
+                        if neg != interaction.item_id:
+                            neg_items.append(neg)
+                    neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
+
+                    pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
+                    pos_emb = _item_embeddings_for_loss(model, iid).detach().to(device)
+                    neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().to(device).unsqueeze(0)
+                    loss = criterion(pred_emb, pos_emb, neg_emb)
+                    loss.backward(retain_graph=True)
+                    total_loss += loss.item()
+            else:
+                # TGN风格节点聚合批处理
+                from collections import defaultdict
+                has_lstm = hasattr(model, 'cell_type') and model.cell_type == 'lstm'
+
+                for batch_start in range(0, len(interactions), batch_size):
+                    batch = interactions[batch_start: batch_start + batch_size]
+
+                    # 收集batch内每个节点的交互
+                    user_interactions = defaultdict(list)
+                    for interaction in batch:
+                        user_interactions[interaction.user_id].append(interaction)
+
+                    # 聚合并更新节点状态
+                    node_updates = {}
+                    for uid, user_batch in user_interactions.items():
+                        user_batch_sorted = sorted(user_batch, key=lambda x: x.timestamp)
+                        last_interaction = user_batch_sorted[-1]
+
+                        uid_t = torch.tensor([uid], dtype=torch.long, device=device)
+                        iid_t = torch.tensor([last_interaction.item_id], dtype=torch.long, device=device)
+                        t = torch.tensor([last_interaction.timestamp], dtype=torch.float32, device=device)
+                        f = last_interaction.features.unsqueeze(0).to(device)
+
+                        if has_lstm:
+                            result = model.process_interaction(uid_t, iid_t, t, f, deferred=True, return_cell_state=True)
+                            new_user_emb, new_item_emb, new_user_c, new_item_c = result
+                            node_updates[('user', uid)] = (new_user_emb, last_interaction.timestamp, new_user_c)
+                            node_updates[('item', last_interaction.item_id)] = (new_item_emb, last_interaction.timestamp, new_item_c)
+                        else:
+                            new_user_emb, new_item_emb = model.process_interaction(uid_t, iid_t, t, f, deferred=True)
+                            node_updates[('user', uid)] = (new_user_emb, last_interaction.timestamp, None)
+                            node_updates[('item', last_interaction.item_id)] = (new_item_emb, last_interaction.timestamp, None)
+
+                    # 计算loss
+                    for interaction in batch:
+                        uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+                        iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+
+                        neg_items = []
+                        while len(neg_items) < neg_sample_size:
+                            neg = int(rng.integers(0, num_items))
+                            if neg != interaction.item_id:
+                                neg_items.append(neg)
+                        neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
+
+                        pred_emb, _ = model.predict(uid, interaction.timestamp)
+                        pos_emb = _item_embeddings_for_loss(model, iid).detach().to(device)
+                        neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().to(device).unsqueeze(0)
+                        loss = criterion(pred_emb, pos_emb, neg_emb) / len(batch)
+                        loss.backward(retain_graph=True)
+                        total_loss += loss.item()
+
+                    # 写回更新
+                    with torch.no_grad():
+                        for (node_type, node_id), (new_emb, ts, new_c) in node_updates.items():
+                            if node_type == 'user':
+                                model.user_embeddings[node_id] = new_emb.detach()
+                                model.user_last_time[node_id] = ts
+                                if has_lstm and new_c is not None:
+                                    model.user_cell_state[node_id] = new_c
+                            else:
+                                model.item_embeddings[node_id] = new_emb.detach()
+                                model.item_last_time[node_id] = ts
+                                if has_lstm and new_c is not None:
+                                    model.item_cell_state[node_id] = new_c
+        else:
+            # 使用逐交互训练（原有逻辑）
+            for interaction in interactions:
+                uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+                iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+                t   = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
+                f   = interaction.features.unsqueeze(0).to(device)
+
+                neg_items = []
+                while len(neg_items) < neg_sample_size:
+                    neg = int(rng.integers(0, num_items))
+                    if neg != interaction.item_id:
+                        neg_items.append(neg)
+                neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
+
+                pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
+                pos_emb = _item_embeddings_for_loss(model, iid).detach().to(device)
+                neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().to(device).unsqueeze(0)
+                loss = criterion(pred_emb, pos_emb, neg_emb)
+                loss.backward(retain_graph=True)
+                total_loss += loss.item()
 
         # Collect accumulated gradients
         grads = {}

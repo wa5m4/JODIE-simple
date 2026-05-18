@@ -1,0 +1,3 @@
+trial_id,mode,start_time_s,end_time_s,duration_s,score,mrr,recall_at_k,cumulative_best_score,model
+0,serial,0.009,2.757,2.748,0.073652,0.073652,0.191919,0.073652,temporal_event_gnn_jodie
+1,serial,2.766,4.001,1.235,0.075224,0.075224,0.161616,0.075224,temporal_event_gnn_jodie

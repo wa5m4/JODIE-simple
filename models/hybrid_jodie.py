@@ -188,6 +188,105 @@ class TemporalEventGNNJODIE(nn.Module):
     def _predict_item_embedding(self, user_state: torch.Tensor) -> torch.Tensor:
         return self.predict_layer(user_state)
 
+    def process_interaction(
+        self,
+        user_ids: torch.Tensor,
+        item_ids: torch.Tensor,
+        timestamps: torch.Tensor,
+        features: torch.Tensor,
+        graph_ctx=None,
+        deferred: bool = False,
+        return_cell_state: bool = False,
+    ):
+        """处理交互并返回新的嵌入（支持延迟更新用于批处理）"""
+        if graph_ctx is None:
+            raise ValueError("TemporalEventGNNJODIE requires graph_ctx")
+
+        graph_state = graph_ctx
+        user_nodes, item_nodes = self._node_ids(user_ids, item_ids)
+
+        uid = int(user_nodes[0].item())
+        iid = int(item_nodes[0].item())
+        ts = float(timestamps[0].item())
+
+        old_user = self.memory[user_nodes].detach().clone()
+        old_item = self.memory[item_nodes].detach().clone()
+
+        last_u = self.last_time[user_nodes].detach().clone()
+        last_i = self.last_time[item_nodes].detach().clone()
+
+        du = (timestamps - last_u).unsqueeze(-1)
+        di = (timestamps - last_i).unsqueeze(-1)
+
+        proj_user = self._project_time(old_user, du)
+        proj_item = self._project_time(old_item, di)
+
+        if self.message_mode == "peer":
+            user_msg = proj_item
+            item_msg = proj_user
+        else:
+            user_neighbors = self._neighbors(graph_state, uid)
+            item_neighbors = self._neighbors(graph_state, iid)
+
+            user_msg = self.event_operator.event_aggregate(
+                center_idx=uid,
+                center_emb=proj_user.squeeze(0),
+                memory=self.memory,
+                neighbors=user_neighbors,
+                edge_last_time=graph_state["edge_last_time"],
+                current_time=ts,
+            ).unsqueeze(0)
+
+            item_msg = self.event_operator.event_aggregate(
+                center_idx=iid,
+                center_emb=proj_item.squeeze(0),
+                memory=self.memory,
+                neighbors=item_neighbors,
+                edge_last_time=graph_state["edge_last_time"],
+                current_time=ts,
+            ).unsqueeze(0)
+
+        user_input = torch.cat([proj_user, item_msg, features], dim=-1)
+        item_input = torch.cat([proj_item, user_msg, features], dim=-1)
+
+        if self.memory_cell == "lstm":
+            user_c = self.user_cell_state[user_ids].clone()
+            item_c = self.item_cell_state[item_ids].clone()
+            new_user, new_user_c = self.user_cell(user_input, (old_user, user_c))
+            new_item, new_item_c = self.item_cell(item_input, (old_item, item_c))
+        else:
+            new_user = self._memory_update("user", user_input, old_user)
+            new_item = self._memory_update("item", item_input, old_item)
+            new_user_c = None
+            new_item_c = None
+
+        new_user = self._apply_gate(old_user, new_user)
+        new_item = self._apply_gate(old_item, new_item)
+
+        if not deferred:
+            self.memory[user_nodes] = new_user.detach()
+            self.memory[item_nodes] = new_item.detach()
+            self.last_time[user_nodes] = timestamps
+            self.last_time[item_nodes] = timestamps
+            if self.memory_cell == "lstm":
+                self.user_cell_state[user_ids] = new_user_c.detach()
+                self.item_cell_state[item_ids] = new_item_c.detach()
+            if self.enable_graph_update:
+                self._update_graph_state(graph_state, uid, iid, ts)
+
+        if return_cell_state and self.memory_cell == "lstm":
+            return new_user, new_item, new_user_c, new_item_c
+        return new_user, new_item
+
+    def predict(self, user_ids: torch.Tensor, query_time: float):
+        """预测用户在给定时间的物品嵌入"""
+        old_user = self.memory[user_ids].detach().clone()
+        last_u = self.last_time[user_ids].detach().clone()
+        d_query = (torch.tensor([query_time], dtype=torch.float32, device=old_user.device) - last_u).unsqueeze(-1)
+        query_user = self._project_time(old_user, d_query)
+        pred_item_emb = self._predict_item_embedding(query_user)
+        return pred_item_emb, query_user
+
     def forward(
         self,
         user_ids: torch.Tensor,

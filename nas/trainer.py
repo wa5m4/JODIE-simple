@@ -175,6 +175,8 @@ class GraphNASTrainer:
                 graph_ctx=graph_ctx,
                 seed=trial_seed,
                 partitions=train_partitions,
+                batch_training=self.base_config.get("batch_training", False),
+                batch_size=self.base_config.get("train_batch_size", 32),
             )
             value = evaluate_recall_by_type(
                 model,
@@ -198,6 +200,8 @@ class GraphNASTrainer:
             graph_ctx=graph_ctx,
             seed=trial_seed,
             partitions=train_partitions,
+            batch_training=self.base_config.get("batch_training", False),
+            batch_size=self.base_config.get("train_batch_size", 32),
         )
         return evaluate_ranking_metrics(
             model,
