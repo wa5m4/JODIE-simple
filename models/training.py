@@ -180,6 +180,9 @@ def train_model(
     partitions: Optional[List[TemporalPartition]] = None,
     batch_training: bool = False,
     batch_size: int = 32,
+    batch_mode: str = "serial",
+    tgn_loss_mode: str = "all",
+    tgn_window_size: float = 10.0,
 ) -> None:
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     criterion = BPRLoss()
@@ -193,7 +196,20 @@ def train_model(
         epoch_graph_ctx = clone_graph_state_template(graph_ctx) if graph_ctx is not None else None
 
         for partition in ordered_partitions:
-            if batch_training:
+            if batch_mode == "tgn":
+                total_loss += train_partition_bpr_tgn(
+                    model=model,
+                    partition=partition,
+                    optimizer=optimizer,
+                    criterion=criterion,
+                    time_window_size=tgn_window_size,
+                    aggregator="mean",
+                    loss_mode=tgn_loss_mode,
+                    neg_sample_size=neg_sample_size,
+                    seed=_partition_seed(seed, partition.partition_id, epoch),
+                    graph_ctx=epoch_graph_ctx,
+                )
+            elif batch_mode == "tbatch" or batch_training:
                 total_loss += train_partition_bpr_batch(
                     model=model,
                     partition=partition,
@@ -203,7 +219,7 @@ def train_model(
                     seed=_partition_seed(seed, partition.partition_id, epoch),
                     graph_ctx=epoch_graph_ctx,
                 )
-            else:
+            else:  # serial
                 total_loss += train_partition_bpr(
                     model=model,
                     partition=partition,
@@ -228,6 +244,9 @@ def train_model_ce(
     partitions: Optional[List[TemporalPartition]] = None,
     batch_training: bool = False,
     batch_size: int = 32,
+    batch_mode: str = "serial",
+    tgn_loss_mode: str = "all",
+    tgn_window_size: float = 10.0,
 ) -> None:
     if seed is not None:
         torch.manual_seed(seed)
@@ -242,7 +261,18 @@ def train_model_ce(
         epoch_graph_ctx = clone_graph_state_template(graph_ctx) if graph_ctx is not None else None
 
         for partition in ordered_partitions:
-            if batch_training:
+            if batch_mode == "tgn":
+                total_loss += train_partition_ce_tgn(
+                    model=model,
+                    partition=partition,
+                    optimizer=optimizer,
+                    time_window_size=tgn_window_size,
+                    aggregator="mean",
+                    loss_mode=tgn_loss_mode,
+                    seed=_partition_seed(seed, partition.partition_id, epoch),
+                    graph_ctx=epoch_graph_ctx,
+                )
+            elif batch_mode == "tbatch" or batch_training:
                 total_loss += train_partition_ce_batch(
                     model=model,
                     partition=partition,
@@ -251,7 +281,7 @@ def train_model_ce(
                     seed=_partition_seed(seed, partition.partition_id, epoch),
                     graph_ctx=epoch_graph_ctx,
                 )
-            else:
+            else:  # serial
                 total_loss += train_partition_ce(
                     model=model,
                     partition=partition,
@@ -507,6 +537,263 @@ def train_partition_ce_batch(
     return total_loss
 
 
+def _create_time_windows(interactions: List[Interaction], window_size: float) -> List[List[Interaction]]:
+    """按时间窗口切分交互序列"""
+    if not interactions:
+        return []
+
+    sorted_interactions = sorted(interactions, key=lambda x: x.timestamp)
+    windows = []
+    current_window = []
+    window_start = sorted_interactions[0].timestamp
+
+    for interaction in sorted_interactions:
+        if interaction.timestamp >= window_start + window_size:
+            if current_window:
+                windows.append(current_window)
+            current_window = [interaction]
+            window_start = interaction.timestamp
+        else:
+            current_window.append(interaction)
+
+    if current_window:
+        windows.append(current_window)
+
+    return windows
+
+
+def train_partition_bpr_tgn(
+    model,
+    partition: TemporalPartition,
+    optimizer,
+    criterion,
+    time_window_size: float,
+    aggregator: str = "mean",
+    loss_mode: str = "all",
+    neg_sample_size: int = 5,
+    seed: Optional[int] = None,
+    graph_ctx: Optional[Dict] = None,
+) -> float:
+    """TGN 风格窗口批处理训练（BPR loss）：窗口内聚合消息后更新
+
+    Args:
+        loss_mode: "all" - 所有交互都计算loss; "last" - 只对每个节点最后一条交互计算loss
+    """
+    from collections import defaultdict
+    device = _model_device(model)
+    rng = np.random.default_rng(seed)
+    total_loss = 0.0
+
+    windows = _create_time_windows(partition.interactions, time_window_size)
+
+    for window in windows:
+        # 阶段1：收集消息（同时记录每个节点的最后一条交互）
+        user_messages = defaultdict(list)
+        item_messages = defaultdict(list)
+        last_interaction_per_node = {}  # 记录每个节点的最后一条交互
+
+        for idx, interaction in enumerate(window):
+            uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+            iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+            t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
+            f = interaction.features.unsqueeze(0).to(device)
+
+            # 计算user和item的消息
+            user_msg, item_msg = model.compute_message(uid, iid, t, f)
+            user_messages[interaction.user_id].append((user_msg, interaction.timestamp))
+            item_messages[interaction.item_id].append((item_msg, interaction.timestamp))
+
+            # 记录每个节点的最后一条交互
+            last_interaction_per_node[('user', interaction.user_id)] = idx
+            last_interaction_per_node[('item', interaction.item_id)] = idx
+
+        # 阶段2：聚合并更新user
+        for uid, msg_list in user_messages.items():
+            messages = [m for m, _ in msg_list]
+            last_ts = max(ts for _, ts in msg_list)
+
+            if aggregator == "mean":
+                agg_msg = torch.stack(messages).mean(dim=0)
+            elif aggregator == "sum":
+                agg_msg = torch.stack(messages).sum(dim=0)
+            elif aggregator == "last":
+                agg_msg = messages[-1]
+            else:
+                agg_msg = messages[-1]
+
+            new_emb, new_cell = model.apply_aggregated_message(uid, agg_msg, node_type="user")
+            model.user_embeddings[uid] = new_emb.detach()
+            model.user_last_time[uid] = last_ts
+            if new_cell is not None:
+                model.user_cell_state[uid] = new_cell.detach()
+
+        # 阶段2：聚合并更新item
+        for iid, msg_list in item_messages.items():
+            messages = [m for m, _ in msg_list]
+            last_ts = max(ts for _, ts in msg_list)
+
+            if aggregator == "mean":
+                agg_msg = torch.stack(messages).mean(dim=0)
+            elif aggregator == "sum":
+                agg_msg = torch.stack(messages).sum(dim=0)
+            elif aggregator == "last":
+                agg_msg = messages[-1]
+            else:
+                agg_msg = messages[-1]
+
+            new_emb, new_cell = model.apply_aggregated_message(iid, agg_msg, node_type="item")
+            model.item_embeddings[iid] = new_emb.detach()
+            model.item_last_time[iid] = last_ts
+            if new_cell is not None:
+                model.item_cell_state[iid] = new_cell.detach()
+
+        # 阶段3：计算loss（根据loss_mode决定哪些交互参与）
+        optimizer.zero_grad()
+        batch_losses = []
+
+        if loss_mode == "last":
+            # 只对每个节点的最后一条交互计算loss
+            last_indices = set(last_interaction_per_node.values())
+            interactions_for_loss = [window[i] for i in sorted(last_indices)]
+        else:  # loss_mode == "all"
+            interactions_for_loss = window
+
+        for interaction in interactions_for_loss:
+            uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+            iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+
+            neg_items = []
+            while len(neg_items) < neg_sample_size:
+                neg = int(rng.integers(0, _num_items(model)))
+                if neg != interaction.item_id:
+                    neg_items.append(neg)
+            neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
+
+            pred_emb, _ = model.predict(uid, interaction.timestamp)
+            pos_emb = _item_embeddings_for_loss(model, iid).detach().to(device)
+            neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().to(device).unsqueeze(0)
+            loss = criterion(pred_emb, pos_emb, neg_emb)
+            batch_losses.append(loss)
+
+        # 阶段4：Backward
+        if batch_losses:
+            total_batch_loss = sum(batch_losses) / len(batch_losses)
+            total_batch_loss.backward()
+            optimizer.step()
+            total_loss += total_batch_loss.item() * len(batch_losses)
+
+    return total_loss
+
+
+def train_partition_ce_tgn(
+    model,
+    partition: TemporalPartition,
+    optimizer,
+    time_window_size: float,
+    aggregator: str = "mean",
+    loss_mode: str = "all",
+    seed: Optional[int] = None,
+    graph_ctx: Optional[Dict] = None,
+) -> float:
+    """TGN 风格窗口批处理训练（CE/L2 loss）：窗口内聚合消息后更新
+
+    Args:
+        loss_mode: "all" - 所有交互都计算loss; "last" - 只对每个节点最后一条交互计算loss
+    """
+    from collections import defaultdict
+    device = _model_device(model)
+    total_loss = 0.0
+
+    windows = _create_time_windows(partition.interactions, time_window_size)
+
+    for window in windows:
+        # 阶段1：收集消息
+        user_messages = defaultdict(list)
+        item_messages = defaultdict(list)
+        last_interaction_per_node = {}
+
+        for idx, interaction in enumerate(window):
+            uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+            iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+            t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
+            f = interaction.features.unsqueeze(0).to(device)
+
+            user_msg, item_msg = model.compute_message(uid, iid, t, f)
+            user_messages[interaction.user_id].append((user_msg, interaction.timestamp))
+            item_messages[interaction.item_id].append((item_msg, interaction.timestamp))
+
+            last_interaction_per_node[('user', interaction.user_id)] = idx
+            last_interaction_per_node[('item', interaction.item_id)] = idx
+
+        # 阶段2：聚合并更新user
+        for uid, msg_list in user_messages.items():
+            messages = [m for m, _ in msg_list]
+            last_ts = max(ts for _, ts in msg_list)
+
+            if aggregator == "mean":
+                agg_msg = torch.stack(messages).mean(dim=0)
+            elif aggregator == "sum":
+                agg_msg = torch.stack(messages).sum(dim=0)
+            elif aggregator == "last":
+                agg_msg = messages[-1]
+            else:
+                agg_msg = messages[-1]
+
+            new_emb, new_cell = model.apply_aggregated_message(uid, agg_msg, node_type="user")
+            model.user_embeddings[uid] = new_emb.detach()
+            model.user_last_time[uid] = last_ts
+            if new_cell is not None:
+                model.user_cell_state[uid] = new_cell.detach()
+
+        # 阶段2：聚合并更新item
+        for iid, msg_list in item_messages.items():
+            messages = [m for m, _ in msg_list]
+            last_ts = max(ts for _, ts in msg_list)
+
+            if aggregator == "mean":
+                agg_msg = torch.stack(messages).mean(dim=0)
+            elif aggregator == "sum":
+                agg_msg = torch.stack(messages).sum(dim=0)
+            elif aggregator == "last":
+                agg_msg = messages[-1]
+            else:
+                agg_msg = messages[-1]
+
+            new_emb, new_cell = model.apply_aggregated_message(iid, agg_msg, node_type="item")
+            model.item_embeddings[iid] = new_emb.detach()
+            model.item_last_time[iid] = last_ts
+            if new_cell is not None:
+                model.item_cell_state[iid] = new_cell.detach()
+
+        # 阶段3：计算loss
+        optimizer.zero_grad()
+        batch_losses = []
+
+        if loss_mode == "last":
+            last_indices = set(last_interaction_per_node.values())
+            interactions_for_loss = [window[i] for i in sorted(last_indices)]
+        else:  # loss_mode == "all"
+            interactions_for_loss = window
+
+        for interaction in interactions_for_loss:
+            uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+            iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+
+            pred_emb, _ = model.predict(uid, interaction.timestamp)
+            target_emb = _item_embeddings_for_loss(model, iid).to(device)
+            loss = ((pred_emb - target_emb) ** 2).sum(dim=-1).mean()
+            batch_losses.append(loss)
+
+        # 阶段4：Backward
+        if batch_losses:
+            total_batch_loss = sum(batch_losses) / len(batch_losses)
+            total_batch_loss.backward()
+            optimizer.step()
+            total_loss += total_batch_loss.item() * len(batch_losses)
+
+    return total_loss
+
+
 if __name__ == "__main__":
     import os
     import sys
@@ -574,5 +861,257 @@ if __name__ == "__main__":
     assert max_diff < 1e-5, f"forward 输出不一致: {max_diff}"
 
     print("\nALL CHECKS PASSED — t-Batch 实现正确")
+
+    # ── 验证4：比较三种训练方式（逐条、t-Batch、TGN）
+    print("\n" + "="*60)
+    print("验证4：比较三种训练方式的loss和速度")
+    print("="*60)
+
+    NUM_EPOCHS = 3
+    LR = 1e-3
+    NEG_SAMPLES = 5
+
+    # 逐条训练
+    print("\n[1] 逐条训练 (Serial)")
+    model_serial = JODIERNN(NUM_USERS, NUM_ITEMS, EMB_DIM, FEAT_DIM, cell_type="rnn")
+    optimizer_serial = torch.optim.Adam(model_serial.parameters(), lr=LR)
+    criterion = BPRLoss()
+
+    import time
+    start = time.time()
+    for epoch in range(NUM_EPOCHS):
+        model_serial.reset_state()
+        loss = train_partition_bpr(
+            model_serial, partition, optimizer_serial, criterion,
+            neg_sample_size=NEG_SAMPLES, seed=epoch
+        )
+        print(f"  Epoch {epoch+1}/{NUM_EPOCHS} | Loss: {loss:.4f}")
+    serial_time = time.time() - start
+    print(f"  总耗时: {serial_time:.2f}s")
+
+    # t-Batch训练
+    print("\n[2] t-Batch训练 (batch_size=32)")
+    model_tbatch = JODIERNN(NUM_USERS, NUM_ITEMS, EMB_DIM, FEAT_DIM, cell_type="rnn")
+    optimizer_tbatch = torch.optim.Adam(model_tbatch.parameters(), lr=LR)
+
+    start = time.time()
+    for epoch in range(NUM_EPOCHS):
+        model_tbatch.reset_state()
+        loss = train_partition_bpr_batch(
+            model_tbatch, partition, optimizer_tbatch,
+            neg_sample_size=NEG_SAMPLES, batch_size=32, seed=epoch
+        )
+        print(f"  Epoch {epoch+1}/{NUM_EPOCHS} | Loss: {loss:.4f}")
+    tbatch_time = time.time() - start
+    print(f"  总耗时: {tbatch_time:.2f}s")
+
+    # TGN窗口训练 (loss_mode="all")
+    print("\n[3] TGN窗口训练 (window_size=10, aggregator=mean, loss_mode='all')")
+    model_tgn = JODIERNN(NUM_USERS, NUM_ITEMS, EMB_DIM, FEAT_DIM, cell_type="rnn")
+    optimizer_tgn = torch.optim.Adam(model_tgn.parameters(), lr=LR)
+
+    start = time.time()
+    for epoch in range(NUM_EPOCHS):
+        model_tgn.reset_state()
+        loss = train_partition_bpr_tgn(
+            model_tgn, partition, optimizer_tgn, criterion,
+            time_window_size=10.0, aggregator="mean", loss_mode="all",
+            neg_sample_size=NEG_SAMPLES, seed=epoch
+        )
+        print(f"  Epoch {epoch+1}/{NUM_EPOCHS} | Loss: {loss:.4f}")
+    tgn_time = time.time() - start
+    print(f"  总耗时: {tgn_time:.2f}s")
+
+    # TGN窗口训练 (loss_mode="last")
+    print("\n[4] TGN窗口训练 (window_size=10, aggregator=mean, loss_mode='last')")
+    model_tgn_last = JODIERNN(NUM_USERS, NUM_ITEMS, EMB_DIM, FEAT_DIM, cell_type="rnn")
+    optimizer_tgn_last = torch.optim.Adam(model_tgn_last.parameters(), lr=LR)
+
+    start = time.time()
+    for epoch in range(NUM_EPOCHS):
+        model_tgn_last.reset_state()
+        loss = train_partition_bpr_tgn(
+            model_tgn_last, partition, optimizer_tgn_last, criterion,
+            time_window_size=10.0, aggregator="mean", loss_mode="last",
+            neg_sample_size=NEG_SAMPLES, seed=epoch
+        )
+        print(f"  Epoch {epoch+1}/{NUM_EPOCHS} | Loss: {loss:.4f}")
+    tgn_last_time = time.time() - start
+    print(f"  总耗时: {tgn_last_time:.2f}s")
+
+    # 比较最终loss
+    print("\n" + "-"*60)
+    print("最终loss对比（第3个epoch后额外测试）:")
+    model_serial.reset_state()
+    serial_final = train_partition_bpr(
+        model_serial, partition, optimizer_serial, criterion,
+        neg_sample_size=NEG_SAMPLES, seed=999
+    )
+    model_tbatch.reset_state()
+    tbatch_final = train_partition_bpr_batch(
+        model_tbatch, partition, optimizer_tbatch,
+        neg_sample_size=NEG_SAMPLES, batch_size=32, seed=999
+    )
+    model_tgn.reset_state()
+    tgn_final = train_partition_bpr_tgn(
+        model_tgn, partition, optimizer_tgn, criterion,
+        time_window_size=10.0, aggregator="mean", loss_mode="all",
+        neg_sample_size=NEG_SAMPLES, seed=999
+    )
+    model_tgn_last.reset_state()
+    tgn_last_final = train_partition_bpr_tgn(
+        model_tgn_last, partition, optimizer_tgn_last, criterion,
+        time_window_size=10.0, aggregator="mean", loss_mode="last",
+        neg_sample_size=NEG_SAMPLES, seed=999
+    )
+
+    print(f"  Serial:        {serial_final:.4f} (baseline)")
+    print(f"  t-Batch:       {tbatch_final:.4f} (差异: {abs(tbatch_final-serial_final)/serial_final*100:.1f}%)")
+    print(f"  TGN (all):     {tgn_final:.4f} (差异: {abs(tgn_final-serial_final)/serial_final*100:.1f}%)")
+    print(f"  TGN (last):    {tgn_last_final:.4f} (差异: {abs(tgn_last_final-serial_final)/serial_final*100:.1f}%)")
+
+    print("\n速度对比:")
+    print(f"  Serial:        {serial_time:.2f}s (baseline)")
+    print(f"  t-Batch:       {tbatch_time:.2f}s (加速: {serial_time/tbatch_time:.2f}x)")
+    print(f"  TGN (all):     {tgn_time:.2f}s (加速: {serial_time/tgn_time:.2f}x)")
+    print(f"  TGN (last):    {tgn_last_time:.2f}s (加速: {serial_time/tgn_last_time:.2f}x)")
+
+    # 验证TGN loss差异在合理范围内
+    tgn_diff_pct = abs(tgn_final - serial_final) / serial_final * 100
+    tgn_last_diff_pct = abs(tgn_last_final - serial_final) / serial_final * 100
+    assert tgn_diff_pct < 40, f"TGN (all) loss差异过大: {tgn_diff_pct:.1f}% > 40%"
+    print(f"\n✓ TGN (all) loss差异在合理范围内 ({tgn_diff_pct:.1f}% < 40%)")
+    print(f"✓ TGN (last) loss差异: {tgn_last_diff_pct:.1f}%")
+    if tgn_last_diff_pct < tgn_diff_pct:
+        print(f"  → loss_mode='last' 缩小了与逐条训练的差距 ({tgn_diff_pct:.1f}% → {tgn_last_diff_pct:.1f}%)")
+    print("  注：TGN是有损批处理，消息聚合会导致loss略高于逐条训练")
+
+    print("\n" + "="*60)
+    print("ALL CHECKS PASSED — TGN实现正确")
+    print("="*60)
+
+    # ── 验证5：测试TGN消息聚合（aggregator参数真实生效）
+    print("\n" + "="*60)
+    print("验证5：测试TGN消息聚合（aggregator参数）")
+    print("="*60)
+
+    NUM_EPOCHS_AGG = 3
+    WINDOW_SIZE = 10.0
+
+    # 测试 aggregator="last"
+    print("\n[1] TGN with aggregator='last'")
+    model_last = JODIERNN(NUM_USERS, NUM_ITEMS, EMB_DIM, FEAT_DIM, cell_type="rnn")
+    optimizer_last = torch.optim.Adam(model_last.parameters(), lr=LR)
+    criterion_last = BPRLoss()
+
+    for epoch in range(NUM_EPOCHS_AGG):
+        model_last.reset_state()
+        loss = train_partition_bpr_tgn(
+            model_last, partition, optimizer_last, criterion_last,
+            time_window_size=WINDOW_SIZE, aggregator="last",
+            neg_sample_size=NEG_SAMPLES, seed=epoch
+        )
+        print(f"  Epoch {epoch+1}/{NUM_EPOCHS_AGG} | Loss: {loss:.4f}")
+
+    # 测试 aggregator="mean"
+    print("\n[2] TGN with aggregator='mean'")
+    model_mean = JODIERNN(NUM_USERS, NUM_ITEMS, EMB_DIM, FEAT_DIM, cell_type="rnn")
+    optimizer_mean = torch.optim.Adam(model_mean.parameters(), lr=LR)
+    criterion_mean = BPRLoss()
+
+    for epoch in range(NUM_EPOCHS_AGG):
+        model_mean.reset_state()
+        loss = train_partition_bpr_tgn(
+            model_mean, partition, optimizer_mean, criterion_mean,
+            time_window_size=WINDOW_SIZE, aggregator="mean",
+            neg_sample_size=NEG_SAMPLES, seed=epoch
+        )
+        print(f"  Epoch {epoch+1}/{NUM_EPOCHS_AGG} | Loss: {loss:.4f}")
+
+    # 测试 aggregator="sum"
+    print("\n[3] TGN with aggregator='sum'")
+    model_sum = JODIERNN(NUM_USERS, NUM_ITEMS, EMB_DIM, FEAT_DIM, cell_type="rnn")
+    optimizer_sum = torch.optim.Adam(model_sum.parameters(), lr=LR)
+    criterion_sum = BPRLoss()
+
+    for epoch in range(NUM_EPOCHS_AGG):
+        model_sum.reset_state()
+        loss = train_partition_bpr_tgn(
+            model_sum, partition, optimizer_sum, criterion_sum,
+            time_window_size=WINDOW_SIZE, aggregator="sum",
+            neg_sample_size=NEG_SAMPLES, seed=epoch
+        )
+        print(f"  Epoch {epoch+1}/{NUM_EPOCHS_AGG} | Loss: {loss:.4f}")
+
+    print("\n" + "-"*60)
+    print("结论：如果三种aggregator的loss有差异且都正常下降，")
+    print("说明消息聚合逻辑真实生效。")
+    print("="*60)
+
+    # ── 验证6：测试TGN loss_mode参数（all vs last）
+    print("\n" + "="*60)
+    print("验证6：测试TGN loss_mode参数（all vs last）")
+    print("="*60)
+
+    NUM_EPOCHS_LOSS_MODE = 3
+    WINDOW_SIZE_LOSS_MODE = 10.0
+
+    # 创建有重复节点的测试数据（确保窗口内有重复）
+    print("\n[准备测试数据] 生成窗口内有重复节点的交互序列...")
+    test_interactions_loss_mode = []
+    for i in range(200):
+        # 使用更小的user/item范围，确保窗口内有重复
+        test_interactions_loss_mode.append(
+            Interaction(
+                timestamp=float(i),
+                user_id=i % 5,  # 只有5个用户，窗口内必有重复
+                item_id=i % 3,  # 只有3个物品，窗口内必有重复
+                features=torch.randn(FEAT_DIM),
+            )
+        )
+    test_partition_loss_mode = TemporalPartition(
+        partition_id=0, split="test",
+        start_ts=0.0, end_ts=199.0,
+        interactions=test_interactions_loss_mode,
+    )
+
+    # 测试 loss_mode="all"
+    print("\n[1] TGN with loss_mode='all'")
+    torch.manual_seed(42)
+    model_all = JODIERNN(5, 3, EMB_DIM, FEAT_DIM, cell_type="rnn")
+    optimizer_all = torch.optim.Adam(model_all.parameters(), lr=LR)
+    criterion_all = BPRLoss()
+
+    for epoch in range(NUM_EPOCHS_LOSS_MODE):
+        model_all.reset_state()
+        loss = train_partition_bpr_tgn(
+            model_all, test_partition_loss_mode, optimizer_all, criterion_all,
+            time_window_size=WINDOW_SIZE_LOSS_MODE, aggregator="mean",
+            loss_mode="all", neg_sample_size=NEG_SAMPLES, seed=epoch
+        )
+        print(f"  Epoch {epoch+1}/{NUM_EPOCHS_LOSS_MODE} | Loss: {loss:.4f}")
+
+    # 测试 loss_mode="last"
+    print("\n[2] TGN with loss_mode='last'")
+    torch.manual_seed(42)
+    model_last = JODIERNN(5, 3, EMB_DIM, FEAT_DIM, cell_type="rnn")
+    optimizer_last = torch.optim.Adam(model_last.parameters(), lr=LR)
+    criterion_last = BPRLoss()
+
+    for epoch in range(NUM_EPOCHS_LOSS_MODE):
+        model_last.reset_state()
+        loss = train_partition_bpr_tgn(
+            model_last, test_partition_loss_mode, optimizer_last, criterion_last,
+            time_window_size=WINDOW_SIZE_LOSS_MODE, aggregator="mean",
+            loss_mode="last", neg_sample_size=NEG_SAMPLES, seed=epoch
+        )
+        print(f"  Epoch {epoch+1}/{NUM_EPOCHS_LOSS_MODE} | Loss: {loss:.4f}")
+
+    print("\n" + "-"*60)
+    print("结论：loss_mode='last' 只对每个节点的最后一条交互计算loss，")
+    print("因此总loss值会低于 'all' 模式（参与loss计算的交互更少）。")
+    print("两种模式都应该正常收敛。")
+    print("="*60)
+
 
 

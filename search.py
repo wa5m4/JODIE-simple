@@ -131,6 +131,9 @@ def parse_args():
     parser.add_argument("--pipeline-mode", type=str, default="naive", choices=["naive", "smart"], help="naive: sync batch mode; smart: async controller+pipeline with optimal allocation.")
     parser.add_argument("--batch-training", action="store_true", help="Use TGN-style batch training (approximate temporal dependency, faster).")
     parser.add_argument("--train-batch-size", type=int, default=32, help="Batch size for batch training mode.")
+    parser.add_argument("--batch-mode", type=str, default="serial", choices=["serial", "tbatch", "tgn"], help="Batch training mode: serial (event-by-event), tbatch (t-Batch), tgn (TGN window-based).")
+    parser.add_argument("--tgn-loss-mode", type=str, default="all", choices=["all", "last"], help="TGN loss mode: all (all interactions) or last (only last interaction per node).")
+    parser.add_argument("--tgn-window-size", type=float, default=10.0, help="TGN time window size for batch processing.")
     return parser.parse_args()
 
 
@@ -237,6 +240,9 @@ def main():
         "pipeline_mode": args.pipeline_mode,
         "batch_training": args.batch_training,
         "train_batch_size": args.train_batch_size,
+        "batch_mode": args.batch_mode,
+        "tgn_loss_mode": args.tgn_loss_mode,
+        "tgn_window_size": args.tgn_window_size,
     }
 
     trainer = GraphNASTrainer(base_config)

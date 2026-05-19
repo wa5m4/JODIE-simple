@@ -1,4 +1,0 @@
-seed,method,trials,wall_time_s,best_score,avg_time_per_trial_s
-42,serial,9,131,0.6069683458704533,14
-42,data_parallel,9,180,0.4757982883007702,20
-42,pipeline_naive,9,135,0.5348021045432898,15

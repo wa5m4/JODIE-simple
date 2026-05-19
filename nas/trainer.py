@@ -177,6 +177,9 @@ class GraphNASTrainer:
                 partitions=train_partitions,
                 batch_training=self.base_config.get("batch_training", False),
                 batch_size=self.base_config.get("train_batch_size", 32),
+                batch_mode=self.base_config.get("batch_mode", "serial"),
+                tgn_loss_mode=self.base_config.get("tgn_loss_mode", "all"),
+                tgn_window_size=self.base_config.get("tgn_window_size", 10.0),
             )
             value = evaluate_recall_by_type(
                 model,
@@ -202,6 +205,9 @@ class GraphNASTrainer:
             partitions=train_partitions,
             batch_training=self.base_config.get("batch_training", False),
             batch_size=self.base_config.get("train_batch_size", 32),
+            batch_mode=self.base_config.get("batch_mode", "serial"),
+            tgn_loss_mode=self.base_config.get("tgn_loss_mode", "all"),
+            tgn_window_size=self.base_config.get("tgn_window_size", 10.0),
         )
         return evaluate_ranking_metrics(
             model,

@@ -142,6 +142,81 @@ class JODIERNN(nn.Module):
         # log1p stabilizes long-tail timestamp gaps.
         return torch.log1p(torch.clamp(delta_t, min=0.0))
 
+    def compute_message(
+        self,
+        user_ids: torch.Tensor,
+        item_ids: torch.Tensor,
+        timestamps: torch.Tensor,
+        features: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """计算RNN输入向量（消息），返回(user_message, item_message)，不detach，保留梯度"""
+        user_emb = self.user_embeddings[user_ids]
+        item_emb = self.item_embeddings[item_ids]
+
+        delta_user = (timestamps - self.user_last_time[user_ids]).unsqueeze(-1)
+        delta_item = (timestamps - self.item_last_time[item_ids]).unsqueeze(-1)
+
+        delta_user_feat = self._delta_feature(delta_user)
+        delta_item_feat = self._delta_feature(delta_item)
+
+        user_emb_proj = self.get_projected_embedding(user_emb, delta_user, self.user_time_proj)
+        item_emb_proj = self.get_projected_embedding(item_emb, delta_item, self.item_time_proj)
+
+        if self.use_static_embeddings:
+            user_static = self.user_static(user_ids)
+            item_static = self.item_static(item_ids)
+        else:
+            user_static = None
+            item_static = None
+
+        user_inputs = [user_emb_proj, item_emb_proj]
+        item_inputs = [item_emb_proj, user_emb_proj]
+        if self.use_static_embeddings:
+            user_inputs.extend([user_static, item_static])
+            item_inputs.extend([item_static, user_static])
+        user_inputs.extend([features, delta_user_feat, delta_item_feat])
+        item_inputs.extend([features, delta_item_feat, delta_user_feat])
+
+        user_rnn_input = torch.cat(user_inputs, dim=-1)
+        item_rnn_input = torch.cat(item_inputs, dim=-1)
+        return user_rnn_input, item_rnn_input
+
+    def apply_aggregated_message(
+        self,
+        node_id: int,
+        aggregated_message: torch.Tensor,
+        node_type: str = "user",
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """用聚合后的消息更新节点状态，返回新embedding和新cell state（保留梯度）"""
+        if node_type == "user":
+            old_emb = self.user_embeddings[node_id].unsqueeze(0)
+            cell = self.user_cell
+            if self.cell_type == "lstm":
+                old_cell = self.user_cell_state[node_id].unsqueeze(0)
+            else:
+                old_cell = None
+        else:  # item
+            old_emb = self.item_embeddings[node_id].unsqueeze(0)
+            cell = self.item_cell
+            if self.cell_type == "lstm":
+                old_cell = self.item_cell_state[node_id].unsqueeze(0)
+            else:
+                old_cell = None
+
+        # 确保消息是2D (batch_size=1, feature_dim)
+        if aggregated_message.dim() == 1:
+            aggregated_message = aggregated_message.unsqueeze(0)
+
+        if self.cell_type == "lstm":
+            new_emb, new_cell = cell(aggregated_message, (old_emb, old_cell))
+            new_emb = self._normalize(new_emb).squeeze(0)
+            new_cell = new_cell.squeeze(0)
+            return new_emb, new_cell
+        else:
+            new_emb = cell(aggregated_message, old_emb)
+            new_emb = self._normalize(new_emb).squeeze(0)
+            return new_emb, None
+
     def process_interaction(
         self,
         user_ids: torch.Tensor,
