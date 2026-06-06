@@ -1,0 +1,98 @@
+{
+  "serial": {
+    "params": {
+      "model": "jodie_rnn",
+      "embedding_dim": 128,
+      "memory_cell": "rnn",
+      "time_proj": "off",
+      "use_static_embeddings": "off",
+      "normalize_state": "off",
+      "enable_graph_update": "off",
+      "enable_event_agg": "off",
+      "event_agg": "none",
+      "max_neighbors": 0,
+      "agg_activation": "none",
+      "attn_type": "dot",
+      "time_decay": "none",
+      "hidden_dim": 0,
+      "memory_gate": "off",
+      "message_mode": "peer",
+      "msg_linear": "off"
+    },
+    "original_val_mrr": 0.8124637826738867,
+    "original_test_mrr": 0.8509143384198148,
+    "original_test_recall": 0.9910022494376406
+  },
+  "data_parallel": {
+    "params": {
+      "model": "jodie_rnn",
+      "embedding_dim": 64,
+      "memory_cell": "rnn",
+      "time_proj": "linear",
+      "use_static_embeddings": "on",
+      "normalize_state": "on",
+      "enable_graph_update": "off",
+      "enable_event_agg": "off",
+      "event_agg": "none",
+      "max_neighbors": 0,
+      "agg_activation": "none",
+      "attn_type": "dot",
+      "time_decay": "none",
+      "hidden_dim": 0,
+      "memory_gate": "off",
+      "message_mode": "peer",
+      "msg_linear": "off"
+    },
+    "original_val_mrr": 0.5074469875074311,
+    "original_test_mrr": 0.5799287244152314,
+    "original_test_recall": 0.860284928767808
+  },
+  "pipeline_naive": {
+    "params": {
+      "model": "jodie_rnn",
+      "embedding_dim": 32,
+      "memory_cell": "rnn",
+      "time_proj": "linear",
+      "use_static_embeddings": "off",
+      "normalize_state": "on",
+      "enable_graph_update": "off",
+      "enable_event_agg": "off",
+      "event_agg": "none",
+      "max_neighbors": 0,
+      "agg_activation": "none",
+      "attn_type": "dot",
+      "time_decay": "none",
+      "hidden_dim": 0,
+      "memory_gate": "off",
+      "message_mode": "peer",
+      "msg_linear": "off"
+    },
+    "original_val_mrr": 0.67123589032715,
+    "original_test_mrr": 0.6255528540352553,
+    "original_test_recall": 0.8480379905023744
+  },
+  "pipeline_smart": {
+    "params": {
+      "model": "jodie_rnn",
+      "embedding_dim": 128,
+      "memory_cell": "rnn",
+      "time_proj": "off",
+      "use_static_embeddings": "off",
+      "normalize_state": "off",
+      "enable_graph_update": "off",
+      "enable_event_agg": "off",
+      "event_agg": "none",
+      "max_neighbors": 0,
+      "agg_activation": "none",
+      "attn_type": "dot",
+      "time_decay": "none",
+      "hidden_dim": 0,
+      "memory_gate": "off",
+      "message_mode": "peer",
+      "msg_linear": "off"
+    },
+    "original_val_mrr": 0.8488396686786328,
+    "original_test_mrr": 0.7895524712086731,
+    "original_test_recall": 0.9717570607348163
+  }
+}

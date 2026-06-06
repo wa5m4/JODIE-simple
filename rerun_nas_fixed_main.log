@@ -1,0 +1,1299 @@
+========================================
+使用修复后的评估逻辑重新运行NAS搜索
+========================================
+参数:
+  - 数据集: MOOC (20000 events)
+  - GPU: 0,1,2
+  - Trials: 27
+  - Epochs: 3
+  - Batch mode: tbatch
+
+========================================
+1/4: Serial + T-Batch
+========================================
+[Timing] Timing log: outputs/nas_search_fixed/serial_tbatch/timing_log.csv
+Epoch 1/3 | L2 Loss: 57472151.2674
+Epoch 2/3 | L2 Loss: 23681556.0748
+Epoch 3/3 | L2 Loss: 21784134.6396
+[Coarse 1/27] model=temporal_event_gnn_jodie agg=none memory=add time_proj=mlp val_score=0.0770
+Epoch 1/3 | L2 Loss: 36697428.8140
+Epoch 2/3 | L2 Loss: 36462190.2972
+Epoch 3/3 | L2 Loss: 36215495.9649
+[Coarse 2/27] model=temporal_event_gnn_jodie agg=none memory=add time_proj=off val_score=0.0782
+Epoch 1/3 | L2 Loss: 0.1824
+Epoch 2/3 | L2 Loss: 0.1624
+Epoch 3/3 | L2 Loss: 0.1592
+[Coarse 3/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3356
+Epoch 1/3 | L2 Loss: 18.5880
+Epoch 2/3 | L2 Loss: 17.3000
+Epoch 3/3 | L2 Loss: 17.0396
+[Coarse 4/27] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.7694
+Epoch 1/3 | L2 Loss: 661759.8676
+Epoch 2/3 | L2 Loss: 59464.5486
+Epoch 3/3 | L2 Loss: 12691.9284
+[Coarse 5/27] model=temporal_event_gnn_jodie agg=sum memory=lstm time_proj=linear val_score=0.1862
+Epoch 1/3 | L2 Loss: 6531091.8979
+Epoch 2/3 | L2 Loss: 6493465.8020
+Epoch 3/3 | L2 Loss: 6459351.4745
+[Coarse 6/27] model=temporal_event_gnn_jodie agg=none memory=add time_proj=off val_score=0.0764
+Epoch 1/3 | L2 Loss: 3066348.0481
+Epoch 2/3 | L2 Loss: 3513935.7737
+Epoch 3/3 | L2 Loss: 3346233.6638
+[Coarse 7/27] model=temporal_event_gnn_jodie agg=attn memory=add time_proj=mlp val_score=0.0771
+Epoch 1/3 | L2 Loss: 2.6416
+Epoch 2/3 | L2 Loss: 2.3594
+Epoch 3/3 | L2 Loss: 2.2990
+[Coarse 8/27] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.4260
+Epoch 1/3 | L2 Loss: 0.1886
+Epoch 2/3 | L2 Loss: 0.1623
+Epoch 3/3 | L2 Loss: 0.1558
+[Coarse 9/27] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.3930
+Epoch 1/3 | L2 Loss: 0.8463
+Epoch 2/3 | L2 Loss: 0.8128
+Epoch 3/3 | L2 Loss: 0.7994
+[Coarse 10/27] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.5642
+Epoch 1/3 | L2 Loss: 0.6198
+Epoch 2/3 | L2 Loss: 0.4521
+Epoch 3/3 | L2 Loss: 0.4013
+[Coarse 11/27] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.3657
+Epoch 1/3 | L2 Loss: 0.6959
+Epoch 2/3 | L2 Loss: 0.6709
+Epoch 3/3 | L2 Loss: 0.6653
+[Coarse 12/27] model=temporal_event_gnn_jodie agg=none memory=gru time_proj=off val_score=0.2375
+Epoch 1/3 | L2 Loss: 19084.3973
+Epoch 2/3 | L2 Loss: 4752.2125
+Epoch 3/3 | L2 Loss: 2315.3910
+[Coarse 13/27] model=temporal_event_gnn_jodie agg=none memory=lstm time_proj=mlp val_score=0.2223
+Epoch 1/3 | L2 Loss: 1.0075
+Epoch 2/3 | L2 Loss: 0.9454
+Epoch 3/3 | L2 Loss: 0.9319
+[Coarse 14/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.5687
+Epoch 1/3 | L2 Loss: 3315360.6699
+Epoch 2/3 | L2 Loss: 237202.8266
+Epoch 3/3 | L2 Loss: 38285.8295
+[Coarse 15/27] model=temporal_event_gnn_jodie agg=sum memory=gru time_proj=linear val_score=0.2096
+Epoch 1/3 | L2 Loss: 23.7088
+Epoch 2/3 | L2 Loss: 21.7826
+Epoch 3/3 | L2 Loss: 21.5578
+[Coarse 16/27] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.8125
+Epoch 1/3 | L2 Loss: 1.3394
+Epoch 2/3 | L2 Loss: 1.1534
+Epoch 3/3 | L2 Loss: 1.1091
+[Coarse 17/27] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.3878
+Epoch 1/3 | L2 Loss: 0.3010
+Epoch 2/3 | L2 Loss: 0.2563
+Epoch 3/3 | L2 Loss: 0.2472
+[Coarse 18/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3211
+Epoch 1/3 | L2 Loss: 5684498.2091
+Epoch 2/3 | L2 Loss: 4537819.6895
+Epoch 3/3 | L2 Loss: 119991.3892
+[Coarse 19/27] model=temporal_event_gnn_jodie agg=none memory=gru time_proj=mlp val_score=0.1773
+Epoch 1/3 | L2 Loss: 259934.3864
+Epoch 2/3 | L2 Loss: 19320.8155
+Epoch 3/3 | L2 Loss: 5559.5561
+[Coarse 20/27] model=temporal_event_gnn_jodie agg=none memory=lstm time_proj=linear val_score=0.2189
+Epoch 1/3 | L2 Loss: 5010420.0237
+Epoch 2/3 | L2 Loss: 522341.8919
+Epoch 3/3 | L2 Loss: 98104.0665
+[Coarse 21/27] model=temporal_event_gnn_jodie agg=mean memory=gru time_proj=linear val_score=0.2002
+Epoch 1/3 | L2 Loss: nan
+Epoch 2/3 | L2 Loss: nan
+Epoch 3/3 | L2 Loss: nan
+[Coarse 22/27] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1266
+Epoch 1/3 | L2 Loss: 0.5712
+Epoch 2/3 | L2 Loss: 0.5220
+Epoch 3/3 | L2 Loss: 0.4877
+[Coarse 23/27] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.6466
+Epoch 1/3 | L2 Loss: 7404032.9614
+Epoch 2/3 | L2 Loss: 11892913.8807
+Epoch 3/3 | L2 Loss: 6701308.3106
+[Coarse 24/27] model=temporal_event_gnn_jodie agg=none memory=add time_proj=mlp val_score=0.0780
+Epoch 1/3 | L2 Loss: 96142.1583
+Epoch 2/3 | L2 Loss: 5712.4271
+Epoch 3/3 | L2 Loss: 2967.7513
+[Coarse 25/27] model=temporal_event_gnn_jodie agg=attn memory=lstm time_proj=mlp val_score=0.1703
+Epoch 1/3 | L2 Loss: nan
+Epoch 2/3 | L2 Loss: nan
+Epoch 3/3 | L2 Loss: nan
+[Coarse 26/27] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1266
+Epoch 1/3 | L2 Loss: 0.8734
+Epoch 2/3 | L2 Loss: 0.7665
+Epoch 3/3 | L2 Loss: 0.7468
+[Coarse 27/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6443
+Epoch 1/3 | L2 Loss: 19.3897
+Epoch 2/3 | L2 Loss: 17.8089
+Epoch 3/3 | L2 Loss: 17.6238
+Best architecture saved to: outputs/nas_search_fixed/serial_tbatch/best_arch.json
+Leaderboard saved to: outputs/nas_search_fixed/serial_tbatch/leaderboard.csv
+Search mode: rl
+Best selection score: 0.8125
+Best test score: 0.8125
+Best model family: jodie_rnn
+
+Serial 完成！
+
+========================================
+2/4: Data Parallel + T-Batch
+========================================
+
+======================================================================
+[GraphNAS] Starting data-parallel search
+[GraphNAS] Coarse trials: 27, epochs: 3, workers: 3
+======================================================================
+
+[Timing] Timing log: outputs/nas_search_fixed/data_parallel_tbatch/timing_log.csv
+2026-05-26 16:49:42,698	INFO worker.py:1812 -- Started a local Ray instance. View the dashboard at [1m[32mhttp://127.0.0.1:8267 [39m[22m
+[36m(_DataParallelWorker pid=1439272)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(_DataParallelWorker pid=1439272)[0m   return torch.load(io.BytesIO(b))
+/usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(io.BytesIO(b))
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 1/27] model=temporal_event_gnn_jodie agg=none memory=add val_score=0.0780
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 2/27] model=jodie_rnn agg=none memory=gru val_score=0.1194
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 3/27] model=jodie_rnn agg=none memory=rnn val_score=0.5051
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 4/27] model=jodie_rnn agg=none memory=gru val_score=0.4520
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 5/27] model=temporal_event_gnn_jodie agg=none memory=add val_score=0.0827
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 6/27] model=jodie_rnn agg=none memory=lstm val_score=0.5405
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 7/27] model=temporal_event_gnn_jodie agg=none memory=lstm val_score=0.1436
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 8/27] model=temporal_event_gnn_jodie agg=none memory=add val_score=0.0830
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 9/27] model=jodie_rnn agg=none memory=rnn val_score=0.6649
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 10/27] model=jodie_rnn agg=none memory=rnn val_score=0.5960
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 11/27] model=temporal_event_gnn_jodie agg=none memory=add val_score=0.0827
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 12/27] model=jodie_rnn agg=none memory=rnn val_score=0.7368
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 13/27] model=jodie_rnn agg=none memory=rnn val_score=0.7092
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 14/27] model=jodie_rnn agg=none memory=lstm val_score=0.3358
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 15/27] model=temporal_event_gnn_jodie agg=none memory=gru val_score=0.1389
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 16/27] model=jodie_rnn agg=none memory=lstm val_score=0.4963
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 17/27] model=jodie_rnn agg=none memory=gru val_score=0.4969
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 18/27] model=jodie_rnn agg=none memory=gru val_score=0.6750
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 19/27] model=temporal_event_gnn_jodie agg=none memory=add val_score=0.0777
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 20/27] model=jodie_rnn agg=none memory=gru val_score=0.3975
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 21/27] model=temporal_event_gnn_jodie agg=mean memory=lstm val_score=0.1531
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 22/27] model=temporal_event_gnn_jodie agg=none memory=add val_score=0.0761
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 23/27] model=temporal_event_gnn_jodie agg=none memory=add val_score=0.0767
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 24/27] model=jodie_rnn agg=none memory=gru val_score=0.1194
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 25/27] model=jodie_rnn agg=none memory=rnn val_score=0.6386
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 26/27] model=jodie_rnn agg=none memory=gru val_score=0.1194
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=1/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=2/3 partition=0 interactions=14000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=4000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=8000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=12000/14000
+[DataParallel batch-sync] trial=0 epoch=3/3 partition=0 interactions=14000/14000
+[DataParallel 27/27] model=jodie_rnn agg=none memory=gru val_score=0.1194
+[DataParallel] Workers shut down.
+Epoch 1/3 | L2 Loss: 0.6471
+Epoch 2/3 | L2 Loss: 0.5877
+Epoch 3/3 | L2 Loss: 0.5756
+Best architecture saved to: outputs/nas_search_fixed/data_parallel_tbatch/best_arch.json
+Leaderboard saved to: outputs/nas_search_fixed/data_parallel_tbatch/leaderboard.csv
+Search mode: rl
+Best selection score: 0.7368
+Best test score: 0.7368
+Best model family: jodie_rnn
+[36m(_DataParallelWorker pid=1439273)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 5x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(_DataParallelWorker pid=1439273)[0m   return torch.load(io.BytesIO(b))[32m [repeated 5x across cluster][0m
+
+Data Parallel 完成！
+
+========================================
+3/4: Pipeline Naive + T-Batch
+========================================
+Pipeline trace log file: outputs/nas_search_fixed/pipeline_naive_tbatch/pipeline_trace_20260526_183607.log
+
+======================================================================
+[GraphNAS] Starting search pipeline
+[GraphNAS] Coarse trials: 27, epochs: 3
+[GraphNAS] Rerank top-k: 0, epochs: 3
+======================================================================
+
+[Timing] Timing log: outputs/nas_search_fixed/pipeline_naive_tbatch/timing_log.csv
+[Coarse Phase] Sampling batch 1: 2 architectures
+[Coarse Phase] Evaluating architectures 1-2/27
+2026-05-26 18:36:12,403	INFO worker.py:1812 -- Started a local Ray instance. View the dashboard at [1m[32mhttp://127.0.0.1:8267 [39m[22m
+[RayPipeline] auto worker allocation: [8] workers across 1 stages (GPUs=8)
+[RayPipeline] detected 8 GPUs; pipeline_worker_gpus=1.0
+[RayPipeline] train stage 1: 1 partitions, 14000 interactions, cost range=[14570-14570] sum=14570, workers=8
+[RayPipeline] train worker counts=[8], train groups=[[0]]
+[RayPipeline] eval worker counts=[1], eval groups=[[1]]
+[36m(PartitionShardWorker pid=2321393)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(PartitionShardWorker pid=2321393)[0m   return torch.load(io.BytesIO(b))
+[36m(PartitionShardWorker pid=2321417)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 4x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(PartitionShardWorker pid=2321417)[0m   return torch.load(io.BytesIO(b))[32m [repeated 4x across cluster][0m
+[RayPipeline] created train worker pools=[8]
+[RayPipeline] running unified train+eval pipeline (no global sync point)
+[pipeline-heartbeat] wall=18:36:28 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:36:33 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:36:38 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:36:43 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:36:48 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:36:53 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:36:58 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:37:03 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:37:08 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+/usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(io.BytesIO(b))
+[pipeline-heartbeat] wall=18:37:14 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:37:19 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[36m(PartitionShardWorker pid=2321393)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 4x across cluster][0m
+[36m(PartitionShardWorker pid=2321393)[0m   return torch.load(io.BytesIO(b))[32m [repeated 4x across cluster][0m
+[pipeline-heartbeat] wall=18:37:28 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:37:33 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:37:38 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:37:43 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:37:48 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:37:53 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:37:58 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:38:03 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:38:13 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:38:18 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:38:23 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:38:28 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:38:36 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:38:41 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:38:46 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:38:51 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:38:56 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:39:01 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:39:06 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:39:11 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:39:16 in_flight=2 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=0.4s, est.remain=6.9s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=0.5s, est.remain=4.7s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=0.7s, est.remain=3.8s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=0.8s, est.remain=3.3s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=1.0s, est.remain=3.0s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=1.1s, est.remain=2.7s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=1.3s, est.remain=2.4s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=1.4s, est.remain=2.2s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=1.6s, est.remain=1.9s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=1.7s, est.remain=1.7s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=1.9s, est.remain=1.6s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=2.1s, est.remain=1.4s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=2.2s, est.remain=1.2s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=2.4s, est.remain=1.0s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=2.5s, est.remain=0.8s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=2.7s, est.remain=0.7s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=2.8s, est.remain=0.5s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=3.0s, est.remain=0.3s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=3.2s, est.remain=0.2s, partition=1
+[36m(PartitionShardWorker pid=2321402)[0m [trial=0 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=3.3s, est.remain=0.0s, partition=1
+[pipeline-heartbeat] wall=18:39:25 in_flight=1 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:39:30 in_flight=1 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:39:35 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=1.3s, est.remain=25.2s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=2.1s, est.remain=18.7s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=3.1s, est.remain=17.7s, partition=1
+[pipeline-heartbeat] wall=18:39:41 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=4.0s, est.remain=16.0s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=4.9s, est.remain=14.7s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=5.8s, est.remain=13.6s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=6.7s, est.remain=12.4s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=7.7s, est.remain=11.5s, partition=1
+[pipeline-heartbeat] wall=18:39:46 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=8.5s, est.remain=10.3s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=9.5s, est.remain=9.5s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=10.3s, est.remain=8.4s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=11.3s, est.remain=7.5s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=12.2s, est.remain=6.5s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=13.0s, est.remain=5.6s, partition=1
+[pipeline-heartbeat] wall=18:39:51 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=14.1s, est.remain=4.7s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=14.8s, est.remain=3.7s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=15.9s, est.remain=2.8s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=16.7s, est.remain=1.8s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=17.6s, est.remain=0.9s, partition=1
+[36m(PartitionShardWorker pid=2321410)[0m [trial=1 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=18.3s, est.remain=0.0s, partition=1
+
+============================================================
+[Pipeline Summary]
+  Trials: 2
+  Train stages: 1, workers: [8] (total=8)
+  Eval stages:  1, workers: [1] (total=1)
+  GPUs: 8 (train workers fit)
+  Train S1: 1 partitions, 14000 interactions, users=1120, items=21, workers=8
+  Eval S1:  1 partitions, 1999 interactions, workers=1
+  hint: 7 GPUs unused during evaluation
+============================================================
+
+[Coarse Phase] Progress: 2/27 trials completed
+[Coarse Phase] Sampling batch 2: 2 architectures
+[Coarse Phase] Evaluating architectures 3-4/27
+[RayPipeline] auto worker allocation: [8] workers across 1 stages (GPUs=8)
+[RayPipeline] detected 8 GPUs; pipeline_worker_gpus=1.0
+[RayPipeline] train stage 1: 1 partitions, 14000 interactions, cost range=[14570-14570] sum=14570, workers=8
+[RayPipeline] train worker counts=[8], train groups=[[0]]
+[RayPipeline] eval worker counts=[1], eval groups=[[1]]
+[36m(PartitionShardWorker pid=2321419)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2321419)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2321384)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 4x across cluster][0m
+[36m(PartitionShardWorker pid=2321384)[0m   return torch.load(io.BytesIO(b))[32m [repeated 4x across cluster][0m
+[RayPipeline] created train worker pools=[8]
+[RayPipeline] running unified train+eval pipeline (no global sync point)
+[pipeline-heartbeat] wall=18:40:12 phase=train status=advancing progress_events_total=46 progress_events_delta=46 in_flight=2 active=stage 1=2 pending=stage 1=0 last_progress=[pipeline-trace] wall=18:39:56 elapsed=209.990s phase=eval event=partition_complete trial=1 partition=1 elapsed_sec=18.296 hits=1390 total=1999
+[pipeline-heartbeat] wall=18:40:17 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:40:22 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:40:27 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:40:32 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:40:37 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:40:42 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:40:48 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:40:53 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[36m(PartitionShardWorker pid=2321419)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 4x across cluster][0m
+[36m(PartitionShardWorker pid=2321419)[0m   return torch.load(io.BytesIO(b))[32m [repeated 4x across cluster][0m
+[pipeline-heartbeat] wall=18:41:01 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:41:06 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:41:11 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:41:16 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:41:21 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:41:26 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:41:35 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:41:40 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:41:45 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:41:53 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:41:58 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:42:03 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:42:08 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:42:13 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:42:18 in_flight=2 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=0.4s, est.remain=7.4s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=0.6s, est.remain=5.4s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=0.9s, est.remain=4.9s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=1.2s, est.remain=4.6s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=1.4s, est.remain=4.3s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=1.5s, est.remain=3.6s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=1.6s, est.remain=3.0s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=1.7s, est.remain=2.6s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=1.8s, est.remain=2.2s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=1.9s, est.remain=1.9s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=2.0s, est.remain=1.6s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=2.1s, est.remain=1.4s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=2.2s, est.remain=1.2s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=2.3s, est.remain=1.0s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=2.4s, est.remain=0.8s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=2.5s, est.remain=0.6s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=2.6s, est.remain=0.5s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=2.7s, est.remain=0.3s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=2.8s, est.remain=0.1s, partition=1
+[36m(PartitionShardWorker pid=2321397)[0m [trial=0 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=2.9s, est.remain=0.0s, partition=1
+[pipeline-heartbeat] wall=18:42:27 in_flight=1 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:42:32 in_flight=1 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:42:37 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=1.1s, est.remain=20.0s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=2.0s, est.remain=17.8s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=2.8s, est.remain=16.1s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=3.7s, est.remain=14.8s, partition=1
+[pipeline-heartbeat] wall=18:42:45 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=4.6s, est.remain=13.9s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=5.6s, est.remain=12.9s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=6.4s, est.remain=11.9s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=7.5s, est.remain=11.3s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=8.3s, est.remain=10.2s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=9.4s, est.remain=9.4s, partition=1
+[pipeline-heartbeat] wall=18:42:50 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=10.6s, est.remain=8.6s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=11.7s, est.remain=7.8s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=12.9s, est.remain=6.9s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=13.8s, est.remain=5.9s, partition=1
+[pipeline-heartbeat] wall=18:42:55 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=14.8s, est.remain=4.9s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=15.8s, est.remain=3.9s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=17.0s, est.remain=3.0s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=17.8s, est.remain=2.0s, partition=1
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=18.8s, est.remain=1.0s, partition=1
+[pipeline-heartbeat] wall=18:43:00 in_flight=1 train_pending=[0] eval_pending=[0]
+
+============================================================
+[Pipeline Summary]
+  Trials: 2
+  Train stages: 1, workers: [8] (total=8)
+  Eval stages:  1, workers: [1] (total=1)
+  GPUs: 8 (train workers fit)
+  Train S1: 1 partitions, 14000 interactions, users=1120, items=21, workers=8
+  Eval S1:  1 partitions, 1999 interactions, workers=1
+  hint: 7 GPUs unused during evaluation
+============================================================
+
+[Coarse Phase] Progress: 4/27 trials completed
+[Coarse Phase] Sampling batch 3: 2 architectures
+[Coarse Phase] Evaluating architectures 5-6/27
+[RayPipeline] auto worker allocation: [8] workers across 1 stages (GPUs=8)
+[RayPipeline] detected 8 GPUs; pipeline_worker_gpus=1.0
+[RayPipeline] train stage 1: 1 partitions, 14000 interactions, cost range=[14570-14570] sum=14570, workers=8
+[RayPipeline] train worker counts=[8], train groups=[[0]]
+[RayPipeline] eval worker counts=[1], eval groups=[[1]]
+[36m(PartitionShardWorker pid=2321401)[0m [trial=1 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=19.9s, est.remain=0.0s, partition=1
+[36m(PartitionShardWorker pid=2321406)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2321406)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[RayPipeline] created train worker pools=[8]
+[RayPipeline] running unified train+eval pipeline (no global sync point)
+[pipeline-heartbeat] wall=18:43:13 phase=train status=advancing progress_events_total=46 progress_events_delta=46 in_flight=2 active=stage 1=2 pending=stage 1=0 last_progress=[pipeline-trace] wall=18:43:00 elapsed=172.108s phase=eval event=partition_complete trial=1 partition=1 elapsed_sec=19.909 hits=1184 total=1999
+[36m(PartitionShardWorker pid=2321395)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 5x across cluster][0m
+[36m(PartitionShardWorker pid=2321395)[0m   return torch.load(io.BytesIO(b))[32m [repeated 5x across cluster][0m
+[pipeline-heartbeat] wall=18:43:18 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:43:23 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:43:28 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:43:33 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:43:38 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:43:43 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:43:48 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:43:53 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:44:02 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:44:07 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[36m(PartitionShardWorker pid=2321406)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 3x across cluster][0m
+[36m(PartitionShardWorker pid=2321406)[0m   return torch.load(io.BytesIO(b))[32m [repeated 3x across cluster][0m
+[pipeline-heartbeat] wall=18:44:16 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:44:21 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:44:26 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:44:31 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:44:36 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:44:41 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:44:46 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:44:51 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:45:00 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:45:05 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:45:12 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:45:17 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:45:22 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:45:27 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:45:32 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:45:37 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:45:42 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:45:47 in_flight=2 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=0.4s, est.remain=8.1s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=0.8s, est.remain=6.9s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=1.1s, est.remain=6.3s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=1.4s, est.remain=5.5s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=1.6s, est.remain=4.9s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=1.9s, est.remain=4.5s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=2.3s, est.remain=4.3s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=2.6s, est.remain=3.9s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=2.9s, est.remain=3.6s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=3.1s, est.remain=3.1s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=3.4s, est.remain=2.8s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=3.7s, est.remain=2.5s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=3.9s, est.remain=2.1s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=4.2s, est.remain=1.8s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=4.5s, est.remain=1.5s, partition=1
+[pipeline-heartbeat] wall=18:45:57 in_flight=2 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=4.7s, est.remain=1.2s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=5.0s, est.remain=0.9s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=5.3s, est.remain=0.6s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=5.4s, est.remain=0.3s, partition=1
+[36m(PartitionShardWorker pid=2321389)[0m [trial=0 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=5.7s, est.remain=0.0s, partition=1
+[pipeline-heartbeat] wall=18:46:03 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=1.4s, est.remain=27.1s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=2.6s, est.remain=23.7s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=3.9s, est.remain=21.8s, partition=1
+[pipeline-heartbeat] wall=18:46:12 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=5.4s, est.remain=21.6s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=6.8s, est.remain=20.3s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=8.4s, est.remain=19.5s, partition=1
+[pipeline-heartbeat] wall=18:46:17 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=9.7s, est.remain=18.0s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=11.6s, est.remain=17.3s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=12.9s, est.remain=15.7s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=14.2s, est.remain=14.2s, partition=1
+[pipeline-heartbeat] wall=18:46:22 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=15.4s, est.remain=12.6s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=16.7s, est.remain=11.1s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=17.9s, est.remain=9.6s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=19.1s, est.remain=8.2s, partition=1
+[pipeline-heartbeat] wall=18:46:27 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=20.5s, est.remain=6.8s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=22.0s, est.remain=5.5s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=23.3s, est.remain=4.1s, partition=1
+[pipeline-heartbeat] wall=18:46:32 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=24.5s, est.remain=2.7s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=25.7s, est.remain=1.3s, partition=1
+[36m(PartitionShardWorker pid=2321408)[0m [trial=1 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=26.9s, est.remain=0.0s, partition=1
+
+============================================================
+[Pipeline Summary]
+  Trials: 2
+  Train stages: 1, workers: [8] (total=8)
+  Eval stages:  1, workers: [1] (total=1)
+  GPUs: 8 (train workers fit)
+  Train S1: 1 partitions, 14000 interactions, users=1120, items=21, workers=8
+  Eval S1:  1 partitions, 1999 interactions, workers=1
+  hint: 7 GPUs unused during evaluation
+============================================================
+
+[Coarse Phase] Progress: 6/27 trials completed
+[Coarse Phase] Sampling batch 4: 2 architectures
+[Coarse Phase] Evaluating architectures 7-8/27
+[RayPipeline] auto worker allocation: [8] workers across 1 stages (GPUs=8)
+[RayPipeline] detected 8 GPUs; pipeline_worker_gpus=1.0
+[RayPipeline] train stage 1: 1 partitions, 14000 interactions, cost range=[14570-14570] sum=14570, workers=8
+[RayPipeline] train worker counts=[8], train groups=[[0]]
+[RayPipeline] eval worker counts=[1], eval groups=[[1]]
+[36m(PartitionShardWorker pid=2321391)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2321391)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[RayPipeline] created train worker pools=[8]
+[RayPipeline] running unified train+eval pipeline (no global sync point)
+[36m(PartitionShardWorker pid=2321386)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 6x across cluster][0m
+[36m(PartitionShardWorker pid=2321386)[0m   return torch.load(io.BytesIO(b))[32m [repeated 6x across cluster][0m
+[pipeline-heartbeat] wall=18:46:47 phase=train status=advancing progress_events_total=46 progress_events_delta=46 in_flight=2 active=stage 1=2 pending=stage 1=0 last_progress=[pipeline-trace] wall=18:46:34 elapsed=196.052s phase=eval event=partition_complete trial=1 partition=1 elapsed_sec=26.920 hits=395 total=1999
+[pipeline-heartbeat] wall=18:46:52 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:46:57 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:02 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:07 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:12 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:17 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:22 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:28 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:33 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:38 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[36m(PartitionShardWorker pid=2321391)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2321391)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[pipeline-heartbeat] wall=18:47:44 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:49 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:54 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:47:59 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:48:04 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:48:09 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:48:14 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:48:24 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:48:29 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:48:36 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:48:41 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:48:46 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:48:51 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:48:56 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:49:01 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:49:06 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:49:11 in_flight=2 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=0.3s, est.remain=6.1s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=0.5s, est.remain=4.1s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=0.6s, est.remain=3.4s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=0.7s, est.remain=2.9s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=0.9s, est.remain=2.6s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=1.0s, est.remain=2.3s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=1.1s, est.remain=2.1s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=1.3s, est.remain=1.9s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=1.4s, est.remain=1.7s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=1.5s, est.remain=1.5s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=1.7s, est.remain=1.4s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=1.8s, est.remain=1.2s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=2.0s, est.remain=1.1s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=2.1s, est.remain=0.9s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=2.3s, est.remain=0.8s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=2.4s, est.remain=0.6s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=2.5s, est.remain=0.4s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=2.7s, est.remain=0.3s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=2.8s, est.remain=0.1s, partition=1
+[36m(PartitionShardWorker pid=2321388)[0m [trial=0 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=3.0s, est.remain=0.0s, partition=1
+[pipeline-heartbeat] wall=18:49:20 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=1.9s, est.remain=36.5s, partition=1
+[pipeline-heartbeat] wall=18:49:30 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=3.8s, est.remain=33.9s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=5.5s, est.remain=31.0s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=6.3s, est.remain=25.1s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=7.0s, est.remain=21.1s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=8.0s, est.remain=18.7s, partition=1
+[pipeline-heartbeat] wall=18:49:35 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=8.7s, est.remain=16.2s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=9.6s, est.remain=14.3s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=10.4s, est.remain=12.8s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=11.1s, est.remain=11.1s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=12.0s, est.remain=9.8s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=12.8s, est.remain=8.5s, partition=1
+[pipeline-heartbeat] wall=18:49:40 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=13.7s, est.remain=7.4s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=14.6s, est.remain=6.2s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=15.4s, est.remain=5.1s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=16.3s, est.remain=4.1s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=17.0s, est.remain=3.0s, partition=1
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=18.0s, est.remain=2.0s, partition=1
+[pipeline-heartbeat] wall=18:49:45 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=18.7s, est.remain=1.0s, partition=1
+
+============================================================
+[Pipeline Summary]
+  Trials: 2
+  Train stages: 1, workers: [8] (total=8)
+  Eval stages:  1, workers: [1] (total=1)
+  GPUs: 8 (train workers fit)
+  Train S1: 1 partitions, 14000 interactions, users=1120, items=21, workers=8
+  Eval S1:  1 partitions, 1999 interactions, workers=1
+  hint: 7 GPUs unused during evaluation
+============================================================
+
+[Coarse Phase] Progress: 8/27 trials completed
+[Coarse Phase] Sampling batch 5: 2 architectures
+[36m(PartitionShardWorker pid=2321418)[0m [trial=1 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=19.7s, est.remain=0.0s, partition=1
+[Coarse Phase] Evaluating architectures 9-10/27
+[RayPipeline] auto worker allocation: [8] workers across 1 stages (GPUs=8)
+[RayPipeline] detected 8 GPUs; pipeline_worker_gpus=1.0
+[RayPipeline] train stage 1: 1 partitions, 14000 interactions, cost range=[14570-14570] sum=14570, workers=8
+[RayPipeline] train worker counts=[8], train groups=[[0]]
+[RayPipeline] eval worker counts=[1], eval groups=[[1]]
+[36m(PartitionShardWorker pid=2321431)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2321431)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[RayPipeline] created train worker pools=[8]
+[RayPipeline] running unified train+eval pipeline (no global sync point)
+[36m(PartitionShardWorker pid=2321412)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 6x across cluster][0m
+[36m(PartitionShardWorker pid=2321412)[0m   return torch.load(io.BytesIO(b))[32m [repeated 6x across cluster][0m
+[pipeline-heartbeat] wall=18:49:58 phase=train status=advancing progress_events_total=46 progress_events_delta=46 in_flight=2 active=stage 1=2 pending=stage 1=0 last_progress=[pipeline-trace] wall=18:49:46 elapsed=181.293s phase=eval event=partition_complete trial=1 partition=1 elapsed_sec=19.693 hits=1482 total=1999
+[pipeline-heartbeat] wall=18:50:03 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:50:08 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:50:13 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:50:18 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:50:23 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:50:28 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:50:33 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:50:38 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:50:43 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:50:48 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[36m(PartitionShardWorker pid=2321431)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2321431)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[pipeline-heartbeat] wall=18:51:00 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:05 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:10 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:15 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:20 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:25 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:30 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:35 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:40 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:45 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:50 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:51:55 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:52:00 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:52:10 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:52:15 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:52:20 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:52:25 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:52:30 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:52:35 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:52:40 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:52:45 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:52:50 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:52:55 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:53:00 in_flight=2 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=0.4s, est.remain=7.8s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=0.6s, est.remain=5.1s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=0.7s, est.remain=4.1s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=0.9s, est.remain=3.5s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=1.0s, est.remain=3.1s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=1.2s, est.remain=2.8s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=1.4s, est.remain=2.5s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=1.5s, est.remain=2.2s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=1.6s, est.remain=2.0s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=1.7s, est.remain=1.7s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=1.9s, est.remain=1.5s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=2.0s, est.remain=1.3s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=2.1s, est.remain=1.1s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=2.2s, est.remain=0.9s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=2.3s, est.remain=0.8s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=2.5s, est.remain=0.6s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=2.6s, est.remain=0.5s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=2.7s, est.remain=0.3s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=2.8s, est.remain=0.1s, partition=1
+[36m(PartitionShardWorker pid=2321383)[0m [trial=1 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=2.9s, est.remain=0.0s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=1.2s, est.remain=23.4s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=2.3s, est.remain=20.9s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=3.3s, est.remain=18.6s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=4.1s, est.remain=16.4s, partition=1
+[pipeline-heartbeat] wall=18:53:14 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=5.2s, est.remain=15.6s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=6.0s, est.remain=13.9s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=7.0s, est.remain=13.0s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=8.0s, est.remain=11.9s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=8.8s, est.remain=10.8s, partition=1
+[pipeline-heartbeat] wall=18:53:19 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=10.1s, est.remain=10.1s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=10.9s, est.remain=8.9s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=12.0s, est.remain=8.0s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=12.8s, est.remain=6.9s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=14.0s, est.remain=6.0s, partition=1
+[pipeline-heartbeat] wall=18:53:24 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=15.0s, est.remain=5.0s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=16.1s, est.remain=4.0s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=17.0s, est.remain=3.0s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=17.8s, est.remain=2.0s, partition=1
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=18.8s, est.remain=1.0s, partition=1
+[pipeline-heartbeat] wall=18:53:29 in_flight=1 train_pending=[0] eval_pending=[0]
+
+============================================================
+[Pipeline Summary]
+  Trials: 2
+  Train stages: 1, workers: [8] (total=8)
+  Eval stages:  1, workers: [1] (total=1)
+  GPUs: 8 (train workers fit)
+  Train S1: 1 partitions, 14000 interactions, users=1120, items=21, workers=8
+  Eval S1:  1 partitions, 1999 interactions, workers=1
+  hint: 7 GPUs unused during evaluation
+============================================================
+
+[36m(PartitionShardWorker pid=2321428)[0m [trial=0 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=19.6s, est.remain=0.0s, partition=1
+[Coarse Phase] Progress: 10/27 trials completed
+[Coarse Phase] Sampling batch 6: 2 architectures
+[Coarse Phase] Evaluating architectures 11-12/27
+[RayPipeline] auto worker allocation: [8] workers across 1 stages (GPUs=8)
+[RayPipeline] detected 8 GPUs; pipeline_worker_gpus=1.0
+[RayPipeline] train stage 1: 1 partitions, 14000 interactions, cost range=[14570-14570] sum=14570, workers=8
+[RayPipeline] train worker counts=[8], train groups=[[0]]
+[RayPipeline] eval worker counts=[1], eval groups=[[1]]
+[36m(PartitionShardWorker pid=2321430)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2321430)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[RayPipeline] created train worker pools=[8]
+[RayPipeline] running unified train+eval pipeline (no global sync point)
+[36m(PartitionShardWorker pid=2321432)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 6x across cluster][0m
+[36m(PartitionShardWorker pid=2321432)[0m   return torch.load(io.BytesIO(b))[32m [repeated 6x across cluster][0m
+[pipeline-heartbeat] wall=18:53:42 phase=train status=advancing progress_events_total=46 progress_events_delta=46 in_flight=2 active=stage 1=2 pending=stage 1=0 last_progress=[pipeline-trace] wall=18:53:29 elapsed=213.357s phase=eval event=partition_complete trial=0 partition=1 elapsed_sec=19.641 hits=1591 total=1999
+[pipeline-heartbeat] wall=18:53:47 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:53:52 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:53:57 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:54:02 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:54:07 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:54:12 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:54:17 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:54:23 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:54:28 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[36m(PartitionShardWorker pid=2321430)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2321430)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[pipeline-heartbeat] wall=18:54:36 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:54:41 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:54:46 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:54:51 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:54:56 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:55:01 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:55:06 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:55:11 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:55:19 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:55:24 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:55:29 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:55:34 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:55:39 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:55:44 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:55:49 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:55:54 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:55:59 in_flight=2 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=0.5s, est.remain=9.4s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=0.8s, est.remain=7.5s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=1.2s, est.remain=6.6s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=1.3s, est.remain=5.4s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=1.6s, est.remain=4.9s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=2.0s, est.remain=4.6s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=2.3s, est.remain=4.3s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=2.6s, est.remain=3.9s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=2.8s, est.remain=3.4s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=3.1s, est.remain=3.1s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=3.5s, est.remain=2.8s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=3.7s, est.remain=2.5s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=3.9s, est.remain=2.1s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=4.3s, est.remain=1.8s, partition=1
+[pipeline-heartbeat] wall=18:56:05 in_flight=2 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=4.6s, est.remain=1.5s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=4.9s, est.remain=1.2s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=5.1s, est.remain=0.9s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=5.4s, est.remain=0.6s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=5.7s, est.remain=0.3s, partition=1
+[36m(PartitionShardWorker pid=2321420)[0m [trial=0 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=6.0s, est.remain=0.0s, partition=1
+[36m(PartitionShardWorker pid=2321423)[0m [trial=1 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=1.3s, est.remain=24.1s, partition=1[32m [repeated 2x across cluster][0m
+[pipeline-heartbeat] wall=18:56:15 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321423)[0m [trial=1 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=7.0s, est.remain=13.0s, partition=1[32m [repeated 6x across cluster][0m
+[pipeline-heartbeat] wall=18:56:20 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321423)[0m [trial=1 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=12.2s, est.remain=8.1s, partition=1[32m [repeated 5x across cluster][0m
+[pipeline-heartbeat] wall=18:56:25 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321423)[0m [trial=1 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=18.8s, est.remain=4.7s, partition=1[32m [repeated 4x across cluster][0m
+[pipeline-heartbeat] wall=18:56:30 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2321423)[0m [trial=1 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=24.0s, est.remain=0.0s, partition=1[32m [repeated 4x across cluster][0m
+
+============================================================
+[Pipeline Summary]
+  Trials: 2
+  Train stages: 1, workers: [8] (total=8)
+  Eval stages:  1, workers: [1] (total=1)
+  GPUs: 8 (train workers fit)
+  Train S1: 1 partitions, 14000 interactions, users=1120, items=21, workers=8
+  Eval S1:  1 partitions, 1999 interactions, workers=1
+  hint: 7 GPUs unused during evaluation
+============================================================
+
+[Coarse Phase] Progress: 12/27 trials completed
+[Coarse Phase] Sampling batch 7: 2 architectures
+[Coarse Phase] Evaluating architectures 13-14/27
+[RayPipeline] auto worker allocation: [8] workers across 1 stages (GPUs=8)
+[RayPipeline] detected 8 GPUs; pipeline_worker_gpus=1.0
+[RayPipeline] train stage 1: 1 partitions, 14000 interactions, cost range=[14570-14570] sum=14570, workers=8
+[RayPipeline] train worker counts=[8], train groups=[[0]]
+[RayPipeline] eval worker counts=[1], eval groups=[[1]]
+[36m(PartitionShardWorker pid=2378446)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2378446)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[RayPipeline] created train worker pools=[8]
+[RayPipeline] running unified train+eval pipeline (no global sync point)
+[36m(PartitionShardWorker pid=2378955)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 6x across cluster][0m
+[36m(PartitionShardWorker pid=2378955)[0m   return torch.load(io.BytesIO(b))[32m [repeated 6x across cluster][0m
+[pipeline-heartbeat] wall=18:56:48 phase=train status=advancing progress_events_total=46 progress_events_delta=46 in_flight=2 active=stage 1=2 pending=stage 1=0 last_progress=[pipeline-trace] wall=18:56:34 elapsed=174.137s phase=eval event=partition_complete trial=1 partition=1 elapsed_sec=24.031 hits=412 total=1999
+[pipeline-heartbeat] wall=18:56:53 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:56:58 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:03 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:08 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:13 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:18 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:23 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:28 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:33 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:39 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:44 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:49 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:54 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:57:59 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[36m(PartitionShardWorker pid=2378446)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2378446)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[pipeline-heartbeat] wall=18:58:07 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:58:12 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:58:17 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:58:22 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:58:27 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:58:32 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:58:37 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:58:42 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:58:47 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:58:52 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=18:59:01 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:59:06 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:59:11 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:59:16 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:59:21 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=18:59:30 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:59:35 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:59:40 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:59:45 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:59:50 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=18:59:55 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=19:00:00 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=19:00:05 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=19:00:10 in_flight=2 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=0.3s, est.remain=6.3s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=0.5s, est.remain=4.3s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=0.6s, est.remain=3.5s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=0.8s, est.remain=3.0s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=0.9s, est.remain=2.7s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=1.0s, est.remain=2.4s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=1.2s, est.remain=2.2s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=1.3s, est.remain=2.0s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=1.5s, est.remain=1.8s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=1.6s, est.remain=1.6s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=1.7s, est.remain=1.4s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=1.9s, est.remain=1.3s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=2.0s, est.remain=1.1s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=2.2s, est.remain=0.9s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=2.3s, est.remain=0.8s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=2.4s, est.remain=0.6s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=2.6s, est.remain=0.5s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=2.8s, est.remain=0.3s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=2.9s, est.remain=0.2s, partition=1
+[36m(PartitionShardWorker pid=2378582)[0m [trial=0 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=3.1s, est.remain=0.0s, partition=1
+[pipeline-heartbeat] wall=19:00:24 in_flight=1 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=19:00:29 in_flight=1 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=19:00:34 in_flight=1 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=19:00:39 in_flight=1 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=19:00:44 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 100/1999 (5.0%)] elapsed=1.2s, est.remain=23.5s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 200/1999 (10.0%)] elapsed=1.9s, est.remain=17.1s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 300/1999 (15.0%)] elapsed=2.9s, est.remain=16.5s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 400/1999 (20.0%)] elapsed=3.7s, est.remain=14.6s, partition=1
+[pipeline-heartbeat] wall=19:00:52 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 500/1999 (25.0%)] elapsed=4.6s, est.remain=13.7s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 600/1999 (30.0%)] elapsed=5.4s, est.remain=12.7s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 700/1999 (35.0%)] elapsed=6.4s, est.remain=12.0s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 800/1999 (40.0%)] elapsed=7.2s, est.remain=10.8s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 900/1999 (45.0%)] elapsed=8.3s, est.remain=10.1s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1000/1999 (50.0%)] elapsed=9.1s, est.remain=9.1s, partition=1
+[pipeline-heartbeat] wall=19:00:57 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1100/1999 (55.0%)] elapsed=10.1s, est.remain=8.2s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1200/1999 (60.0%)] elapsed=11.0s, est.remain=7.3s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1300/1999 (65.0%)] elapsed=11.9s, est.remain=6.4s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1400/1999 (70.0%)] elapsed=13.0s, est.remain=5.5s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1500/1999 (75.0%)] elapsed=13.9s, est.remain=4.6s, partition=1
+[pipeline-heartbeat] wall=19:01:02 in_flight=1 train_pending=[0] eval_pending=[0]
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1600/1999 (80.0%)] elapsed=14.8s, est.remain=3.7s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1700/1999 (85.0%)] elapsed=15.9s, est.remain=2.8s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1800/1999 (90.0%)] elapsed=16.8s, est.remain=1.9s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1900/1999 (95.0%)] elapsed=17.7s, est.remain=0.9s, partition=1
+[36m(PartitionShardWorker pid=2378648)[0m [trial=1 partitions=[1]] [Interaction 1999/1999 (100.0%)] elapsed=18.8s, est.remain=0.0s, partition=1
+
+============================================================
+[Pipeline Summary]
+  Trials: 2
+  Train stages: 1, workers: [8] (total=8)
+  Eval stages:  1, workers: [1] (total=1)
+  GPUs: 8 (train workers fit)
+  Train S1: 1 partitions, 14000 interactions, users=1120, items=21, workers=8
+  Eval S1:  1 partitions, 1999 interactions, workers=1
+  hint: 7 GPUs unused during evaluation
+============================================================
+
+[Coarse Phase] Progress: 14/27 trials completed
+[Coarse Phase] Sampling batch 8: 2 architectures
+[Coarse Phase] Evaluating architectures 15-16/27
+[RayPipeline] auto worker allocation: [8] workers across 1 stages (GPUs=8)
+[RayPipeline] detected 8 GPUs; pipeline_worker_gpus=1.0
+[RayPipeline] train stage 1: 1 partitions, 14000 interactions, cost range=[14570-14570] sum=14570, workers=8
+[RayPipeline] train worker counts=[8], train groups=[[0]]
+[RayPipeline] eval worker counts=[1], eval groups=[[1]]
+[36m(PartitionShardWorker pid=2390223)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2390223)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[RayPipeline] created train worker pools=[8]
+[RayPipeline] running unified train+eval pipeline (no global sync point)
+[36m(PartitionShardWorker pid=2390730)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 5x across cluster][0m
+[36m(PartitionShardWorker pid=2390730)[0m   return torch.load(io.BytesIO(b))[32m [repeated 5x across cluster][0m
+[pipeline-heartbeat] wall=19:01:19 phase=train status=advancing progress_events_total=46 progress_events_delta=46 in_flight=2 active=stage 1=2 pending=stage 1=0 last_progress=[pipeline-trace] wall=19:01:06 elapsed=261.102s phase=eval event=partition_complete trial=1 partition=1 elapsed_sec=18.803 hits=1789 total=1999
+[pipeline-heartbeat] wall=19:01:24 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=19:01:29 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=19:01:34 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=19:01:39 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=19:01:44 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=19:01:50 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=19:01:55 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=19:02:00 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=19:02:05 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=19:02:10 phase=train status=no_new_progress progress_events_total=46 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[36m(PartitionShardWorker pid=2390223)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 3x across cluster][0m
+[36m(PartitionShardWorker pid=2390223)[0m   return torch.load(io.BytesIO(b))[32m [repeated 3x across cluster][0m
+[pipeline-heartbeat] wall=19:02:16 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=19:02:21 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=19:02:26 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=19:02:31 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=19:02:36 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=2 active=stage 1=2 pending=stage 1=0
+[pipeline-heartbeat] wall=19:02:45 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=19:02:50 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=19:02:55 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=19:03:00 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0
+[pipeline-heartbeat] wall=19:03:10 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=19:03:15 in_flight=2 train_pending=[0] eval_pending=[0]
+[pipeline-heartbeat] wall=19:03:20 in_flight=2 train_pending=[0] eval_pending=[0]
+已终止

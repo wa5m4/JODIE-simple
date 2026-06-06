@@ -1,0 +1,348 @@
+nohup: 忽略输入
+==========================================
+16组全交叉实验开始
+数据集: public_csv (data/public/mooc.csv)
+事件数: 20000, Trials: 27, Epochs: 3
+GPU: 0,1,2, Seed: 42, Space: mixed
+==========================================
+
+
+==========================================
+[1/16] 实验: serial_serial
+执行模式: serial
+批处理: serial
+==========================================
+[Timing] Timing log: outputs/full_cross_experiment/serial_serial/timing_log.csv
+Epoch 1/3 | L2 Loss: 50.7440
+Epoch 2/3 | L2 Loss: 48.1830
+Epoch 3/3 | L2 Loss: 47.4542
+[Coarse 1/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6562
+Epoch 1/3 | L2 Loss: 4.3417
+Epoch 2/3 | L2 Loss: 3.7393
+Epoch 3/3 | L2 Loss: 3.6804
+[Coarse 2/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.3575
+Epoch 1/3 | L2 Loss: 0.8955
+Epoch 2/3 | L2 Loss: 0.8405
+Epoch 3/3 | L2 Loss: 0.8449
+[Coarse 3/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6255
+Epoch 1/3 | L2 Loss: 12.3893
+Epoch 2/3 | L2 Loss: 11.4525
+Epoch 3/3 | L2 Loss: 11.3423
+[Coarse 4/27] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.7253
+Epoch 1/3 | L2 Loss: 0.1090
+Epoch 2/3 | L2 Loss: 0.1058
+Epoch 3/3 | L2 Loss: 0.1045
+[Coarse 5/27] model=temporal_event_gnn_jodie agg=none memory=lstm time_proj=off val_score=0.2024
+Epoch 1/3 | L2 Loss: 49.7187
+Epoch 2/3 | L2 Loss: 47.8142
+Epoch 3/3 | L2 Loss: 47.6887
+[Coarse 6/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6084
+Epoch 1/3 | L2 Loss: 99.1779
+Epoch 2/3 | L2 Loss: 95.0029
+Epoch 3/3 | L2 Loss: 93.9943
+[Coarse 7/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.7435
+Epoch 1/3 | L2 Loss: 9631305.9426
+Epoch 2/3 | L2 Loss: 1336434.7490
+Epoch 3/3 | L2 Loss: 129858.6747
+[Coarse 8/27] model=temporal_event_gnn_jodie agg=sum memory=gru time_proj=linear val_score=0.2320
+Epoch 1/3 | L2 Loss: 117883.8104
+Epoch 2/3 | L2 Loss: 3307.6054
+Epoch 3/3 | L2 Loss: 172.4495
+[Coarse 9/27] model=temporal_event_gnn_jodie agg=none memory=lstm time_proj=linear val_score=0.1868
+Epoch 1/3 | L2 Loss: 0.7819
+Epoch 2/3 | L2 Loss: 0.7172
+Epoch 3/3 | L2 Loss: 0.7090
+[Coarse 10/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6894
+Epoch 1/3 | L2 Loss: 0.6632
+Epoch 2/3 | L2 Loss: 0.6032
+Epoch 3/3 | L2 Loss: 0.5796
+[Coarse 11/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.7212
+Epoch 1/3 | L2 Loss: 1602517.3382
+Epoch 2/3 | L2 Loss: 233077.7912
+Epoch 3/3 | L2 Loss: 20848.3506
+[Coarse 12/27] model=temporal_event_gnn_jodie agg=mean memory=lstm time_proj=linear val_score=0.1623
+Epoch 1/3 | L2 Loss: 0.8925
+Epoch 2/3 | L2 Loss: 0.8230
+Epoch 3/3 | L2 Loss: 0.8176
+[Coarse 13/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.5400
+Epoch 1/3 | L2 Loss: 13.8969
+Epoch 2/3 | L2 Loss: 11.6463
+Epoch 3/3 | L2 Loss: 11.8034
+[Coarse 14/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2890
+Epoch 1/3 | L2 Loss: 4123028.1577
+Epoch 2/3 | L2 Loss: 309959.9462
+Epoch 3/3 | L2 Loss: 12249.8713
+[Coarse 15/27] model=temporal_event_gnn_jodie agg=none memory=rnn time_proj=linear val_score=0.1741
+Epoch 1/3 | L2 Loss: 23.9508
+Epoch 2/3 | L2 Loss: 22.3589
+Epoch 3/3 | L2 Loss: 22.2076
+[Coarse 16/27] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.7986
+Epoch 1/3 | L2 Loss: 518723.6463
+Epoch 2/3 | L2 Loss: 56767.4780
+Epoch 3/3 | L2 Loss: 2235.9947
+[Coarse 17/27] model=temporal_event_gnn_jodie agg=sum memory=gru time_proj=linear val_score=0.2073
+Epoch 1/3 | L2 Loss: 392137.7480
+Epoch 2/3 | L2 Loss: 23184.5448
+Epoch 3/3 | L2 Loss: 724.3082
+[Coarse 18/27] model=temporal_event_gnn_jodie agg=mean memory=gru time_proj=linear val_score=0.2510
+Epoch 1/3 | L2 Loss: 0.3259
+Epoch 2/3 | L2 Loss: 0.2965
+Epoch 3/3 | L2 Loss: 0.2917
+[Coarse 19/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3307
+Epoch 1/3 | L2 Loss: 0.7780
+Epoch 2/3 | L2 Loss: 0.7411
+Epoch 3/3 | L2 Loss: 0.7376
+[Coarse 20/27] model=temporal_event_gnn_jodie agg=none memory=rnn time_proj=off val_score=0.2173
+Epoch 1/3 | L2 Loss: 0.4845
+Epoch 2/3 | L2 Loss: 0.4687
+Epoch 3/3 | L2 Loss: 0.4655
+[Coarse 21/27] model=temporal_event_gnn_jodie agg=none memory=gru time_proj=off val_score=0.1781
+Epoch 1/3 | L2 Loss: 363056.7856
+Epoch 2/3 | L2 Loss: 24235.5093
+Epoch 3/3 | L2 Loss: 2880.4060
+[Coarse 22/27] model=temporal_event_gnn_jodie agg=sum memory=lstm time_proj=linear val_score=0.2018
+Epoch 1/3 | L2 Loss: 0.1196
+Epoch 2/3 | L2 Loss: 0.0999
+Epoch 3/3 | L2 Loss: 0.0986
+[Coarse 23/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3236
+Epoch 1/3 | L2 Loss: 0.8953
+Epoch 2/3 | L2 Loss: 0.7814
+Epoch 3/3 | L2 Loss: 0.7036
+[Coarse 24/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.5369
+Epoch 1/3 | L2 Loss: 844848.7836
+Epoch 2/3 | L2 Loss: 23566.5071
+Epoch 3/3 | L2 Loss: 992.6749
+[Coarse 25/27] model=temporal_event_gnn_jodie agg=mean memory=rnn time_proj=linear val_score=0.1934
+Epoch 1/3 | L2 Loss: 25.0978
+Epoch 2/3 | L2 Loss: 23.8898
+Epoch 3/3 | L2 Loss: 23.9686
+[Coarse 26/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.5673
+Epoch 1/3 | L2 Loss: 1.1362
+Epoch 2/3 | L2 Loss: 1.1011
+Epoch 3/3 | L2 Loss: 1.0629
+[Coarse 27/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.4520
+Epoch 1/3 | L2 Loss: 19.6738
+Epoch 2/3 | L2 Loss: 18.3511
+Epoch 3/3 | L2 Loss: 18.1912
+Best architecture saved to: outputs/full_cross_experiment/serial_serial/best_arch.json
+Leaderboard saved to: outputs/full_cross_experiment/serial_serial/leaderboard.csv
+Search mode: rl
+Best selection score: 0.7986
+Best test score: 0.7986
+Best model family: jodie_rnn
+
+[1/16] 完成: serial_serial
+耗时: 68分10秒 (4090秒)
+结果: Test MRR=0.8310854879669255, Recall@10=0.9875031242189453
+
+
+==========================================
+[2/16] 实验: serial_tbatch
+执行模式: serial
+批处理: tbatch
+==========================================
+[Timing] Timing log: outputs/full_cross_experiment/serial_tbatch/timing_log.csv
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 51.1679
+Epoch 2/3 | L2 Loss: 47.5689
+Epoch 3/3 | L2 Loss: 47.4903
+[Coarse 1/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6455
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 4.5062
+Epoch 2/3 | L2 Loss: 3.8118
+Epoch 3/3 | L2 Loss: 3.6973
+[Coarse 2/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.3011
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.9054
+Epoch 2/3 | L2 Loss: 0.8322
+Epoch 3/3 | L2 Loss: 0.8349
+[Coarse 3/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.5950
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 12.4532
+Epoch 2/3 | L2 Loss: 11.3650
+Epoch 3/3 | L2 Loss: 11.2224
+[Coarse 4/27] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.7397
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.1078
+Epoch 2/3 | L2 Loss: 0.1042
+Epoch 3/3 | L2 Loss: 0.1030
+[Coarse 5/27] model=temporal_event_gnn_jodie agg=none memory=lstm time_proj=off val_score=0.1994
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 49.9238
+Epoch 2/3 | L2 Loss: 46.8914
+Epoch 3/3 | L2 Loss: 47.2038
+[Coarse 6/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.5729
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 98.8473
+Epoch 2/3 | L2 Loss: 93.0493
+Epoch 3/3 | L2 Loss: 93.0334
+[Coarse 7/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6775
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 9302754.7290
+Epoch 2/3 | L2 Loss: 2721054.4385
+Epoch 3/3 | L2 Loss: 1185013.9720
+[Coarse 8/27] model=temporal_event_gnn_jodie agg=sum memory=gru time_proj=linear val_score=0.1662
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 129165.3231
+Epoch 2/3 | L2 Loss: 25899.2357
+Epoch 3/3 | L2 Loss: 3032.2059
+[Coarse 9/27] model=temporal_event_gnn_jodie agg=none memory=lstm time_proj=linear val_score=0.1949
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.8194
+Epoch 2/3 | L2 Loss: 0.7297
+Epoch 3/3 | L2 Loss: 0.7142
+[Coarse 10/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.7240
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.6736
+Epoch 2/3 | L2 Loss: 0.5861
+Epoch 3/3 | L2 Loss: 0.5478
+[Coarse 11/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.7028
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 1505104.1395
+Epoch 2/3 | L2 Loss: 352632.5853
+Epoch 3/3 | L2 Loss: 110501.4242
+[Coarse 12/27] model=temporal_event_gnn_jodie agg=mean memory=lstm time_proj=linear val_score=0.2413
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.9008
+Epoch 2/3 | L2 Loss: 0.8379
+Epoch 3/3 | L2 Loss: 0.7937
+[Coarse 13/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.5060
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 13.6314
+Epoch 2/3 | L2 Loss: 11.2562
+Epoch 3/3 | L2 Loss: 11.0416
+[Coarse 14/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2933
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 3947090.1028
+Epoch 2/3 | L2 Loss: 667701.8228
+Epoch 3/3 | L2 Loss: 123084.6770
+[Coarse 15/27] model=temporal_event_gnn_jodie agg=none memory=rnn time_proj=linear val_score=0.1808
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 23.7088
+Epoch 2/3 | L2 Loss: 21.7826
+Epoch 3/3 | L2 Loss: 21.5578
+[Coarse 16/27] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.8125
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 629481.7929
+Epoch 2/3 | L2 Loss: 160106.9511
+Epoch 3/3 | L2 Loss: 55729.9980
+[Coarse 17/27] model=temporal_event_gnn_jodie agg=sum memory=gru time_proj=linear val_score=0.2113
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 479876.3336
+Epoch 2/3 | L2 Loss: 72247.8215
+Epoch 3/3 | L2 Loss: 20680.3381
+[Coarse 18/27] model=temporal_event_gnn_jodie agg=mean memory=gru time_proj=linear val_score=0.2158
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 1.0511
+Epoch 2/3 | L2 Loss: 1.0147
+Epoch 3/3 | L2 Loss: 1.0096
+[Coarse 19/27] model=temporal_event_gnn_jodie agg=sum memory=rnn time_proj=off val_score=0.2077
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 25.5906
+Epoch 2/3 | L2 Loss: 23.8065
+Epoch 3/3 | L2 Loss: 23.7037
+[Coarse 20/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.5954
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 1.2056
+Epoch 2/3 | L2 Loss: 1.0466
+Epoch 3/3 | L2 Loss: 1.0163
+[Coarse 21/27] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.3575
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.2791
+Epoch 2/3 | L2 Loss: 0.2455
+Epoch 3/3 | L2 Loss: 0.2419
+[Coarse 22/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3100
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 2186399.1551
+Epoch 2/3 | L2 Loss: 610581.6328
+Epoch 3/3 | L2 Loss: 154250.8440
+[Coarse 23/27] model=temporal_event_gnn_jodie agg=sum memory=lstm time_proj=linear val_score=0.1759
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.2071
+Epoch 2/3 | L2 Loss: 0.1767
+Epoch 3/3 | L2 Loss: 0.1689
+[Coarse 24/27] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.3852
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.1454
+Epoch 2/3 | L2 Loss: 0.1268
+Epoch 3/3 | L2 Loss: 0.1247
+[Coarse 25/27] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.3512
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.2397
+Epoch 2/3 | L2 Loss: 0.2135
+Epoch 3/3 | L2 Loss: 0.2094
+[Coarse 26/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3129
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.1732
+Epoch 2/3 | L2 Loss: 0.1660
+Epoch 3/3 | L2 Loss: 0.1640
+[Coarse 27/27] model=temporal_event_gnn_jodie agg=sum memory=lstm time_proj=off val_score=0.3404
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 19.3897
+Epoch 2/3 | L2 Loss: 17.8089
+Epoch 3/3 | L2 Loss: 17.6238
+Best architecture saved to: outputs/full_cross_experiment/serial_tbatch/best_arch.json
+Leaderboard saved to: outputs/full_cross_experiment/serial_tbatch/leaderboard.csv
+Search mode: rl
+Best selection score: 0.8125
+Best test score: 0.8125
+Best model family: jodie_rnn
+
+[2/16] 完成: serial_tbatch
+耗时: 60分43秒 (3643秒)
+结果: Test MRR=0.8509143384198148, Recall@10=0.9910022494376406
+
+
+==========================================
+[3/16] 实验: serial_tgn_last
+执行模式: serial
+批处理: tgn-last
+==========================================
+[Timing] Timing log: outputs/full_cross_experiment/serial_tgn_last/timing_log.csv
+[Verify] train_model() called with batch_mode=tgn, tgn_loss_mode=last, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 43.3849
+Epoch 2/3 | L2 Loss: 41.4873
+Epoch 3/3 | L2 Loss: 41.1085
+[Coarse 1/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.2215
+[Verify] train_model() called with batch_mode=tgn, tgn_loss_mode=last, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 3.5260
+Epoch 2/3 | L2 Loss: 3.1222
+Epoch 3/3 | L2 Loss: 3.1448
+[Coarse 2/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.3066
+[Verify] train_model() called with batch_mode=tgn, tgn_loss_mode=last, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 0.6120
+Epoch 2/3 | L2 Loss: 0.4834
+Epoch 3/3 | L2 Loss: 0.4854
+[Coarse 3/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.1983
+[Verify] train_model() called with batch_mode=tgn, tgn_loss_mode=last, tgn_window_size=10.0
+Epoch 1/3 | L2 Loss: 6.9541
+Epoch 2/3 | L2 Loss: 5.6884
+Epoch 3/3 | L2 Loss: 5.5448
+[Coarse 4/27] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.1744
+[Verify] train_model() called with batch_mode=tgn, tgn_loss_mode=last, tgn_window_size=10.0
+Traceback (most recent call last):
+  File "/home/wanghaoyu/JODIE-simple/search.py", line 295, in <module>
+    main()
+  File "/home/wanghaoyu/JODIE-simple/search.py", line 275, in main
+    best, results = trainer.search(
+                    ^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/nas/trainer.py", line 1037, in search
+    result = self._evaluate_arch_multi_seed(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/nas/trainer.py", line 303, in _evaluate_arch_multi_seed
+    single = self.evaluate_arch(
+             ^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/nas/trainer.py", line 365, in evaluate_arch
+    metrics = self._train_and_eval(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/nas/trainer.py", line 207, in _train_and_eval
+    train_model_ce(
+  File "/home/wanghaoyu/JODIE-simple/models/training.py", line 265, in train_model_ce
+    total_loss += train_partition_ce_tgn(
+                  ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/models/training.py", line 721, in train_partition_ce_tgn
+    user_msg, item_msg = model.compute_message(uid, iid, t, f)
+                         ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/anaconda3/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1729, in __getattr__
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+AttributeError: 'TemporalEventGNNJODIE' object has no attribute 'compute_message'

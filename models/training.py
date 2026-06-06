@@ -294,8 +294,22 @@ def train_model_ce(
 
 
 @torch.no_grad()
-def evaluate_partition_ranking(model, partition: TemporalPartition, k: int = 10, graph_ctx=None, progress_label: str = "", progress_every: int = 0, progress_callback=None) -> Dict[str, float]:
+def evaluate_partition_ranking(model, partition: TemporalPartition, k: int = 10, graph_ctx=None, progress_label: str = "", progress_every: int = 0, progress_callback=None, frozen: bool = False) -> Dict[str, float]:
     device = _model_device(model)
+
+    # 如果frozen=True，保存原始embeddings
+    if frozen and hasattr(model, 'user_embeddings'):
+        original_user_emb = model.user_embeddings.data.clone()
+        original_item_emb = model.item_embeddings.data.clone()
+        original_user_time = model.user_last_time.data.clone()
+        original_item_time = model.item_last_time.data.clone()
+        if hasattr(model, 'user_cell_state') and model.user_cell_state is not None:
+            original_user_cell = model.user_cell_state.data.clone()
+            original_item_cell = model.item_cell_state.data.clone()
+        else:
+            original_user_cell = None
+            original_item_cell = None
+
     hits = 0
     mrr_sum = 0.0
     interaction_total = len(partition.interactions)
@@ -312,14 +326,27 @@ def evaluate_partition_ranking(model, partition: TemporalPartition, k: int = 10,
             prefix = f"[{progress_label}] " if progress_label else ""
             print(f"{prefix}[Interaction {idx}/{interaction_total} ({pct:.1f}%)] elapsed={elapsed:.1f}s, est.remain={remaining:.1f}s, partition={partition.partition_id}", flush=True)
         uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
-        pred_emb, _, _ = model(
-            uid,
-            torch.tensor([interaction.item_id], dtype=torch.long, device=device),
-            torch.tensor([interaction.timestamp], dtype=torch.float32, device=device),
-            interaction.features.unsqueeze(0).to(device),
-            interaction.timestamp,
-            graph_ctx=graph_ctx,
-        )
+
+        # 根据frozen参数决定是否使用deferred模式
+        if frozen and hasattr(model, 'user_embeddings'):
+            pred_emb, _, _ = model(
+                uid,
+                torch.tensor([interaction.item_id], dtype=torch.long, device=device),
+                torch.tensor([interaction.timestamp], dtype=torch.float32, device=device),
+                interaction.features.unsqueeze(0).to(device),
+                interaction.timestamp,
+                graph_ctx=graph_ctx,
+                deferred=True,  # 冻结模式：不更新embeddings
+            )
+        else:
+            pred_emb, _, _ = model(
+                uid,
+                torch.tensor([interaction.item_id], dtype=torch.long, device=device),
+                torch.tensor([interaction.timestamp], dtype=torch.float32, device=device),
+                interaction.features.unsqueeze(0).to(device),
+                interaction.timestamp,
+                graph_ctx=graph_ctx,
+            )
         all_item_emb = _all_item_embeddings(model).to(device)
         distances = torch.norm(all_item_emb - pred_emb, p=2, dim=-1)
         item_count = int(distances.shape[0])
@@ -330,6 +357,16 @@ def evaluate_partition_ranking(model, partition: TemporalPartition, k: int = 10,
         sorted_indices = torch.argsort(distances, descending=False)
         rank = int((sorted_indices == interaction.item_id).nonzero(as_tuple=False)[0].item()) + 1
         mrr_sum += 1.0 / rank
+
+    # 如果frozen=True，恢复原始embeddings
+    if frozen and hasattr(model, 'user_embeddings'):
+        model.user_embeddings.data = original_user_emb
+        model.item_embeddings.data = original_item_emb
+        model.user_last_time.data = original_user_time
+        model.item_last_time.data = original_item_time
+        if original_user_cell is not None:
+            model.user_cell_state.data = original_user_cell
+            model.item_cell_state.data = original_item_cell
 
     total = max(interaction_total, 1)
     return {
@@ -346,6 +383,7 @@ def evaluate_ranking_metrics(
     k: int = 10,
     graph_ctx=None,
     partitions: Optional[List[TemporalPartition]] = None,
+    frozen: bool = False,  # 在线评估模式（允许测试时更新embeddings）
 ) -> Dict[str, float]:
     model.eval()
     eval_graph_ctx = clone_graph_state_template(graph_ctx) if graph_ctx is not None else None
@@ -355,7 +393,7 @@ def evaluate_ranking_metrics(
     mrr_sum = 0.0
     total = 0
     for partition in ordered_partitions:
-        metrics = evaluate_partition_ranking(model, partition, k=k, graph_ctx=eval_graph_ctx)
+        metrics = evaluate_partition_ranking(model, partition, k=k, graph_ctx=eval_graph_ctx, frozen=frozen)
         hits += int(metrics["hits"])
         mrr_sum += float(metrics["mrr_sum"])
         total += int(metrics["total"])
@@ -585,6 +623,8 @@ def train_partition_bpr_tgn(
     total_loss = 0.0
 
     windows = _create_time_windows(partition.interactions, time_window_size)
+    total_events = len(partition.interactions)
+    processed_events = 0
 
     for window in windows:
         # 阶段1：收集消息（同时记录每个节点的最后一条交互）
@@ -593,13 +633,16 @@ def train_partition_bpr_tgn(
         last_interaction_per_node = {}  # 记录每个节点的最后一条交互
 
         for idx, interaction in enumerate(window):
+            processed_events += 1
+            if processed_events % 100 == 0 or processed_events == total_events:
+                print(f"  [TGN-BPR] Processed {processed_events}/{total_events} events ({100*processed_events//total_events}%)", flush=True)
             uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
             iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
             t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
             f = interaction.features.unsqueeze(0).to(device)
 
             # 计算user和item的消息
-            user_msg, item_msg = model.compute_message(uid, iid, t, f)
+            user_msg, item_msg = model.compute_message(uid, iid, t, f, graph_ctx=graph_ctx)
             user_messages[interaction.user_id].append((user_msg, interaction.timestamp))
             item_messages[interaction.item_id].append((item_msg, interaction.timestamp))
 
@@ -705,6 +748,8 @@ def train_partition_ce_tgn(
     total_loss = 0.0
 
     windows = _create_time_windows(partition.interactions, time_window_size)
+    total_events = len(partition.interactions)
+    processed_events = 0
 
     for window in windows:
         # 阶段1：收集消息
@@ -713,12 +758,15 @@ def train_partition_ce_tgn(
         last_interaction_per_node = {}
 
         for idx, interaction in enumerate(window):
+            processed_events += 1
+            if processed_events % 100 == 0 or processed_events == total_events:
+                print(f"  [TGN-CE] Processed {processed_events}/{total_events} events ({100*processed_events//total_events}%)", flush=True)
             uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
             iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
             t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
             f = interaction.features.unsqueeze(0).to(device)
 
-            user_msg, item_msg = model.compute_message(uid, iid, t, f)
+            user_msg, item_msg = model.compute_message(uid, iid, t, f, graph_ctx=graph_ctx)
             user_messages[interaction.user_id].append((user_msg, interaction.timestamp))
             item_messages[interaction.item_id].append((item_msg, interaction.timestamp))
 

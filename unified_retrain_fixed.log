@@ -1,0 +1,178 @@
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Traceback (most recent call last):
+  File "/home/wanghaoyu/JODIE-simple/train_single_arch.py", line 143, in <module>
+    main()
+  File "/home/wanghaoyu/JODIE-simple/train_single_arch.py", line 107, in main
+    train_model(
+TypeError: train_model() got an unexpected keyword argument 'partition_plan'
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 64,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "on",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 148352
+
+开始训练 (3 epochs)...
+Traceback (most recent call last):
+  File "/home/wanghaoyu/JODIE-simple/train_single_arch.py", line 143, in <module>
+    main()
+  File "/home/wanghaoyu/JODIE-simple/train_single_arch.py", line 107, in main
+    train_model(
+TypeError: train_model() got an unexpected keyword argument 'partition_plan'
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 32,
+  "memory_cell": "rnn",
+  "time_proj": "linear",
+  "use_static_embeddings": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 9152
+
+开始训练 (3 epochs)...
+Traceback (most recent call last):
+  File "/home/wanghaoyu/JODIE-simple/train_single_arch.py", line 143, in <module>
+    main()
+  File "/home/wanghaoyu/JODIE-simple/train_single_arch.py", line 107, in main
+    train_model(
+TypeError: train_model() got an unexpected keyword argument 'partition_plan'
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Traceback (most recent call last):
+  File "/home/wanghaoyu/JODIE-simple/train_single_arch.py", line 143, in <module>
+    main()
+  File "/home/wanghaoyu/JODIE-simple/train_single_arch.py", line 107, in main
+    train_model(
+TypeError: train_model() got an unexpected keyword argument 'partition_plan'
+
+================================================================================
+重训练 serial 的最优架构
+================================================================================
+架构: jodie_rnn, 128-dim
+命令: python -u train_single_arch.py --model jodie_rnn --embedding-dim 128 --batch-mode tbatch --train-batch-size 32 --dataset public_csv --local-data-path data/public/mooc.csv --max-events 20000 --epochs 3 --seed 42 --output-dir outputs/unified_retrain/serial --memory-cell rnn --time-proj off --use-static-embeddings off --event-agg none --max-neighbors 0
+
+Error: 重训练 serial 失败
+
+================================================================================
+重训练 data_parallel 的最优架构
+================================================================================
+架构: jodie_rnn, 64-dim
+命令: python -u train_single_arch.py --model jodie_rnn --embedding-dim 64 --batch-mode tbatch --train-batch-size 32 --dataset public_csv --local-data-path data/public/mooc.csv --max-events 20000 --epochs 3 --seed 42 --output-dir outputs/unified_retrain/data_parallel --memory-cell rnn --time-proj off --use-static-embeddings on --event-agg none --max-neighbors 0
+
+Error: 重训练 data_parallel 失败
+
+================================================================================
+重训练 pipeline_naive 的最优架构
+================================================================================
+架构: jodie_rnn, 32-dim
+命令: python -u train_single_arch.py --model jodie_rnn --embedding-dim 32 --batch-mode tbatch --train-batch-size 32 --dataset public_csv --local-data-path data/public/mooc.csv --max-events 20000 --epochs 3 --seed 42 --output-dir outputs/unified_retrain/pipeline_naive --memory-cell rnn --time-proj linear --use-static-embeddings off --event-agg none --max-neighbors 0
+
+Error: 重训练 pipeline_naive 失败
+
+================================================================================
+重训练 pipeline_smart 的最优架构
+================================================================================
+架构: jodie_rnn, 128-dim
+命令: python -u train_single_arch.py --model jodie_rnn --embedding-dim 128 --batch-mode tbatch --train-batch-size 32 --dataset public_csv --local-data-path data/public/mooc.csv --max-events 20000 --epochs 3 --seed 42 --output-dir outputs/unified_retrain/pipeline_smart --memory-cell rnn --time-proj off --use-static-embeddings off --event-agg none --max-neighbors 0
+
+Error: 重训练 pipeline_smart 失败
+
+================================================================================
+统一重训练完成
+================================================================================
+结果已保存到: outputs/unified_retrain/unified_retrain_results.json
+
+## 重训练结果对比
+
+模式                   原始MRR        重训MRR        差异        
+------------------------------------------------------------

@@ -148,6 +148,7 @@ class JODIERNN(nn.Module):
         item_ids: torch.Tensor,
         timestamps: torch.Tensor,
         features: torch.Tensor,
+        graph_ctx=None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """计算RNN输入向量（消息），返回(user_message, item_message)，不detach，保留梯度"""
         user_emb = self.user_embeddings[user_ids]

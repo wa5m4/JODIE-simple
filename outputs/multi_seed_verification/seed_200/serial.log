@@ -1,0 +1,165 @@
+[serial] Seed=200 开始...
+[Timing] Timing log: outputs/multi_seed_verification/seed_200/serial/timing_log.csv
+Epoch 1/3 | L2 Loss: 1.1091
+Epoch 2/3 | L2 Loss: 1.0541
+Epoch 3/3 | L2 Loss: 1.0457
+[Coarse 1/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.5244
+Epoch 1/3 | L2 Loss: 7.5567
+Epoch 2/3 | L2 Loss: 6.1738
+Epoch 3/3 | L2 Loss: 6.1464
+[Coarse 2/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2934
+Epoch 1/3 | L2 Loss: 98.7640
+Epoch 2/3 | L2 Loss: 92.9885
+Epoch 3/3 | L2 Loss: 92.5473
+[Coarse 3/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6821
+Epoch 1/3 | L2 Loss: 12.8894
+Epoch 2/3 | L2 Loss: 10.2497
+Epoch 3/3 | L2 Loss: 10.2122
+[Coarse 4/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2996
+Epoch 1/3 | L2 Loss: 12.4492
+Epoch 2/3 | L2 Loss: 11.4863
+Epoch 3/3 | L2 Loss: 11.3251
+[Coarse 5/27] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.5884
+Epoch 1/3 | L2 Loss: 1.0715
+Epoch 2/3 | L2 Loss: 0.9425
+Epoch 3/3 | L2 Loss: 0.9854
+[Coarse 6/27] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.5835
+Epoch 1/3 | L2 Loss: 1.2661
+Epoch 2/3 | L2 Loss: 1.0939
+Epoch 3/3 | L2 Loss: 1.0573
+[Coarse 7/27] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.3898
+Epoch 1/3 | L2 Loss: 1.5146
+Epoch 2/3 | L2 Loss: 1.3471
+Epoch 3/3 | L2 Loss: 1.3281
+[Coarse 8/27] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.3647
+Epoch 1/3 | L2 Loss: 4.4024
+Epoch 2/3 | L2 Loss: 3.6375
+Epoch 3/3 | L2 Loss: 3.5361
+[Coarse 9/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2748
+Epoch 1/3 | L2 Loss: 49.5970
+Epoch 2/3 | L2 Loss: 46.3855
+Epoch 3/3 | L2 Loss: 46.4948
+[Coarse 10/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6007
+Epoch 1/3 | L2 Loss: 0.9477
+Epoch 2/3 | L2 Loss: 0.8173
+Epoch 3/3 | L2 Loss: 0.7971
+[Coarse 11/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6866
+Epoch 1/3 | L2 Loss: 7.3680
+Epoch 2/3 | L2 Loss: 5.9144
+Epoch 3/3 | L2 Loss: 5.8135
+[Coarse 12/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2839
+Epoch 1/3 | L2 Loss: 0.2673
+Epoch 2/3 | L2 Loss: 0.2316
+Epoch 3/3 | L2 Loss: 0.2245
+[Coarse 13/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3493
+Epoch 1/3 | L2 Loss: 0.1566
+Epoch 2/3 | L2 Loss: 0.1369
+Epoch 3/3 | L2 Loss: 0.1320
+[Coarse 14/27] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.4185
+Epoch 1/3 | L2 Loss: 0.2102
+Epoch 2/3 | L2 Loss: 0.1838
+Epoch 3/3 | L2 Loss: 0.1760
+[Coarse 15/27] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.4251
+Epoch 1/3 | L2 Loss: 0.7941
+Epoch 2/3 | L2 Loss: 0.7377
+Epoch 3/3 | L2 Loss: 0.6942
+[Coarse 16/27] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.5801
+Epoch 1/3 | L2 Loss: nan
+Epoch 2/3 | L2 Loss: nan
+Epoch 3/3 | L2 Loss: nan
+[Coarse 17/27] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1266
+Epoch 1/3 | L2 Loss: 0.2206
+Epoch 2/3 | L2 Loss: 0.1912
+Epoch 3/3 | L2 Loss: 0.1822
+[Coarse 18/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3897
+Epoch 1/3 | L2 Loss: 0.9333
+Epoch 2/3 | L2 Loss: 0.8567
+Epoch 3/3 | L2 Loss: 0.8410
+[Coarse 19/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6653
+Epoch 1/3 | L2 Loss: 0.1282
+Epoch 2/3 | L2 Loss: 0.1125
+Epoch 3/3 | L2 Loss: 0.1097
+[Coarse 20/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.2971
+Epoch 1/3 | L2 Loss: 97.0878
+Epoch 2/3 | L2 Loss: 91.9798
+Epoch 3/3 | L2 Loss: 92.6329
+[Coarse 21/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.5152
+Epoch 1/3 | L2 Loss: 0.9318
+Epoch 2/3 | L2 Loss: 0.8175
+Epoch 3/3 | L2 Loss: 0.7956
+[Coarse 22/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6055
+Epoch 1/3 | L2 Loss: 0.1165
+Epoch 2/3 | L2 Loss: 0.1045
+Epoch 3/3 | L2 Loss: 0.1017
+[Coarse 23/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.2892
+Epoch 1/3 | L2 Loss: 0.7761
+Epoch 2/3 | L2 Loss: 0.7173
+Epoch 3/3 | L2 Loss: 0.7074
+[Coarse 24/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6521
+Epoch 1/3 | L2 Loss: 0.2915
+Epoch 2/3 | L2 Loss: 0.2572
+Epoch 3/3 | L2 Loss: 0.2535
+[Coarse 25/27] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3156
+Epoch 1/3 | L2 Loss: nan
+Epoch 2/3 | L2 Loss: nan
+Epoch 3/3 | L2 Loss: nan
+[Coarse 26/27] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1266
+Epoch 1/3 | L2 Loss: 0.7958
+Epoch 2/3 | L2 Loss: 0.7198
+Epoch 3/3 | L2 Loss: 0.7077
+[Coarse 27/27] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.5813
+Epoch 1/3 | L2 Loss: 0.9487
+Epoch 2/3 | L2 Loss: 0.8595
+Epoch 3/3 | L2 Loss: 0.8498
+Best architecture saved to: outputs/multi_seed_verification/seed_200/serial/best_arch.json
+Leaderboard saved to: outputs/multi_seed_verification/seed_200/serial/leaderboard.csv
+Search mode: rl
+Best selection score: 0.6866
+Best test score: 0.6866
+Best model family: jodie_rnn
+✓ [serial] NAS完成
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 32,
+  "memory_cell": "rnn",
+  "time_proj": "linear",
+  "use_static_embeddings": "off",
+  "normalize_state": "on",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 20200,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 20200
+构建模型...
+模型参数: 9152
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 0.9487
+Epoch 2/3 | L2 Loss: 0.8578
+Epoch 3/3 | L2 Loss: 0.8377
+训练完成，耗时: 190.90s
+
+评估...
+
+结果:
+  Test MRR: 0.5985
+  Test Recall@10: 0.8712
+  训练时间: 190.90s
+
+结果已保存到: outputs/multi_seed_verification/seed_200/serial/retrain/result.json
+✓ [serial] 重训练完成

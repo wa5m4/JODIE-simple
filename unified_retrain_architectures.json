@@ -1,0 +1,66 @@
+{
+  "serial": {
+    "arch_params": {
+      "model": "jodie_rnn",
+      "embedding_dim": 128,
+      "memory_cell": "rnn",
+      "time_proj": "off",
+      "use_static_embeddings": "off",
+      "normalize_state": "off",
+      "enable_graph_update": "off",
+      "enable_event_agg": "off",
+      "event_agg": "none",
+      "max_neighbors": 0
+    },
+    "original_mrr": 0.8124637826738867,
+    "original_phase": "final"
+  },
+  "data_parallel": {
+    "arch_params": {
+      "model": "jodie_rnn",
+      "embedding_dim": 64,
+      "memory_cell": "rnn",
+      "time_proj": "off",
+      "use_static_embeddings": "on",
+      "normalize_state": "off",
+      "enable_graph_update": "off",
+      "enable_event_agg": "off",
+      "event_agg": "none",
+      "max_neighbors": 0
+    },
+    "original_mrr": 0.7126015798164378,
+    "original_phase": "final_dp"
+  },
+  "pipeline_naive": {
+    "arch_params": {
+      "model": "jodie_rnn",
+      "embedding_dim": 32,
+      "memory_cell": "rnn",
+      "time_proj": "linear",
+      "use_static_embeddings": "off",
+      "normalize_state": "on",
+      "enable_graph_update": "off",
+      "enable_event_agg": "off",
+      "event_agg": "none",
+      "max_neighbors": 0
+    },
+    "original_mrr": 0.67123589032715,
+    "original_phase": "coarse_pipeline"
+  },
+  "pipeline_smart": {
+    "arch_params": {
+      "model": "jodie_rnn",
+      "embedding_dim": 128,
+      "memory_cell": "rnn",
+      "time_proj": "off",
+      "use_static_embeddings": "off",
+      "normalize_state": "off",
+      "enable_graph_update": "off",
+      "enable_event_agg": "off",
+      "event_agg": "none",
+      "max_neighbors": 0
+    },
+    "original_mrr": 0.8488396686786328,
+    "original_phase": "coarse_pipeline"
+  }
+}

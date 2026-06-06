@@ -1,0 +1,206 @@
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | Loss: 0.6008
+Epoch 2/3 | Loss: 0.5931
+Epoch 3/3 | Loss: 0.5894
+训练完成，耗时: 136.86s
+
+评估...
+
+结果:
+  Test MRR: 0.3696
+  Test Recall@10: 0.8087
+  训练时间: 136.86s
+
+结果已保存到: outputs/unified_retrain/serial/result.json
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 64,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "on",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 148352
+
+开始训练 (3 epochs)...
+Epoch 1/3 | Loss: 0.5757
+Epoch 2/3 | Loss: 0.5533
+Epoch 3/3 | Loss: 0.5435
+训练完成，耗时: 78.08s
+
+评估...
+
+结果:
+  Test MRR: 0.4734
+  Test Recall@10: 0.8750
+  训练时间: 78.08s
+
+结果已保存到: outputs/unified_retrain/data_parallel/result.json
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 32,
+  "memory_cell": "rnn",
+  "time_proj": "linear",
+  "use_static_embeddings": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 9152
+
+开始训练 (3 epochs)...
+Epoch 1/3 | Loss: 0.5526
+Epoch 2/3 | Loss: 0.5295
+Epoch 3/3 | Loss: 0.5246
+训练完成，耗时: 76.48s
+
+评估...
+
+结果:
+  Test MRR: 0.6123
+  Test Recall@10: 0.8645
+  训练时间: 76.48s
+
+结果已保存到: outputs/unified_retrain/pipeline_naive/result.json
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | Loss: 0.5959
+Epoch 2/3 | Loss: 0.5892
+Epoch 3/3 | Loss: 0.5854
+训练完成，耗时: 143.30s
+
+评估...
+
+结果:
+  Test MRR: 0.3715
+  Test Recall@10: 0.8133
+  训练时间: 143.30s
+
+结果已保存到: outputs/unified_retrain/pipeline_smart/result.json
+
+================================================================================
+重训练 serial 的最优架构
+================================================================================
+架构: jodie_rnn, 128-dim
+命令: python -u train_single_arch.py --model jodie_rnn --embedding-dim 128 --batch-mode tbatch --train-batch-size 32 --dataset public_csv --local-data-path data/public/mooc.csv --max-events 20000 --epochs 3 --seed 42 --output-dir outputs/unified_retrain/serial --memory-cell rnn --time-proj off --use-static-embeddings off --event-agg none --max-neighbors 0
+
+
+================================================================================
+重训练 data_parallel 的最优架构
+================================================================================
+架构: jodie_rnn, 64-dim
+命令: python -u train_single_arch.py --model jodie_rnn --embedding-dim 64 --batch-mode tbatch --train-batch-size 32 --dataset public_csv --local-data-path data/public/mooc.csv --max-events 20000 --epochs 3 --seed 42 --output-dir outputs/unified_retrain/data_parallel --memory-cell rnn --time-proj off --use-static-embeddings on --event-agg none --max-neighbors 0
+
+
+================================================================================
+重训练 pipeline_naive 的最优架构
+================================================================================
+架构: jodie_rnn, 32-dim
+命令: python -u train_single_arch.py --model jodie_rnn --embedding-dim 32 --batch-mode tbatch --train-batch-size 32 --dataset public_csv --local-data-path data/public/mooc.csv --max-events 20000 --epochs 3 --seed 42 --output-dir outputs/unified_retrain/pipeline_naive --memory-cell rnn --time-proj linear --use-static-embeddings off --event-agg none --max-neighbors 0
+
+
+================================================================================
+重训练 pipeline_smart 的最优架构
+================================================================================
+架构: jodie_rnn, 128-dim
+命令: python -u train_single_arch.py --model jodie_rnn --embedding-dim 128 --batch-mode tbatch --train-batch-size 32 --dataset public_csv --local-data-path data/public/mooc.csv --max-events 20000 --epochs 3 --seed 42 --output-dir outputs/unified_retrain/pipeline_smart --memory-cell rnn --time-proj off --use-static-embeddings off --event-agg none --max-neighbors 0
+
+
+================================================================================
+统一重训练完成
+================================================================================
+结果已保存到: outputs/unified_retrain/unified_retrain_results.json
+
+## 重训练结果对比
+
+模式                   原始MRR        重训MRR        差异        
+------------------------------------------------------------
+serial               0.8125       0.3696       -0.4429
+data_parallel        0.7126       0.4734       -0.2392
+pipeline_naive       0.6712       0.6123       -0.0589
+pipeline_smart       0.8488       0.3715       -0.4773

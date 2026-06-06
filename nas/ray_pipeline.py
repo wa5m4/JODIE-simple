@@ -100,10 +100,28 @@ class PartitionShardWorker:
 
             for partition_id in partition_ids:
                 partition = self.partitions[partition_id]
-                batch_training = bool(self.base_config.get("batch_training", False))
+                batch_mode = self.base_config.get("batch_mode", "serial")
                 train_batch_size = int(self.base_config.get("train_batch_size", 32))
+
                 if use_bpr:
-                    if batch_training:
+                    if batch_mode == "tgn":
+                        # TGN batch processing
+                        from models.training import train_partition_bpr_tgn
+                        criterion = BPRLoss()
+                        tgn_loss_mode = self.base_config.get("tgn_loss_mode", "last")
+                        tgn_window_size = float(self.base_config.get("tgn_window_size", 10.0))
+                        train_partition_bpr_tgn(
+                            model=model, partition=partition, optimizer=optimizer,
+                            criterion=criterion,
+                            time_window_size=tgn_window_size,
+                            aggregator="mean",
+                            loss_mode=tgn_loss_mode,
+                            neg_sample_size=config.get("neg_sample_size", 5),
+                            graph_ctx=epoch_graph_state,
+                            seed=payload.seed + epoch * 100000 + partition_id,
+                        )
+                    elif batch_mode == "tbatch":
+                        # T-batch processing
                         train_partition_bpr_batch(
                             model=model, partition=partition, optimizer=optimizer,
                             neg_sample_size=config.get("neg_sample_size", 5),
@@ -112,6 +130,7 @@ class PartitionShardWorker:
                             seed=payload.seed + epoch * 100000 + partition_id,
                         )
                     else:
+                        # Serial processing
                         criterion = BPRLoss()
                         train_partition_bpr(
                             model=model, partition=partition, optimizer=optimizer,
@@ -125,7 +144,22 @@ class PartitionShardWorker:
                             ),
                         )
                 else:
-                    if batch_training:
+                    # CE loss
+                    if batch_mode == "tgn":
+                        # TGN batch processing
+                        from models.training import train_partition_ce_tgn
+                        tgn_loss_mode = self.base_config.get("tgn_loss_mode", "last")
+                        tgn_window_size = float(self.base_config.get("tgn_window_size", 10.0))
+                        train_partition_ce_tgn(
+                            model=model, partition=partition, optimizer=optimizer,
+                            time_window_size=tgn_window_size,
+                            aggregator="mean",
+                            loss_mode=tgn_loss_mode,
+                            graph_ctx=epoch_graph_state,
+                            seed=payload.seed + epoch * 100000 + partition_id,
+                        )
+                    elif batch_mode == "tbatch":
+                        # T-batch processing
                         train_partition_ce_batch(
                             model=model, partition=partition, optimizer=optimizer,
                             batch_size=train_batch_size,
@@ -133,6 +167,7 @@ class PartitionShardWorker:
                             seed=payload.seed + epoch * 100000 + partition_id,
                         )
                     else:
+                        # Serial processing
                         train_partition_ce(
                             model=model, partition=partition, optimizer=optimizer,
                             graph_ctx=epoch_graph_state,
@@ -215,6 +250,7 @@ class PartitionShardWorker:
                     progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
                         f"phase=eval event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=ranking"
                     ),
+                    frozen=self.base_config.get("eval_frozen", False),
                 )
                 total_hits += int(metrics["hits"])
                 total_count += int(metrics["total"])
@@ -970,11 +1006,15 @@ class RayPipelineExecutor:
 
     def submit_arch(self, arch_config: Dict) -> int:
         """提交一个架构到异步 pipeline，返回 trial_id。"""
+        import time
         trial_id = self._pool_trial_counter
         self._pool_trial_counter += 1
         seed = int(self.base_config.get("seed", 42)) + trial_id
         payload = self._make_payload(arch_config, trial_id, seed)
-        self._pool_scores[trial_id] = {"hits": 0, "total": 0, "mrr_sum": 0.0, "config": arch_config}
+        self._pool_scores[trial_id] = {
+            "hits": 0, "total": 0, "mrr_sum": 0.0, "config": arch_config,
+            "start_time": time.time()
+        }
         self._pool_train_pending[0].append(payload)
         self._drain_pool()
         return trial_id
@@ -1072,6 +1112,8 @@ class RayPipelineExecutor:
                 denom = max(metrics["total"], 1)
                 synthetic_mode = self.base_config.get("dataset", "synthetic") == "synthetic"
                 score = metrics["hits"] / denom if synthetic_mode else metrics["mrr_sum"] / denom
+                import time
+                elapsed_time = time.time() - metrics.get("start_time", time.time())
                 results.append({
                     "trial_id": trial_id,
                     "config": metrics["config"],
@@ -1079,7 +1121,7 @@ class RayPipelineExecutor:
                     "mrr": metrics["mrr_sum"] / denom,
                     "score": score,
                     "params": sum(p.numel() for p in build_model({**self.base_config, **metrics["config"]}).parameters()),
-                    "time_sec": 0.0,
+                    "time_sec": elapsed_time,
                     "phase": "coarse_pipeline",
                     "eval_split": "val",
                 })

@@ -1,0 +1,196 @@
+==========================================
+Retraining Bug Fix Verification Architectures
+==========================================
+
+==========================================
+Retraining: serial
+==========================================
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | Loss: 0.5966
+Epoch 2/3 | Loss: 0.5899
+Epoch 3/3 | Loss: 0.5864
+训练完成，耗时: 113.96s
+
+评估...
+
+结果:
+  Test MRR: 0.3704
+  Test Recall@10: 0.8287
+  训练时间: 113.96s
+
+结果已保存到: outputs/bug_fix_verification/seed_42/serial/retrain/result.json
+✓ serial retrain completed
+
+==========================================
+Retraining: data_parallel
+==========================================
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "linear",
+  "use_static_embeddings": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | Loss: 0.4982
+Epoch 2/3 | Loss: 0.4788
+Epoch 3/3 | Loss: 0.4758
+训练完成，耗时: 125.77s
+
+评估...
+
+结果:
+  Test MRR: 0.7464
+  Test Recall@10: 0.9595
+  训练时间: 125.77s
+
+结果已保存到: outputs/bug_fix_verification/seed_42/data_parallel/retrain/result.json
+✓ data_parallel retrain completed
+
+==========================================
+Retraining: pipeline_naive
+==========================================
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 64,
+  "memory_cell": "rnn",
+  "time_proj": "linear",
+  "use_static_embeddings": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 34688
+
+开始训练 (3 epochs)...
+Epoch 1/3 | Loss: 0.5252
+Epoch 2/3 | Loss: 0.5115
+Epoch 3/3 | Loss: 0.5082
+训练完成，耗时: 63.42s
+
+评估...
+
+结果:
+  Test MRR: 0.6743
+  Test Recall@10: 0.9180
+  训练时间: 63.42s
+
+结果已保存到: outputs/bug_fix_verification/seed_42/pipeline_naive/retrain/result.json
+✓ pipeline_naive retrain completed
+
+==========================================
+Retraining: pipeline_smart
+==========================================
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 64,
+  "memory_cell": "rnn",
+  "time_proj": "linear",
+  "use_static_embeddings": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+构建模型...
+模型参数: 34688
+
+开始训练 (3 epochs)...
+Epoch 1/3 | Loss: 0.5219
+Epoch 2/3 | Loss: 0.5026
+Epoch 3/3 | Loss: 0.5001
+训练完成，耗时: 57.59s
+
+评估...
+
+结果:
+  Test MRR: 0.7009
+  Test Recall@10: 0.9180
+  训练时间: 57.59s
+
+结果已保存到: outputs/bug_fix_verification/seed_42/pipeline_smart/retrain/result.json
+✓ pipeline_smart retrain completed
+
+==========================================
+Retrain Results Summary
+==========================================
+

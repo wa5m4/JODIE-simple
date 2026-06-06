@@ -215,6 +215,7 @@ class GraphNASTrainer:
             k=config.get("k", 10),
             graph_ctx=graph_ctx,
             partitions=eval_partitions,
+            frozen=self.base_config.get("eval_frozen", False),
         )
 
     def _selection_score(self, config: Dict, metrics: Dict[str, float]) -> float:
@@ -539,10 +540,14 @@ class GraphNASTrainer:
                 update_buffer.append((r["config"], r["score"]))
                 with open(timing_log_path, "a", newline="", encoding="utf-8") as f:
                     import csv as _csv
+                    trial_end_time = now - search_start_time
+                    trial_duration = r.get("time_sec", 0)
+                    trial_start_time = max(0, trial_end_time - trial_duration)
                     _csv.writer(f).writerow([
                         len(results) - 1, "pipeline_smart",
-                        round(search_start_time - search_start_time, 3),
-                        round(now - search_start_time, 3), 0,
+                        round(trial_start_time, 3),
+                        round(trial_end_time, 3),
+                        round(trial_duration, 3),
                         round(r["score"], 6), round(r["mrr"], 6),
                         round(r["recall_at_k"], 6), round(cumulative_best, 6),
                         r["config"].get("model", "unknown"),
@@ -939,7 +944,7 @@ class GraphNASTrainer:
             phase="final_pipeline",
             eval_split="test",
             epochs=final_epochs,
-            executor=pipeline_executor,
+            executor=None,
             time_budget_sec=0.0,
             search_start_time=None,
         )[0]
@@ -950,6 +955,8 @@ class GraphNASTrainer:
         selected["test_score"] = float(final_test_result["score"])
         selected["test_mrr"] = float(final_test_result["mrr"])
         selected["test_recall_at_k"] = float(final_test_result["recall_at_k"])
+        # Pipeline Final Test应使用与Serial一致的seed计算: base_seed + 20000
+        selected["seed"] = int(self.base_config.get("seed", 42)) + 20000
         # score/mrr/recall_at_k stay as val scores for fair NAS comparison
 
         best = selected
@@ -1136,7 +1143,12 @@ class GraphNASTrainer:
 
         final_result["selected_val_score"] = float(selected["score"])
         final_result["val_score"] = float(selected["score"])
+        final_result["val_mrr"] = float(selected.get("mrr", selected["score"]))
+        final_result["val_recall_at_k"] = float(selected.get("recall_at_k", 0.0))
         final_result["test_score"] = float(final_result["score"])
+        final_result["test_mrr"] = float(final_result["mrr"])
+        final_result["test_recall_at_k"] = float(final_result["recall_at_k"])
+        # score/mrr/recall_at_k stay as val scores for fair NAS comparison
         final_result["score"] = float(selected["score"])
         final_result["mrr"] = float(selected.get("mrr", selected["score"]))
         final_result["recall_at_k"] = float(selected.get("recall_at_k", 0.0))
@@ -1274,7 +1286,12 @@ class GraphNASTrainer:
 
         final_result["selected_val_score"] = float(selected["score"])
         final_result["val_score"] = float(selected["score"])
+        final_result["val_mrr"] = float(selected.get("mrr", selected["score"]))
+        final_result["val_recall_at_k"] = float(selected.get("recall_at_k", 0.0))
         final_result["test_score"] = float(final_result["score"])
+        final_result["test_mrr"] = float(final_result["mrr"])
+        final_result["test_recall_at_k"] = float(final_result["recall_at_k"])
+        # score/mrr/recall_at_k stay as val scores for fair NAS comparison
         final_result["score"] = float(selected["score"])
         final_result["mrr"] = float(selected.get("mrr", selected["score"]))
         final_result["recall_at_k"] = float(selected.get("recall_at_k", 0.0))

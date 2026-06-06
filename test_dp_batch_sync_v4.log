@@ -1,0 +1,26 @@
+
+======================================================================
+[GraphNAS] Starting data-parallel search
+[GraphNAS] Coarse trials: 1, epochs: 1, workers: 3
+======================================================================
+
+[Timing] Timing log: outputs/test_dp_batch_sync_v4/timing_log.csv
+2026-05-25 20:34:40,920	INFO worker.py:1812 -- Started a local Ray instance. View the dashboard at [1m[32mhttp://127.0.0.1:8267 [39m[22m
+[36m(_DataParallelWorker pid=3491965)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(_DataParallelWorker pid=3491965)[0m   return torch.load(io.BytesIO(b))
+/usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(io.BytesIO(b))
+[DataParallel batch-sync] trial=0 epoch=1/1 partition=0 interactions=1000/1000
+[DataParallel batch-sync] trial=0 epoch=1/1 partition=1 interactions=400/400
+[DataParallel 1/1] model=jodie_rnn agg=none memory=rnn val_score=0.2738
+[DataParallel] Workers shut down.
+[Verify] train_model() called with batch_mode=tbatch, tgn_loss_mode=all, tgn_window_size=10.0
+Epoch 1/1 | L2 Loss: 69.8739
+Best architecture saved to: outputs/test_dp_batch_sync_v4/best_arch.json
+Leaderboard saved to: outputs/test_dp_batch_sync_v4/leaderboard.csv
+Search mode: rl
+Best selection score: 0.2738
+Best test score: 0.2738
+Best model family: jodie_rnn
+[36m(_DataParallelWorker pid=3491964)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 5x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(_DataParallelWorker pid=3491964)[0m   return torch.load(io.BytesIO(b))[32m [repeated 5x across cluster][0m
