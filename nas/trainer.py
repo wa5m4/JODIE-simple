@@ -927,27 +927,22 @@ class GraphNASTrainer:
             return best, results
 
         final_train_data = train_data + val_data
-        final_partition_plan = build_partition_plan(
-            train_interactions=final_train_data,
-            val_interactions=[],
-            test_interactions=test_data,
-            partition_size=int(self.base_config.get("partition_size", 0)) if int(self.base_config.get("partition_size", 0)) > 0 else None,
-            strategy=self.base_config.get("partition_strategy", "count"),
-        )
         final_epochs = rerank_epochs if rerank_top_k > 0 else coarse_epochs
-        print(f"[Final Test] Evaluating best architecture on test set (fit=train+val, test=test, epochs={final_epochs})", flush=True)
-        final_test_result = self.evaluate_arch_pipeline(
-            arch_configs=[selected["config"]],
-            partition_plan=final_partition_plan,
+        final_seed = int(self.base_config.get("seed", 42)) + 20000
+        print(f"[Final Test] Evaluating best architecture on test set using Serial training (fit=train+val, test=test, epochs={final_epochs})", flush=True)
+        final_test_result = self._evaluate_arch_multi_seed(
+            arch_config=selected["config"],
+            train_data=final_train_data,
+            eval_data=test_data,
             user_type_prefs=user_type_prefs,
             item_type=item_type,
+            graph_template=graph_template,
+            epochs=final_epochs,
+            eval_seeds=None,
+            default_seed=final_seed,
             phase="final_pipeline",
             eval_split="test",
-            epochs=final_epochs,
-            executor=None,
-            time_budget_sec=0.0,
-            search_start_time=None,
-        )[0]
+        )
         selected["selected_val_score"] = float(selected["score"])
         selected["val_score"] = float(selected["score"])
         selected["val_mrr"] = float(selected.get("mrr", selected["score"]))
@@ -955,7 +950,6 @@ class GraphNASTrainer:
         selected["test_score"] = float(final_test_result["score"])
         selected["test_mrr"] = float(final_test_result["mrr"])
         selected["test_recall_at_k"] = float(final_test_result["recall_at_k"])
-        # Pipeline Final Test应使用与Serial一致的seed计算: base_seed + 20000
         selected["seed"] = int(self.base_config.get("seed", 42)) + 20000
         # score/mrr/recall_at_k stay as val scores for fair NAS comparison
 
@@ -1162,6 +1156,8 @@ class GraphNASTrainer:
         coarse_trials: int,
         coarse_epochs: int,
         num_workers: int = 3,
+        rerank_top_k: int = 0,
+        rerank_epochs: int = 1,
         time_budget_sec: float = 0.0,
     ) -> Tuple[Dict, List[Dict]]:
         print(f"\n{'='*70}", flush=True)
@@ -1256,6 +1252,59 @@ class GraphNASTrainer:
 
         coarse_sorted = sorted(results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)
         selected = coarse_sorted[0]
+
+        # Rerank phase
+        if rerank_top_k > 0:
+            print(f"[DataParallel Rerank Phase] Evaluating top {rerank_top_k} candidates with {rerank_epochs} epochs", flush=True)
+            rerank_candidates = coarse_sorted[:rerank_top_k]
+            rerank_configs = [row["config"] for row in rerank_candidates]
+
+            # Recreate executor for rerank
+            rerank_executor = DataParallelExecutor(self.base_config, partition_plan, num_workers=num_workers)
+
+            for idx, arch_config in enumerate(rerank_configs):
+                if self._time_budget_reached(search_start_time, time_budget_sec):
+                    print(f"[DataParallel Rerank] Time budget reached after {idx} rerank trials", flush=True)
+                    break
+
+                raw_list = rerank_executor.run([arch_config], user_type_prefs=user_type_prefs,
+                                              item_type=item_type, num_train_epochs=rerank_epochs)
+                raw = raw_list[0]
+
+                config = dict(self.base_config)
+                config.update(raw["config"])
+                model_obj = build_model(config)
+                params = sum(p.numel() for p in model_obj.parameters())
+
+                result = {
+                    "config": config,
+                    "phase": "rerank_dp",
+                    "eval_split": "val",
+                    "seed": int(self.base_config.get("seed", 42)) + coarse_trials + idx,
+                    "score": float(raw["score"]),
+                    "val_score": float(raw["score"]),
+                    "test_score": None,
+                    "mrr": float(raw["mrr"]),
+                    "recall_at_k": float(raw["recall_at_k"]),
+                    "params": int(params),
+                    "time_sec": float(raw["time_sec"]),
+                }
+                results.append(result)
+
+                print(
+                    f"[DataParallel Rerank {idx + 1}/{len(rerank_configs)}] "
+                    f"model={result['config'].get('model', 'unknown')} "
+                    f"val_score={result['score']:.4f}"
+                )
+
+            rerank_executor.shutdown()
+            print("[DataParallel Rerank] Rerank completed, workers shut down.", flush=True)
+
+            # Select best from rerank results
+            rerank_results = [r for r in results if r["phase"] == "rerank_dp"]
+            if rerank_results:
+                selected = sorted(rerank_results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)[0]
+
 
         if self._time_budget_reached(search_start_time, time_budget_sec):
             print(f"[DataParallel] Time budget {time_budget_sec:.0f}s reached before final test, returning best coarse result.", flush=True)

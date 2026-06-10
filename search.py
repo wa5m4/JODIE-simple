@@ -271,6 +271,8 @@ def main():
             coarse_trials=coarse_trials,
             coarse_epochs=coarse_epochs,
             num_workers=args.data_parallel_workers,
+            rerank_top_k=args.rerank_top_k,
+            rerank_epochs=rerank_epochs,
             time_budget_sec=args.time_budget_sec,
         )
     else:
