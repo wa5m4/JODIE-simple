@@ -1,0 +1,196 @@
+Pipeline trace log file: outputs/comprehensive_comparison/seed_100/smart_no_overlap/pipeline_trace_20260614_173420.log
+
+======================================================================
+[GraphNAS] Starting search pipeline
+[GraphNAS] Coarse trials: 50, epochs: 3
+[GraphNAS] Rerank top-k: 0, epochs: 3
+======================================================================
+
+[Timing] Timing log: outputs/comprehensive_comparison/seed_100/smart_no_overlap/timing_log.csv
+[Smart] Using manual allocation: stages=1, workers=3
+2026-06-14 17:34:26,033	INFO worker.py:1812 -- Started a local Ray instance. View the dashboard at [1m[32mhttp://127.0.0.1:8268 [39m[22m
+[36m(PartitionShardWorker pid=228137)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(PartitionShardWorker pid=228137)[0m   return torch.load(io.BytesIO(b))
+[AsyncPool] started: 1 stages, workers=[3]
+[Smart] Progress: 0/50 completed, in_flight=3, submitted=4
+[Smart] Progress: 0/50 completed, in_flight=3, submitted=4
+[Smart] Progress: 0/50 completed, in_flight=3, submitted=4
+[Smart] Progress: 0/50 completed, in_flight=3, submitted=4
+/usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(io.BytesIO(b))
+[36m(PartitionShardWorker pid=228136)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 3x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(PartitionShardWorker pid=228136)[0m   return torch.load(io.BytesIO(b))[32m [repeated 3x across cluster][0m
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 100/1999 (5.0%)] elapsed=0.2s, est.remain=4.6s, partition=3
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 200/1999 (10.0%)] elapsed=0.4s, est.remain=3.4s, partition=3
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 300/1999 (15.0%)] elapsed=0.5s, est.remain=2.9s, partition=3
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 400/1999 (20.0%)] elapsed=0.6s, est.remain=2.6s, partition=3
+[Smart] Progress: 0/50 completed, in_flight=3, submitted=4
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 500/1999 (25.0%)] elapsed=0.8s, est.remain=2.4s, partition=3
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 600/1999 (30.0%)] elapsed=0.9s, est.remain=2.1s, partition=3
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 700/1999 (35.0%)] elapsed=1.1s, est.remain=2.0s, partition=3
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 800/1999 (40.0%)] elapsed=1.2s, est.remain=1.8s, partition=3
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 900/1999 (45.0%)] elapsed=1.3s, est.remain=1.6s, partition=3
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 1000/1999 (50.0%)] elapsed=1.5s, est.remain=1.5s, partition=3
+[36m(PartitionShardWorker pid=228136)[0m [trial=2 partitions=[3]] [Interaction 1100/1999 (55.0%)] elapsed=1.6s, est.remain=1.3s, partition=3
+[Smart] Progress: 1/50 completed, in_flight=3, submitted=4
+[Smart] Progress: 2/50 completed, in_flight=3, submitted=5
+[36m(PartitionShardWorker pid=228138)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=228138)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=228138)[0m [trial=1 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 31x across cluster][0m
+[Smart] Progress: 2/50 completed, in_flight=3, submitted=5
+[Smart] Progress: 3/50 completed, in_flight=3, submitted=6
+[Smart] Progress: 3/50 completed, in_flight=3, submitted=6
+[Smart] Progress: 3/50 completed, in_flight=3, submitted=6
+[Smart] Progress: 3/50 completed, in_flight=3, submitted=6
+[36m(PartitionShardWorker pid=228137)[0m [trial=4 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 4/50 completed, in_flight=3, submitted=7
+[36m(PartitionShardWorker pid=228136)[0m [trial=3 partitions=[3]] [Interaction 800/1999 (40.0%)] elapsed=1.3s, est.remain=1.9s, partition=3[32m [repeated 29x across cluster][0m
+[Smart] Progress: 5/50 completed, in_flight=3, submitted=8
+[Smart] Progress: 6/50 completed, in_flight=3, submitted=9
+[Smart] Progress: 6/50 completed, in_flight=3, submitted=9
+[Smart] Progress: 6/50 completed, in_flight=3, submitted=9
+[Smart] Progress: 6/50 completed, in_flight=3, submitted=9
+[36m(PartitionShardWorker pid=228138)[0m [trial=8 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 34x across cluster][0m
+[Smart] Progress: 6/50 completed, in_flight=3, submitted=9
+[Smart] Progress: 7/50 completed, in_flight=3, submitted=10
+[36m(PartitionShardWorker pid=228137)[0m [trial=6 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 7/50 completed, in_flight=3, submitted=10
+[Smart] Progress: 8/50 completed, in_flight=3, submitted=11
+[36m(PartitionShardWorker pid=228136)[0m [trial=7 partitions=[3]] [Interaction 500/1999 (25.0%)] elapsed=1.0s, est.remain=3.0s, partition=3[32m [repeated 26x across cluster][0m
+[Smart] Progress: 9/50 completed, in_flight=3, submitted=12
+[Smart] Progress: 9/50 completed, in_flight=3, submitted=12
+[Smart] Progress: 9/50 completed, in_flight=3, submitted=12
+[Smart] Progress: 9/50 completed, in_flight=3, submitted=12
+[36m(PartitionShardWorker pid=228138)[0m [trial=9 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 16x across cluster][0m
+[Smart] Progress: 10/50 completed, in_flight=3, submitted=13
+[36m(PartitionShardWorker pid=228137)[0m [trial=10 partitions=[3]] [Interaction 1100/1999 (55.0%)] elapsed=1.5s, est.remain=1.2s, partition=3[32m [repeated 32x across cluster][0m
+[Smart] Progress: 11/50 completed, in_flight=3, submitted=14
+[36m(PartitionShardWorker pid=228136)[0m [trial=11 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 10x across cluster][0m
+[Smart] Progress: 12/50 completed, in_flight=3, submitted=15
+[Smart] Progress: 12/50 completed, in_flight=3, submitted=15
+[Smart] Progress: 12/50 completed, in_flight=3, submitted=15
+[36m(PartitionShardWorker pid=228138)[0m [trial=12 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 13/50 completed, in_flight=3, submitted=16
+[Smart] Progress: 14/50 completed, in_flight=3, submitted=17
+[Smart] Progress: 14/50 completed, in_flight=3, submitted=17
+[36m(PartitionShardWorker pid=228136)[0m [trial=14 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 42x across cluster][0m
+[Smart] Progress: 15/50 completed, in_flight=3, submitted=18
+[Smart] Progress: 15/50 completed, in_flight=3, submitted=18
+[36m(PartitionShardWorker pid=228137)[0m [trial=16 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 16/50 completed, in_flight=3, submitted=19
+[36m(PartitionShardWorker pid=228138)[0m [trial=15 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 17/50 completed, in_flight=3, submitted=20
+[Smart] Progress: 17/50 completed, in_flight=3, submitted=20
+[36m(PartitionShardWorker pid=228136)[0m [trial=17 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 17/50 completed, in_flight=3, submitted=20
+[Smart] Progress: 18/50 completed, in_flight=3, submitted=21
+[Smart] Progress: 19/50 completed, in_flight=3, submitted=22
+[Smart] Progress: 19/50 completed, in_flight=3, submitted=22
+[36m(PartitionShardWorker pid=228138)[0m [trial=19 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 42x across cluster][0m
+[Smart] Progress: 20/50 completed, in_flight=3, submitted=23
+[Smart] Progress: 20/50 completed, in_flight=3, submitted=23
+[Smart] Progress: 20/50 completed, in_flight=3, submitted=23
+[36m(PartitionShardWorker pid=228136)[0m [trial=20 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 21/50 completed, in_flight=3, submitted=24
+[Smart] Progress: 21/50 completed, in_flight=3, submitted=24
+[36m(PartitionShardWorker pid=228137)[0m [trial=21 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 22/50 completed, in_flight=3, submitted=25
+[36m(PartitionShardWorker pid=228138)[0m [trial=22 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 23/50 completed, in_flight=3, submitted=26
+[Smart] Progress: 23/50 completed, in_flight=3, submitted=26
+[Smart] Progress: 23/50 completed, in_flight=3, submitted=26
+[36m(PartitionShardWorker pid=228136)[0m [trial=23 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 23/50 completed, in_flight=3, submitted=26
+[Smart] Progress: 24/50 completed, in_flight=3, submitted=27
+[36m(PartitionShardWorker pid=228138)[0m [trial=25 partitions=[3]] [Interaction 500/1999 (25.0%)] elapsed=0.6s, est.remain=1.9s, partition=3[32m [repeated 26x across cluster][0m
+[Smart] Progress: 25/50 completed, in_flight=3, submitted=28
+[Smart] Progress: 25/50 completed, in_flight=3, submitted=28
+[36m(PartitionShardWorker pid=228137)[0m [trial=24 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 16x across cluster][0m
+[Smart] Progress: 25/50 completed, in_flight=3, submitted=28
+[Smart] Progress: 26/50 completed, in_flight=3, submitted=29
+[Smart] Progress: 26/50 completed, in_flight=3, submitted=29
+[36m(PartitionShardWorker pid=228136)[0m [trial=26 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 26/50 completed, in_flight=3, submitted=29
+[Smart] Progress: 27/50 completed, in_flight=3, submitted=30
+[Smart] Progress: 27/50 completed, in_flight=3, submitted=30
+[36m(PartitionShardWorker pid=228138)[0m [trial=27 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 28/50 completed, in_flight=3, submitted=31
+[36m(PartitionShardWorker pid=228137)[0m [trial=28 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 29/50 completed, in_flight=3, submitted=32
+[Smart] Progress: 29/50 completed, in_flight=3, submitted=32
+[Smart] Progress: 29/50 completed, in_flight=3, submitted=32
+[36m(PartitionShardWorker pid=228138)[0m [trial=30 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 29/50 completed, in_flight=3, submitted=32
+[Smart] Progress: 30/50 completed, in_flight=3, submitted=33
+[36m(PartitionShardWorker pid=228137)[0m [trial=31 partitions=[3]] [Interaction 100/1999 (5.0%)] elapsed=0.1s, est.remain=2.4s, partition=3[32m [repeated 26x across cluster][0m
+[Smart] Progress: 31/50 completed, in_flight=3, submitted=34
+[Smart] Progress: 32/50 completed, in_flight=3, submitted=35
+[Smart] Progress: 32/50 completed, in_flight=3, submitted=35
+[Smart] Progress: 32/50 completed, in_flight=3, submitted=35
+[Smart] Progress: 32/50 completed, in_flight=3, submitted=35
+[36m(PartitionShardWorker pid=228138)[0m [trial=32 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 37x across cluster][0m
+[Smart] Progress: 33/50 completed, in_flight=3, submitted=36
+[Smart] Progress: 34/50 completed, in_flight=3, submitted=37
+[36m(PartitionShardWorker pid=228137)[0m [trial=33 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 42x across cluster][0m
+[Smart] Progress: 35/50 completed, in_flight=3, submitted=38
+[Smart] Progress: 35/50 completed, in_flight=3, submitted=38
+[Smart] Progress: 35/50 completed, in_flight=3, submitted=38
+[36m(PartitionShardWorker pid=228136)[0m [trial=36 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 36/50 completed, in_flight=3, submitted=39
+[36m(PartitionShardWorker pid=228138)[0m [trial=35 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 37/50 completed, in_flight=3, submitted=40
+[Smart] Progress: 37/50 completed, in_flight=3, submitted=40
+[36m(PartitionShardWorker pid=228137)[0m [trial=37 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 37/50 completed, in_flight=3, submitted=40
+[Smart] Progress: 38/50 completed, in_flight=3, submitted=41
+[36m(PartitionShardWorker pid=228136)[0m [trial=38 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 38/50 completed, in_flight=3, submitted=41
+[Smart] Progress: 39/50 completed, in_flight=3, submitted=42
+[Smart] Progress: 39/50 completed, in_flight=3, submitted=42
+[36m(PartitionShardWorker pid=228138)[0m [trial=39 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 40/50 completed, in_flight=3, submitted=43
+[Smart] Progress: 40/50 completed, in_flight=3, submitted=43
+[Smart] Progress: 40/50 completed, in_flight=3, submitted=43
+[Smart] Progress: 40/50 completed, in_flight=3, submitted=43
+[36m(PartitionShardWorker pid=228136)[0m [trial=41 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 41/50 completed, in_flight=3, submitted=44
+[Smart] Progress: 42/50 completed, in_flight=3, submitted=45
+[Smart] Progress: 42/50 completed, in_flight=3, submitted=45
+[36m(PartitionShardWorker pid=228138)[0m [trial=42 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 42x across cluster][0m
+[Smart] Progress: 43/50 completed, in_flight=3, submitted=46
+[Smart] Progress: 43/50 completed, in_flight=3, submitted=46
+[Smart] Progress: 43/50 completed, in_flight=3, submitted=46
+[Smart] Progress: 43/50 completed, in_flight=3, submitted=46
+[36m(PartitionShardWorker pid=228136)[0m [trial=43 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 44/50 completed, in_flight=3, submitted=47
+[36m(PartitionShardWorker pid=228137)[0m [trial=44 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 44/50 completed, in_flight=3, submitted=47
+[Smart] Progress: 45/50 completed, in_flight=3, submitted=48
+[Smart] Progress: 45/50 completed, in_flight=3, submitted=48
+[36m(PartitionShardWorker pid=228138)[0m [trial=45 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 46/50 completed, in_flight=3, submitted=49
+[Smart] Progress: 46/50 completed, in_flight=3, submitted=49
+[36m(PartitionShardWorker pid=228136)[0m [trial=46 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 47/50 completed, in_flight=3, submitted=50
+[36m(PartitionShardWorker pid=228137)[0m [trial=47 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 48/50 completed, in_flight=2, submitted=50
+[Smart] Progress: 48/50 completed, in_flight=2, submitted=50
+[Smart] Progress: 48/50 completed, in_flight=2, submitted=50
+[Smart] Progress: 48/50 completed, in_flight=2, submitted=50
+[36m(PartitionShardWorker pid=228137)[0m [trial=49 partitions=[3]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=3[32m [repeated 21x across cluster][0m
+[Smart] Progress: 48/50 completed, in_flight=2, submitted=50
+[Smart] Progress: 49/50 completed, in_flight=1, submitted=50
+[36m(PartitionShardWorker pid=228136)[0m [trial=48 partitions=[3]] [Interaction 1300/1999 (65.0%)] elapsed=2.6s, est.remain=1.4s, partition=3[32m [repeated 34x across cluster][0m
+[Smart] Progress: 50/50 completed, in_flight=0, submitted=50
+[Final Test] Evaluating best architecture on test set using Serial training (fit=train+val, test=test, epochs=3)
+Epoch 1/3 | L2 Loss: 21.2930
+Epoch 2/3 | L2 Loss: 19.5992
+Epoch 3/3 | L2 Loss: 19.4705
+Best architecture saved to: outputs/comprehensive_comparison/seed_100/smart_no_overlap/best_arch.json
+Leaderboard saved to: outputs/comprehensive_comparison/seed_100/smart_no_overlap/leaderboard.csv
+Search mode: rl
+Best selection score: 0.7887
+Best test score: 0.7887
+Best model family: jodie_rnn
+[36m(PartitionShardWorker pid=228136)[0m [trial=48 partitions=[3]] [Interaction 1999/1999 (100.0%)] elapsed=3.7s, est.remain=0.0s, partition=3[32m [repeated 7x across cluster][0m

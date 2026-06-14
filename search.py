@@ -49,6 +49,7 @@ def parse_args():
     parser.add_argument("--architectures-per-step", type=int, default=2, help="Number of architectures evaluated concurrently in pipeline mode.")
     parser.add_argument("--partition-size", type=int, default=0, help="Temporal partition size. 0 keeps one partition per split.")
     parser.add_argument("--partition-strategy", choices=["count"], default="count", help="Temporal partition strategy.")
+    parser.add_argument("--partition-overlap-ratio", type=float, default=0.0, help="Partition overlap ratio (0.0-0.99). 0.2 means 20% overlap between consecutive partitions.")
     parser.add_argument("--num-pipeline-stages", type=int, default=2, help="Number of pipeline worker stages.")
     parser.add_argument("--pipeline-worker-gpus", type=float, default=0.0, help="GPU resources requested by each pipeline worker stage.")
     parser.add_argument("--pipeline-worker-cpus", type=float, default=1.0, help="CPU resources requested by each pipeline worker stage.")

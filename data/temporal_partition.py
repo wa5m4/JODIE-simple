@@ -56,12 +56,30 @@ def sort_interactions_by_time(interactions: Sequence[Interaction]) -> List[Inter
     return sorted(interactions, key=lambda x: x.timestamp)
 
 
-def _build_count_partitions(interactions: List[Interaction], partition_size: int) -> List[List[Interaction]]:
+def _build_count_partitions(interactions: List[Interaction], partition_size: int, overlap_ratio: float = 0.0) -> List[List[Interaction]]:
     #根据指定的分区大小将交互列表分割成多个分区
+    #改进2：支持分区重叠，overlap_ratio=0.2表示20%重叠
     #返回分区列表
     if partition_size <= 0:
         raise ValueError("partition_size must be > 0")
-    return [interactions[i : i + partition_size] for i in range(0, len(interactions), partition_size)]
+    if overlap_ratio < 0 or overlap_ratio >= 1:
+        raise ValueError("overlap_ratio must be in [0, 1)")
+
+    if overlap_ratio == 0:
+        # 无重叠：原有逻辑
+        return [interactions[i : i + partition_size] for i in range(0, len(interactions), partition_size)]
+
+    # 有重叠：改进逻辑
+    step = int(partition_size * (1 - overlap_ratio))
+    partitions = []
+    start = 0
+    while start < len(interactions):
+        end = min(start + partition_size, len(interactions))
+        partitions.append(interactions[start:end])
+        if end >= len(interactions):
+            break
+        start += step
+    return partitions
 
 
 def _build_num_partitions(interactions: List[Interaction], num_partitions: int) -> List[List[Interaction]]:
@@ -93,6 +111,7 @@ def build_temporal_partitions(
     num_partitions: Optional[int] = None,   #分区数量
     strategy: str = "count",                #分区策略（count/num）
     partition_id_offset: int = 0,           #分区 ID 的偏移量
+    overlap_ratio: float = 0.0,             #改进2：分区重叠比例（0-0.99）
 ) -> List[TemporalPartition]: #返回分区列表
     #从原始交互数据构建 TemporalPartition 对象列表
 
@@ -106,7 +125,7 @@ def build_temporal_partitions(
         raise ValueError(f"Unsupported partition strategy: {strategy}")
 
     if partition_size is not None:#如果指定了分区大小，则按数量划分
-        chunks = _build_count_partitions(ordered, partition_size)
+        chunks = _build_count_partitions(ordered, partition_size, overlap_ratio)
     elif num_partitions is not None:#如果指定了分区数量，则按数量划分
         chunks = _build_num_partitions(ordered, num_partitions)
     else:#如果没有未指定分区大小和分区数量，则抛出错误
@@ -138,6 +157,7 @@ def build_partition_plan(
     partition_size: Optional[int] = None,        # 每个分区的大小
     num_partitions: Optional[int] = None,        # 分区的数量
     strategy: str = "count",                     # 分区策略
+    overlap_ratio: float = 0.0,                  # 改进2：分区重叠比例
 ) -> TemporalPartitionPlan:                      # 返回规划对象
     
     #构建完整的时间分区规划，将训练集、验证集、测试集统一组织成一个 TemporalPartitionPlan 对象
@@ -166,6 +186,7 @@ def build_partition_plan(
             num_partitions=num_partitions,
             strategy=strategy,
             partition_id_offset=offset,
+            overlap_ratio=overlap_ratio,
         )
         partitions.extend(split_partitions)
         #将当前划分类型的分区添加到总分区列表中

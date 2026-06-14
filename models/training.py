@@ -55,7 +55,9 @@ def _all_item_embeddings(model):
     raise ValueError("Model does not expose item embeddings for evaluation.")
 
 
-def reset_model_state(model):
+def reset_model_state(model, disable_reset=False):
+    if disable_reset:
+        return
     if hasattr(model, "reset_state"):
         model.reset_state()
 

@@ -135,6 +135,7 @@ class GraphNASTrainer:
             test_interactions=test_data,
             partition_size=partition_size if partition_size > 0 else None,
             strategy=partition_strategy,
+            overlap_ratio=self.base_config.get("partition_overlap_ratio", 0.0),
         )
 
         graph_template = init_dynamic_graph_state(
