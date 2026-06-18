@@ -329,7 +329,8 @@ class DataParallelExecutor:
         val_partitions = self.partition_plan.get_split_partitions("val")
 
         t_start = time.time()
-        batch_size = config.get("train_batch_size", 32)
+        # Use data_parallel_micro_batch_size for sync granularity
+        batch_size = config.get("data_parallel_micro_batch_size", config.get("train_batch_size", 32))
 
         for epoch_idx in range(num_train_epochs):
             runtime_state: Optional[Dict] = None

@@ -1,0 +1,575 @@
+========================================================================
+补充Serial重训练 (Seeds: 42, 1000)
+========================================================================
+
+========================================================================
+种子 42 开始重训练
+========================================================================
+
+  重训练: serial
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 42
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 24.6822
+Epoch 2/3 | L2 Loss: 22.8342
+Epoch 3/3 | L2 Loss: 22.6410
+训练完成，耗时: 129.86s
+
+评估...
+
+结果:
+  Test MRR: 0.8801
+  Test Recall@10: 0.9918
+  训练时间: 129.86s
+
+结果已保存到: outputs/comprehensive_comparison/seed_42/serial/retrain/result.json
+
+  重训练: data_parallel
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 64,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "on",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 42
+构建模型...
+模型参数: 148352
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 11.3266
+Epoch 2/3 | L2 Loss: 10.5643
+Epoch 3/3 | L2 Loss: 10.4064
+训练完成，耗时: 139.76s
+
+评估...
+
+结果:
+  Test MRR: 0.6141
+  Test Recall@10: 0.9163
+  训练时间: 139.76s
+
+结果已保存到: outputs/comprehensive_comparison/seed_42/data_parallel/retrain/result.json
+
+  重训练: smart_overlap20
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 42
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 24.6822
+Epoch 2/3 | L2 Loss: 22.8342
+Epoch 3/3 | L2 Loss: 22.6410
+训练完成，耗时: 105.00s
+
+评估...
+
+结果:
+  Test MRR: 0.8801
+  Test Recall@10: 0.9918
+  训练时间: 105.00s
+
+结果已保存到: outputs/comprehensive_comparison/seed_42/smart_overlap20/retrain/result.json
+
+  重训练: smart_no_overlap
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 42
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 24.6822
+Epoch 2/3 | L2 Loss: 22.8342
+Epoch 3/3 | L2 Loss: 22.6410
+训练完成，耗时: 96.66s
+
+评估...
+
+结果:
+  Test MRR: 0.8801
+  Test Recall@10: 0.9918
+  训练时间: 96.66s
+
+结果已保存到: outputs/comprehensive_comparison/seed_42/smart_no_overlap/retrain/result.json
+
+  重训练: naive_overlap20
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 42
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 24.6822
+Epoch 2/3 | L2 Loss: 22.8342
+Epoch 3/3 | L2 Loss: 22.6410
+训练完成，耗时: 133.33s
+
+评估...
+
+结果:
+  Test MRR: 0.8801
+  Test Recall@10: 0.9918
+  训练时间: 133.33s
+
+结果已保存到: outputs/comprehensive_comparison/seed_42/naive_overlap20/retrain/result.json
+
+  重训练: naive_no_overlap
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 42,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 42
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 24.6822
+Epoch 2/3 | L2 Loss: 22.8342
+Epoch 3/3 | L2 Loss: 22.6410
+训练完成，耗时: 133.33s
+
+评估...
+
+结果:
+  Test MRR: 0.8801
+  Test Recall@10: 0.9918
+  训练时间: 133.33s
+
+结果已保存到: outputs/comprehensive_comparison/seed_42/naive_no_overlap/retrain/result.json
+
+========================================================================
+种子 42 重训练完成
+========================================================================
+
+========================================================================
+种子 1000 开始重训练
+========================================================================
+
+  重训练: serial
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 1000,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 1000
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 19.6265
+Epoch 2/3 | L2 Loss: 18.0123
+Epoch 3/3 | L2 Loss: 17.8295
+训练完成，耗时: 138.69s
+
+评估...
+
+结果:
+  Test MRR: 0.8228
+  Test Recall@10: 0.9882
+  训练时间: 138.69s
+
+结果已保存到: outputs/comprehensive_comparison/seed_1000/serial/retrain/result.json
+
+  重训练: data_parallel
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "on",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 1000,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 1000
+构建模型...
+模型参数: 403200
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 13.9763
+Epoch 2/3 | L2 Loss: 12.9382
+Epoch 3/3 | L2 Loss: 12.8676
+训练完成，耗时: 152.81s
+
+评估...
+
+结果:
+  Test MRR: 0.7320
+  Test Recall@10: 0.9567
+  训练时间: 152.81s
+
+结果已保存到: outputs/comprehensive_comparison/seed_1000/data_parallel/retrain/result.json
+
+  重训练: smart_overlap20
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "off",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 1000,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 1000
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 19.6265
+Epoch 2/3 | L2 Loss: 18.0123
+Epoch 3/3 | L2 Loss: 17.8295
+训练完成，耗时: 142.45s
+
+评估...
+
+结果:
+  Test MRR: 0.8228
+  Test Recall@10: 0.9882
+  训练时间: 142.45s
+
+结果已保存到: outputs/comprehensive_comparison/seed_1000/smart_overlap20/retrain/result.json
+
+  重训练: smart_no_overlap
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "off",
+  "use_static_embeddings": "on",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 1000,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 1000
+构建模型...
+模型参数: 403200
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 13.9763
+Epoch 2/3 | L2 Loss: 12.9382
+Epoch 3/3 | L2 Loss: 12.8676
+训练完成，耗时: 144.31s
+
+评估...
+
+结果:
+  Test MRR: 0.7320
+  Test Recall@10: 0.9567
+  训练时间: 144.31s
+
+结果已保存到: outputs/comprehensive_comparison/seed_1000/smart_no_overlap/retrain/result.json
+
+  重训练: naive_overlap20
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "linear",
+  "use_static_embeddings": "off",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 1000,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 1000
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 96.7026
+Epoch 2/3 | L2 Loss: 91.2452
+Epoch 3/3 | L2 Loss: 91.1148
+训练完成，耗时: 143.09s
+
+评估...
+
+结果:
+  Test MRR: 0.5805
+  Test Recall@10: 0.8685
+  训练时间: 143.09s
+
+结果已保存到: outputs/comprehensive_comparison/seed_1000/naive_overlap20/retrain/result.json
+
+  重训练: naive_no_overlap
+训练配置: {
+  "model": "jodie_rnn",
+  "embedding_dim": 128,
+  "memory_cell": "rnn",
+  "time_proj": "linear",
+  "use_static_embeddings": "off",
+  "normalize_state": "off",
+  "event_agg": "none",
+  "max_neighbors": 0,
+  "batch_mode": "tbatch",
+  "train_batch_size": 32,
+  "dataset": "public_csv",
+  "local_data_path": "data/public/mooc.csv",
+  "max_events": 20000,
+  "seed": 1000,
+  "lr": 0.001,
+  "neg_sample_size": 5,
+  "k": 10,
+  "device": "cuda"
+}
+
+加载数据...
+数据集: 14000 train, 2000 val, 4000 test
+最终训练: 16000 (train+val), 测试: 4000
+用户数: 1435, 物品数: 21
+
+设置种子: 1000
+构建模型...
+模型参数: 134912
+
+开始训练 (3 epochs)...
+Epoch 1/3 | L2 Loss: 96.7026
+Epoch 2/3 | L2 Loss: 91.2452
+Epoch 3/3 | L2 Loss: 91.1148
+训练完成，耗时: 146.51s
+
+评估...
+
+结果:
+  Test MRR: 0.5805
+  Test Recall@10: 0.8685
+  训练时间: 146.51s
+
+结果已保存到: outputs/comprehensive_comparison/seed_1000/naive_no_overlap/retrain/result.json
+
+========================================================================
+种子 1000 重训练完成
+========================================================================
+
+========================================================================
+所有重训练完成！生成对比报告...
+========================================================================

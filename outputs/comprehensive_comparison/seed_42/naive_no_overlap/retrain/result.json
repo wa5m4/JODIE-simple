@@ -1,0 +1,28 @@
+{
+  "config": {
+    "model": "jodie_rnn",
+    "embedding_dim": 128,
+    "memory_cell": "rnn",
+    "time_proj": "off",
+    "use_static_embeddings": "off",
+    "normalize_state": "off",
+    "event_agg": "none",
+    "max_neighbors": 0,
+    "batch_mode": "tbatch",
+    "train_batch_size": 32,
+    "dataset": "public_csv",
+    "local_data_path": "data/public/mooc.csv",
+    "max_events": 20000,
+    "seed": 42,
+    "lr": 0.001,
+    "neg_sample_size": 5,
+    "k": 10,
+    "device": "cuda",
+    "num_users": 1435,
+    "num_items": 21,
+    "feature_dim": 8
+  },
+  "test_mrr": 0.8800553034426896,
+  "test_recall_at_k": 0.99175,
+  "time_sec": 133.32934379577637
+}
