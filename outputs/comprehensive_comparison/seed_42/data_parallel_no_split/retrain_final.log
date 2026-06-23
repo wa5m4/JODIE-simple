@@ -1,0 +1,18 @@
+======================================================================
+Final Test Retrain
+======================================================================
+
+配置:
+  架构: jodie_rnn / off / off
+  Base seed: 42
+  Final seed: 20042 (base_seed + 20000)
+  Epochs: 3
+  输出: outputs/comprehensive_comparison/seed_42/data_parallel_no_split/retrain
+
+Traceback (most recent call last):
+  File "/home/wanghaoyu/JODIE-simple/retrain_final_test.py", line 138, in <module>
+    main()
+  File "/home/wanghaoyu/JODIE-simple/retrain_final_test.py", line 72, in main
+    trainer = GraphNASTrainer(
+              ^^^^^^^^^^^^^^^^
+TypeError: GraphNASTrainer.__init__() got an unexpected keyword argument 'search_space'

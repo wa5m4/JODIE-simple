@@ -34,19 +34,41 @@ def split_partition_interactions(
     partition: "TemporalPartition",
     num_workers: int,
 ) -> List[List[Interaction]]:
-    """Split partition.interactions into num_workers temporally-ordered chunks."""
+    """Split partition.interactions into num_workers temporally-ordered chunks by time."""
     interactions = partition.interactions
     if num_workers <= 1:
         return [list(interactions)]
-    chunk_size = len(interactions) // num_workers
-    remainder = len(interactions) % num_workers
-    chunks: List[List[Interaction]] = []
-    start = 0
-    for i in range(num_workers):
-        end = start + chunk_size + (1 if i < remainder else 0)
-        if end > start:
-            chunks.append(interactions[start:end])
-        start = end
+
+    # Split by time range instead of count to reduce user/item overlap
+    if not interactions:
+        return [[] for _ in range(num_workers)]
+
+    start_ts = partition.start_ts
+    end_ts = partition.end_ts
+    time_span = end_ts - start_ts
+
+    if time_span <= 0:
+        # Fallback to simple split if no time span
+        chunk_size = len(interactions) // num_workers
+        remainder = len(interactions) % num_workers
+        chunks: List[List[Interaction]] = []
+        start = 0
+        for i in range(num_workers):
+            end = start + chunk_size + (1 if i < remainder else 0)
+            if end > start:
+                chunks.append(interactions[start:end])
+            start = end
+        return chunks
+
+    # Time-based splitting
+    chunk_duration = time_span / num_workers
+    chunks: List[List[Interaction]] = [[] for _ in range(num_workers)]
+
+    for inter in interactions:
+        worker_id = int((inter.timestamp - start_ts) / chunk_duration)
+        worker_id = min(worker_id, num_workers - 1)  # Ensure last chunk gets boundary events
+        chunks[worker_id].append(inter)
+
     return chunks
 
 

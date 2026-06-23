@@ -1,0 +1,23 @@
+Pipeline trace log file: outputs/three_factor_test/async/1stage_overlap0/pipeline_trace_20260622_213105.log
+
+======================================================================
+[GraphNAS] Starting search pipeline
+[GraphNAS] Coarse trials: 50, epochs: 3
+[GraphNAS] Rerank top-k: 0, epochs: 3
+======================================================================
+
+Traceback (most recent call last):
+  File "/home/wanghaoyu/JODIE-simple/search.py", line 300, in <module>
+    main()
+  File "/home/wanghaoyu/JODIE-simple/search.py", line 258, in main
+    best, results = trainer.search_pipeline(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/nas/trainer.py", line 674, in search_pipeline
+    train_data, val_data, test_data, user_type_prefs, item_type, graph_template, partition_plan = self._prepare_data()
+                                                                                                  ^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/nas/trainer.py", line 108, in _prepare_data
+    interactions, num_users, num_items = load_public_dataset(
+                                         ^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/data/public_dataset.py", line 77, in load_public_dataset
+    raise ValueError("dataset=public_csv requires --local-data-path")
+ValueError: dataset=public_csv requires --local-data-path

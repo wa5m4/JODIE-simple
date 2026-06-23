@@ -335,66 +335,54 @@ class DataParallelExecutor:
         for epoch_idx in range(num_train_epochs):
             runtime_state: Optional[Dict] = None
 
+            # Micro-batch level parallelism within each partition
             for partition in train_partitions:
                 if not partition.interactions:
                     continue
 
                 interactions = partition.interactions
-                total = len(interactions)
+                batch_size = config.get("data_parallel_micro_batch_size", 32)
 
-                # Process partition in batches, splitting each batch among workers
-                for start_idx in range(0, total, batch_size):
-                    end_idx = min(start_idx + batch_size, total)
-                    batch = interactions[start_idx:end_idx]
+                # Split partition into micro-batches and distribute to workers
+                for batch_start in range(0, len(interactions), batch_size * self.num_workers):
+                    refs = []
+                    for worker_idx in range(self.num_workers):
+                        start_idx = batch_start + worker_idx * batch_size
+                        end_idx = min(start_idx + batch_size, len(interactions))
 
-                    # Split batch among workers
-                    chunks = split_partition_interactions(
-                        TemporalPartition(
-                            partition.partition_id, partition.split,
-                            batch[0].timestamp if batch else partition.start_ts,
-                            batch[-1].timestamp if batch else partition.end_ts,
-                            batch
-                        ),
-                        self.num_workers
-                    )
-                    while len(chunks) < self.num_workers:
-                        chunks.append([])
+                        if start_idx >= len(interactions):
+                            break
 
-                    refs = [
-                        self._workers[i].train_chunk.remote(
-                            model_state_dict, runtime_state, chunks[i],
+                        batch_interactions = interactions[start_idx:end_idx]
+                        ref = self._workers[worker_idx].train_chunk.remote(
+                            model_state_dict, runtime_state, batch_interactions,
                             arch_config, self.base_config,
                         )
-                        for i in range(self.num_workers)
-                    ]
-                    worker_results = ray.get(refs)
+                        refs.append(ref)
 
-                    total_interactions = sum(r["num_interactions"] for r in worker_results)
-                    if total_interactions == 0:
-                        continue
+                    # Wait for all workers to complete this micro-batch
+                    results = [ray.get(ref) for ref in refs]
 
-                    # Average gradients weighted by chunk size
+                    # Average gradients
                     avg_grads = {}
-                    for r in worker_results:
-                        w = r["num_interactions"] / total_interactions
-                        for name, g in r["gradients"].items():
-                            avg_grads[name] = avg_grads.get(name, 0) + g * w
+                    for name in results[0]["gradients"].keys():
+                        avg_grads[name] = sum(r["gradients"][name] for r in results) / len(results)
 
-                    # Update model parameters with averaged gradients
+                    # Merge runtime states
+                    merged_states = _merge_runtime_states([r["runtime_state"] for r in results])
+
+                    # Apply gradients
                     model_state_dict, optimizer_state = _apply_averaged_gradients(
                         model_state_dict, avg_grads, arch_config,
-                        self.base_config, runtime_state, optimizer_state,
+                        self.base_config, merged_states, optimizer_state,
                     )
+                    runtime_state = merged_states
 
-                    # Merge embedding states from workers
-                    runtime_state = _merge_runtime_states([r["runtime_state"] for r in worker_results])
-
-                    if (end_idx % 500 == 0) or (end_idx == total):
-                        print(
-                            f"[DataParallel batch-sync] trial={trial_id} epoch={epoch_idx+1}/{num_train_epochs} "
-                            f"partition={partition.partition_id} interactions={end_idx}/{total}",
-                            flush=True,
-                        )
+                print(
+                    f"[DataParallel] trial={trial_id} epoch={epoch_idx+1}/{num_train_epochs} "
+                    f"partition={partition.partition_id} interactions={len(interactions)}",
+                    flush=True,
+                )
 
         # Evaluation (sequential to preserve temporal order)
         # Evaluation runs in the executor process (no GPU assigned by Ray here), use CPU.

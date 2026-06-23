@@ -1,0 +1,210 @@
+[Timing] Timing log: outputs/50k_comparison/seed_42/serial/timing_log.csv
+Epoch 1/3 | L2 Loss: 48.9207
+Epoch 2/3 | L2 Loss: 47.1413
+Epoch 3/3 | L2 Loss: 45.9908
+[Coarse 1/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.4811
+Epoch 1/3 | L2 Loss: 4.0987
+Epoch 2/3 | L2 Loss: 3.7819
+Epoch 3/3 | L2 Loss: 3.6643
+[Coarse 2/50] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2069
+Epoch 1/3 | L2 Loss: 0.8130
+Epoch 2/3 | L2 Loss: 0.7590
+Epoch 3/3 | L2 Loss: 0.7208
+[Coarse 3/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.5430
+Epoch 1/3 | L2 Loss: 11.9520
+Epoch 2/3 | L2 Loss: 10.9141
+Epoch 3/3 | L2 Loss: 10.6953
+[Coarse 4/50] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.1893
+Epoch 1/3 | L2 Loss: 0.9719
+Epoch 2/3 | L2 Loss: 0.9490
+Epoch 3/3 | L2 Loss: 0.9354
+[Coarse 5/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.4585
+Epoch 1/3 | L2 Loss: 0.1455
+Epoch 2/3 | L2 Loss: 0.1353
+Epoch 3/3 | L2 Loss: 0.1332
+[Coarse 6/50] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.2939
+Epoch 1/3 | L2 Loss: 0.3028
+Epoch 2/3 | L2 Loss: 0.2848
+Epoch 3/3 | L2 Loss: 0.2814
+[Coarse 7/50] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.2917
+Epoch 1/3 | L2 Loss: nan
+Epoch 2/3 | L2 Loss: nan
+Epoch 3/3 | L2 Loss: nan
+[Coarse 8/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1309
+Epoch 1/3 | L2 Loss: 2.5147
+Epoch 2/3 | L2 Loss: 2.3084
+Epoch 3/3 | L2 Loss: 2.2520
+[Coarse 9/50] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.3969
+Epoch 1/3 | L2 Loss: 0.7335
+Epoch 2/3 | L2 Loss: 0.6767
+Epoch 3/3 | L2 Loss: 0.6924
+[Coarse 10/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.4085
+Epoch 1/3 | L2 Loss: nan
+Epoch 2/3 | L2 Loss: nan
+Epoch 3/3 | L2 Loss: nan
+[Coarse 11/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1309
+Epoch 1/3 | L2 Loss: 0.2322
+Epoch 2/3 | L2 Loss: 0.2131
+Epoch 3/3 | L2 Loss: 0.2093
+[Coarse 12/50] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3415
+Epoch 1/3 | L2 Loss: 0.7534
+Epoch 2/3 | L2 Loss: 0.6848
+Epoch 3/3 | L2 Loss: 0.7412
+[Coarse 13/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.5575
+Epoch 1/3 | L2 Loss: 0.9865
+Epoch 2/3 | L2 Loss: 0.9210
+Epoch 3/3 | L2 Loss: 0.9019
+[Coarse 14/50] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.5086
+Epoch 1/3 | L2 Loss: 0.4067
+Epoch 2/3 | L2 Loss: 0.2732
+Epoch 3/3 | L2 Loss: 0.2764
+[Coarse 15/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.2861
+Epoch 1/3 | L2 Loss: 24.4099
+Epoch 2/3 | L2 Loss: 23.6661
+Epoch 3/3 | L2 Loss: 23.7946
+[Coarse 16/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.4267
+Epoch 1/3 | L2 Loss: 1.1856
+Epoch 2/3 | L2 Loss: 1.0765
+Epoch 3/3 | L2 Loss: 1.0471
+[Coarse 17/50] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.4147
+Epoch 1/3 | L2 Loss: 0.1804
+Epoch 2/3 | L2 Loss: 0.1625
+Epoch 3/3 | L2 Loss: 0.1553
+[Coarse 18/50] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.4271
+Epoch 1/3 | L2 Loss: 0.7494
+Epoch 2/3 | L2 Loss: 0.7303
+Epoch 3/3 | L2 Loss: 0.6930
+[Coarse 19/50] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.5362
+Epoch 1/3 | L2 Loss: 94.0487
+Epoch 2/3 | L2 Loss: 90.6911
+Epoch 3/3 | L2 Loss: 90.4145
+[Coarse 20/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.5152
+Epoch 1/3 | L2 Loss: 12.6716
+Epoch 2/3 | L2 Loss: 11.2395
+Epoch 3/3 | L2 Loss: 11.0801
+[Coarse 21/50] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.1908
+Epoch 1/3 | L2 Loss: nan
+Epoch 2/3 | L2 Loss: nan
+Epoch 3/3 | L2 Loss: nan
+[Coarse 22/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1309
+Epoch 1/3 | L2 Loss: 0.5105
+Epoch 2/3 | L2 Loss: 0.4525
+Epoch 3/3 | L2 Loss: 0.4957
+[Coarse 23/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.2856
+Epoch 1/3 | L2 Loss: 0.7900
+Epoch 2/3 | L2 Loss: 0.6982
+Epoch 3/3 | L2 Loss: 0.7113
+[Coarse 24/50] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.5820
+Epoch 1/3 | L2 Loss: 6.0096
+Epoch 2/3 | L2 Loss: 5.2798
+Epoch 3/3 | L2 Loss: 5.1929
+[Coarse 25/50] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2076
+Epoch 1/3 | L2 Loss: 3.4666
+Epoch 2/3 | L2 Loss: 3.3439
+Epoch 3/3 | L2 Loss: 3.2509
+[Coarse 26/50] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2199
+Epoch 1/3 | L2 Loss: 0.2058
+Epoch 2/3 | L2 Loss: 0.1890
+Epoch 3/3 | L2 Loss: 0.1837
+[Coarse 27/50] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.3908
+Epoch 1/3 | L2 Loss: 0.2381
+Epoch 2/3 | L2 Loss: 0.2166
+Epoch 3/3 | L2 Loss: 0.2108
+[Coarse 28/50] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.2738
+Epoch 1/3 | L2 Loss: 0.4776
+Epoch 2/3 | L2 Loss: 0.4293
+Epoch 3/3 | L2 Loss: 0.4183
+[Coarse 29/50] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3242
+Epoch 1/3 | L2 Loss: 0.7517
+Epoch 2/3 | L2 Loss: 0.6396
+Epoch 3/3 | L2 Loss: 0.6532
+[Coarse 30/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.5112
+Epoch 1/3 | L2 Loss: 0.9398
+Epoch 2/3 | L2 Loss: 0.8462
+Epoch 3/3 | L2 Loss: 0.7950
+[Coarse 31/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.5117
+Epoch 1/3 | L2 Loss: nan
+Epoch 2/3 | L2 Loss: nan
+Epoch 3/3 | L2 Loss: nan
+[Coarse 32/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1309
+Epoch 1/3 | L2 Loss: 0.1371
+Epoch 2/3 | L2 Loss: 0.1255
+Epoch 3/3 | L2 Loss: 0.1229
+[Coarse 33/50] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.2783
+Epoch 1/3 | L2 Loss: nan
+Epoch 2/3 | L2 Loss: nan
+Epoch 3/3 | L2 Loss: nan
+[Coarse 34/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1309
+Epoch 1/3 | L2 Loss: 4.7918
+Epoch 2/3 | L2 Loss: 4.4671
+Epoch 3/3 | L2 Loss: 4.3760
+[Coarse 35/50] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.4117
+Epoch 1/3 | L2 Loss: 6.6574
+Epoch 2/3 | L2 Loss: 6.2969
+Epoch 3/3 | L2 Loss: 6.2219
+[Coarse 36/50] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.6161
+Epoch 1/3 | L2 Loss: 1.2950
+Epoch 2/3 | L2 Loss: 1.2586
+Epoch 3/3 | L2 Loss: 1.2345
+[Coarse 37/50] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.4405
+Epoch 1/3 | L2 Loss: 0.7233
+Epoch 2/3 | L2 Loss: 0.6737
+Epoch 3/3 | L2 Loss: 0.6352
+[Coarse 38/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6338
+Epoch 1/3 | L2 Loss: nan
+Epoch 2/3 | L2 Loss: nan
+Epoch 3/3 | L2 Loss: nan
+[Coarse 39/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1309
+Epoch 1/3 | L2 Loss: 2.0975
+Epoch 2/3 | L2 Loss: 1.8931
+Epoch 3/3 | L2 Loss: 1.8202
+[Coarse 40/50] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.4242
+Epoch 1/3 | L2 Loss: 95.1622
+Epoch 2/3 | L2 Loss: 92.8679
+Epoch 3/3 | L2 Loss: 92.0806
+[Coarse 41/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.3596
+Epoch 1/3 | L2 Loss: 47.9715
+Epoch 2/3 | L2 Loss: 47.0762
+Epoch 3/3 | L2 Loss: 46.7753
+[Coarse 42/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.4342
+Epoch 1/3 | L2 Loss: 0.1067
+Epoch 2/3 | L2 Loss: 0.0981
+Epoch 3/3 | L2 Loss: 0.0967
+[Coarse 43/50] model=jodie_rnn agg=none memory=gru time_proj=off val_score=0.2935
+Epoch 1/3 | L2 Loss: 0.6586
+Epoch 2/3 | L2 Loss: 0.6051
+Epoch 3/3 | L2 Loss: 0.5925
+[Coarse 44/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6370
+Epoch 1/3 | L2 Loss: 0.4478
+Epoch 2/3 | L2 Loss: 0.4177
+Epoch 3/3 | L2 Loss: 0.4115
+[Coarse 45/50] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.2902
+Epoch 1/3 | L2 Loss: 0.8178
+Epoch 2/3 | L2 Loss: 0.7623
+Epoch 3/3 | L2 Loss: 0.6975
+[Coarse 46/50] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.6113
+Epoch 1/3 | L2 Loss: 0.8338
+Epoch 2/3 | L2 Loss: 0.7552
+Epoch 3/3 | L2 Loss: 0.7026
+[Coarse 47/50] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.2941
+Epoch 1/3 | L2 Loss: 18.9970
+Epoch 2/3 | L2 Loss: 17.9888
+Epoch 3/3 | L2 Loss: 17.9013
+[Coarse 48/50] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.7410
+Epoch 1/3 | L2 Loss: 0.2285
+Epoch 2/3 | L2 Loss: 0.2122
+Epoch 3/3 | L2 Loss: 0.2103
+[Coarse 49/50] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.3060
+Epoch 1/3 | L2 Loss: 0.4039
+Epoch 2/3 | L2 Loss: 0.3745
+Epoch 3/3 | L2 Loss: 0.3639
+[Coarse 50/50] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.3119
+Epoch 1/3 | L2 Loss: 18.4538
+Epoch 2/3 | L2 Loss: 17.5776
+Epoch 3/3 | L2 Loss: 17.4624
+Best architecture saved to: outputs/50k_comparison/seed_42/serial/best_arch.json
+Leaderboard saved to: outputs/50k_comparison/seed_42/serial/leaderboard.csv
+Search mode: rl
+Best selection score: 0.7410
+Best test score: 0.7410
+Best model family: jodie_rnn

@@ -1,0 +1,2 @@
+trial_id,mode,start_time_s,end_time_s,duration_s,score,mrr,recall_at_k,cumulative_best_score,model
+0,serial,0.006,115.25,115.244,0.645504,0.645504,0.898449,0.645504,jodie_rnn
