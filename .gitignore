@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# 运行结果 (体积大, 不提交)
+results/
+outputs/
+
+# Ray 临时文件
+ray_results/
+/tmp/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# 虚拟环境
+venv/
+.venv/
