@@ -17,6 +17,40 @@ try:
 except ImportError:  # pragma: no cover
     ray = None
 
+
+def _safe_ray_init(**kwargs):
+    """ray.init() with a workaround for phantom /proc/<pid> entries.
+
+    On some systems a kernel mount (e.g. devtmpfs) is anchored at a path like
+    ``/proc/1778``.  The directory *appears* in the /proc listing (so
+    ``psutil.pids()`` returns it) but it is not a real process and has no
+    ``stat`` file.  Ray's GCS-address discovery calls ``psutil.Process(pid)``
+    for every PID on the machine, which triggers a ``FileNotFoundError`` on
+    ``/proc/<pid>/stat`` that Ray does not catch.
+
+    We monkey-patch ``psutil.pids()`` before calling ``ray.init()`` so that
+    these phantom entries are never seen by Ray.  The patch is reverted once
+    ``ray.init()`` returns (success or failure).
+    """
+    import os as _os
+
+    try:
+        import psutil as _psutil
+    except ImportError:
+        return ray.init(**kwargs)
+
+    _original_pids = _psutil.pids
+
+    def _filtered_pids():
+        return [p for p in _original_pids() if _os.path.exists(f"/proc/{p}/stat")]
+
+    _psutil.pids = _filtered_pids
+    try:
+        return ray.init(**kwargs)
+    finally:
+        _psutil.pids = _original_pids
+
+
 # 条件 Ray 装饰器（当 ray 不可用时为空操作）
 if ray is None:
     def _ray_remote(*args, **kwargs):
@@ -407,7 +441,7 @@ class DataParallelExecutor:
             import os
             visible = str(base_config.get("data_parallel_visible_gpus", "0,1,2"))
             os.environ["CUDA_VISIBLE_DEVICES"] = visible
-            ray.init(ignore_reinit_error=True)
+            _safe_ray_init(ignore_reinit_error=True)
 
         gpu_frac = base_config.get("data_parallel_worker_gpus", 1.0)
         self._workers = [
@@ -420,7 +454,7 @@ class DataParallelExecutor:
 
     def shutdown(self) -> None:
         """杀死所有 Ray worker actor，以便它们在下一个 executor 之前释放资源。"""
-        for w in self._workers:
+        for w in getattr(self, "_workers", []):
             try:
                 ray.kill(w)
             except Exception:
@@ -672,7 +706,7 @@ class MemShareDPExecutor:
             import os
             visible = str(base_config.get("data_parallel_visible_gpus", "0,1,2"))
             os.environ["CUDA_VISIBLE_DEVICES"] = visible
-            ray.init(ignore_reinit_error=True)
+            _safe_ray_init(ignore_reinit_error=True)
 
         gpu_frac = base_config.get("data_parallel_worker_gpus", 1.0)
         self._workers = [
@@ -690,7 +724,7 @@ class MemShareDPExecutor:
         )
 
     def shutdown(self) -> None:
-        for w in self._workers:
+        for w in getattr(self, "_workers", []):
             try:
                 ray.kill(w)
             except Exception:

@@ -256,8 +256,8 @@ FAMILY_BALANCE_PER_MODEL = 1
 
 # ---- 启用的策略 (可注释不需要的) ----
 ENABLE_STRATEGIES = [
-    "serial",
-    "data_parallel",
+    # "serial",         # 已验证: test_score=0.8793 ✅
+    # "data_parallel",  # 已验证: test_score=0.8793 ✅
     "pipeline_naive",
     "pipeline_smart",
 ]

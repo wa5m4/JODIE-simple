@@ -34,6 +34,39 @@ except ImportError:  # pragma: no cover
     ray = None
 
 
+def _safe_ray_init(**kwargs):
+    """ray.init() with a workaround for phantom /proc/<pid> entries.
+
+    On some systems a kernel mount (e.g. devtmpfs) is anchored at a path like
+    ``/proc/1778``.  The directory *appears* in the /proc listing (so
+    ``psutil.pids()`` returns it) but it is not a real process and has no
+    ``stat`` file.  Ray's GCS-address discovery calls ``psutil.Process(pid)``
+    for every PID on the machine, which triggers a ``FileNotFoundError`` on
+    ``/proc/<pid>/stat`` that Ray does not catch.
+
+    We monkey-patch ``psutil.pids()`` before calling ``ray.init()`` so that
+    these phantom entries are never seen by Ray.  The patch is reverted once
+    ``ray.init()`` returns (success or failure).
+    """
+    import os as _os
+
+    try:
+        import psutil as _psutil
+    except ImportError:
+        return ray.init(**kwargs)
+
+    _original_pids = _psutil.pids
+
+    def _filtered_pids():
+        return [p for p in _original_pids() if _os.path.exists(f"/proc/{p}/stat")]
+
+    _psutil.pids = _filtered_pids
+    try:
+        return ray.init(**kwargs)
+    finally:
+        _psutil.pids = _original_pids
+
+
 @dataclass
 class PipelineModelPayload:
     trial_id: int
@@ -62,6 +95,12 @@ class PartitionShardWorker:
         model.load_state_dict({k: v.to(device) for k, v in payload.model_state_dict.items()})
         if payload.runtime_state is not None and hasattr(model, "import_runtime_state"):
             model.import_runtime_state(payload.runtime_state)
+        else:
+            # runtime_state=None 表示 epoch 边界：重置嵌入缓冲区（user/item
+            # embeddings, last_time），但保留 RNN 权重、投影层等可学习参数。
+            # 这与 Serial 训练中 reset_model_state() 在每个 epoch 开始时的行为一致。
+            if hasattr(model, "reset_state"):
+                model.reset_state()
         return model, config
 
     def _append_trace_line(self, line: str) -> None:
@@ -182,6 +221,11 @@ class PartitionShardWorker:
                                 f"phase=train event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=ce epoch={epoch + 1}/{epochs}"
                         ),
                     )
+
+            # 将当前 epoch 的图状态保留至下一 epoch / 下一 stage，
+            # 防止动态图在 stage 边界丢失（原代码 snapshot 了未修改的模板）
+            if epoch_graph_state is not None:
+                graph_state = epoch_graph_state
 
         runtime_state = model.export_runtime_state() if hasattr(model, "export_runtime_state") else None
         if runtime_state is not None:
@@ -954,7 +998,7 @@ class RayPipelineExecutor:
             raise ImportError("ray is required")
         if not ray.is_initialized():
             ray_address = str(self.base_config.get("ray_address", "")).strip()
-            ray.init(address=ray_address if ray_address else None, ignore_reinit_error=True)
+            _safe_ray_init(address=ray_address if ray_address else None, ignore_reinit_error=True)
 
         self._pool_num_epochs = max(int(num_train_epochs), 1)
         num_stages = int(self.base_config.get("num_pipeline_stages", 1))
@@ -1120,11 +1164,16 @@ class RayPipelineExecutor:
         config.update(arch_config)
         model = build_model(config)
         runtime_state = model.export_runtime_state() if hasattr(model, "export_runtime_state") else None
-        graph_state = init_dynamic_graph_state(
-            num_users=int(self.base_config.get("num_users", 0)),
-            num_items=int(self.base_config.get("num_items", 0)),
-            max_neighbors=int(self.base_config.get("max_neighbors", 20)),
-        )
+        # jodie_rnn 不使用动态图（与 Serial 训练的 graph_ctx=None 保持一致）
+        model_name = config.get("model", "temporal_event_gnn_jodie")
+        if model_name == "jodie_rnn":
+            graph_state = None
+        else:
+            graph_state = init_dynamic_graph_state(
+                num_users=int(self.base_config.get("num_users", 0)),
+                num_items=int(self.base_config.get("num_items", 0)),
+                max_neighbors=int(self.base_config.get("max_neighbors", 20)),
+            )
         return PipelineModelPayload(
             trial_id=trial_id,
             arch_config=arch_config,
@@ -1181,9 +1230,9 @@ class RayPipelineExecutor:
         if not ray.is_initialized():
             ray_address = str(self.base_config.get("ray_address", "")).strip()
             if ray_address:
-                ray.init(address=ray_address, ignore_reinit_error=True)
+                _safe_ray_init(address=ray_address, ignore_reinit_error=True)
             else:
-                ray.init(ignore_reinit_error=True)
+                _safe_ray_init(ignore_reinit_error=True)
 
         num_stages = int(self.base_config.get("num_pipeline_stages", 1))
         train_groups = self._group_partitions("train", num_stages)

@@ -552,7 +552,7 @@ class GraphNASTrainer:
             samples = self._sample_unique_arch_batch(controller, 1, seen_signatures)
             arch, logprob = samples[0]
             tid = pipeline_executor.submit_arch(arch)
-            pending_logprobs[tid] = logprob.clone() if logprob is not None else None
+            pending_logprobs[tid] = logprob.detach().clone() if logprob is not None else None
             total_submitted += 1
 
         # 主循环
@@ -610,7 +610,7 @@ class GraphNASTrainer:
                 s = self._sample_unique_arch_batch(controller, 1, seen_signatures)
                 arch, logprob = s[0]
                 tid = pipeline_executor.submit_arch(arch)
-                pending_logprobs[tid] = logprob.clone() if logprob is not None else None
+                pending_logprobs[tid] = logprob.detach().clone() if logprob is not None else None
                 total_submitted += 1
                 headroom -= 1
 

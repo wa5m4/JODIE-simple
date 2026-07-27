@@ -23,6 +23,7 @@ class RandomGraphNASController(GraphNASController):
     def __init__(self, search_space: Dict[str, List], seed: int = 42):
         self.search_space = search_space
         self.random = random.Random(seed)
+        self.reward_baseline = 0.0  # 异步 pipeline 路径需要此属性
 
     def sample_arch(self) -> Dict:
         arch = {k: self.random.choice(v) for k, v in self.search_space.items()}
