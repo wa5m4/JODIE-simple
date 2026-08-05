@@ -68,7 +68,8 @@ class RLGraphNASController(GraphNASController):
 
     def compute_logprob(self, arch_config: Dict) -> torch.Tensor:
         """用当前 logits 重新计算给定架构的 logprob（off-policy 更新用）。"""
-        logprob = torch.tensor(0.0)
+        device = self.logits[self.keys[0]].device
+        logprob = torch.tensor(0.0, requires_grad=True, device=device)
         for k in self.keys:
             v = arch_config.get(k)
             if v not in self.search_space[k]:

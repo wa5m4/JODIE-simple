@@ -219,7 +219,7 @@ LR = 1e-3
 NEG_SAMPLE_SIZE = 5
 K = 10
 SELECTION_METRIC = "mrr"        # "mrr" | "recall_at_k"
-BATCH_MODE = "tbatch"           # "serial" | "tbatch" | "tgn"
+BATCH_MODE = "serial"           # "serial" | "tbatch" | "tgn"
 TRAIN_BATCH_SIZE = 32
 TGN_WINDOW_SIZE = 10.0
 TGN_LOSS_MODE = "all"           # "all" | "last"
@@ -256,10 +256,9 @@ FAMILY_BALANCE_PER_MODEL = 1
 
 # ---- 启用的策略 (可注释不需要的) ----
 ENABLE_STRATEGIES = [
-    # "serial",         # 已验证: test_score=0.8793 ✅
-    # "data_parallel",  # 已验证: test_score=0.8793 ✅
-    "pipeline_naive",
-    "pipeline_smart",
+    # "serial",              # 复用: test=0.8561 ✅
+    # "pipeline_naive",      # 复用: test=0.7000 (已跑完)
+    "pipeline_smart",        # ← 只跑这个，修复后重跑
 ]
 
 # =============================================================================
@@ -496,11 +495,9 @@ def run_pipeline_smart(output_dir: str) -> Tuple[Dict, List[Dict], float]:
     base_config = build_base_config("pipeline_smart", output_dir, pipeline_mode="smart")
     trainer = GraphNASTrainer(base_config)
 
+    # Smart 的 RL inplace bug 尚未完全修复，暂时用 random controller
     search_space = get_search_space(SEARCH_SPACE)
-    if SEARCH_MODE == "rl":
-        controller = RLGraphNASController(search_space, seed=SEED, lr=CONTROLLER_LR)
-    else:
-        controller = RandomGraphNASController(search_space, seed=SEED)
+    controller = RandomGraphNASController(search_space, seed=SEED)
 
     coarse_trials = COARSE_TRIALS
     coarse_epochs = COARSE_EPOCHS

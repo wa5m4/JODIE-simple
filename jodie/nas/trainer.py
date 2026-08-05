@@ -552,7 +552,7 @@ class GraphNASTrainer:
             samples = self._sample_unique_arch_batch(controller, 1, seen_signatures)
             arch, logprob = samples[0]
             tid = pipeline_executor.submit_arch(arch)
-            pending_logprobs[tid] = logprob.detach().clone() if logprob is not None else None
+            pending_logprobs[tid] = logprob.clone() if logprob is not None else None
             total_submitted += 1
 
         # 主循环
@@ -590,15 +590,24 @@ class GraphNASTrainer:
 
             # 累积够 arch_per_step 个结果后用采样时的 logprob 更新 controller
             if len(update_buffer) >= architectures_per_step:
-                if hasattr(controller, "reinforce_step"):
+                if hasattr(controller, "reinforce_step_batch"):
+                    # 批量收集所有 logprob，一次 backward + step，避免逐样本
+                    # step() 导致的 self.logits 版本号冲突
+                    samples: List[Tuple[torch.Tensor, float]] = []
                     for arch_cfg, sc, stored_lp in update_buffer:
-                        # 优先使用采样时存储的原始 logprob（on-policy REINFORCE）
-                        # 若不可用则回退到离线策略的 compute_logprob（有偏估计）
-                        if stored_lp is not None:
-                            controller.reinforce_step(stored_lp, sc)
-                        elif hasattr(controller, "compute_logprob"):
+                        if hasattr(controller, "compute_logprob"):
+                            samples.append((controller.compute_logprob(arch_cfg), sc))
+                        elif stored_lp is not None:
+                            samples.append((stored_lp, sc))
+                    if samples:
+                        controller.reinforce_step_batch(samples)
+                elif hasattr(controller, "reinforce_step"):
+                    for arch_cfg, sc, stored_lp in update_buffer:
+                        if hasattr(controller, "compute_logprob"):
                             logprob = controller.compute_logprob(arch_cfg)
                             controller.reinforce_step(logprob, sc)
+                        elif stored_lp is not None:
+                            controller.reinforce_step(stored_lp, sc)
                 else:
                     for _, sc, _ in update_buffer:
                         controller.reward_baseline = 0.9 * controller.reward_baseline + 0.1 * sc
@@ -610,7 +619,7 @@ class GraphNASTrainer:
                 s = self._sample_unique_arch_batch(controller, 1, seen_signatures)
                 arch, logprob = s[0]
                 tid = pipeline_executor.submit_arch(arch)
-                pending_logprobs[tid] = logprob.detach().clone() if logprob is not None else None
+                pending_logprobs[tid] = logprob.clone() if logprob is not None else None
                 total_submitted += 1
                 headroom -= 1
 

@@ -28,3 +28,6 @@ Thumbs.db
 # 虚拟环境
 venv/
 .venv/
+
+# 数据集 CSV (不提交到 git)
+data/public/*.csv

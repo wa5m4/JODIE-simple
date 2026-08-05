@@ -13,8 +13,8 @@ import torch
 from .synthetic import Interaction
 
 _JODIE_URLS = {
-    "wikipedia": "https://raw.githubusercontent.com/claws-lab/jodie/master/data/wikipedia.csv",
-    "reddit": "https://raw.githubusercontent.com/claws-lab/jodie/master/data/reddit.csv",
+    "wikipedia": "http://snap.stanford.edu/jodie/wikipedia.csv",
+    "reddit": "http://snap.stanford.edu/jodie/reddit.csv",
 }
 
 
