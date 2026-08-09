@@ -1,4 +1,5 @@
 from collections import deque
+import copy
 from dataclasses import dataclass
 import os
 from typing import Deque, Dict, List, Optional, Tuple
@@ -67,6 +68,70 @@ def _safe_ray_init(**kwargs):
         _psutil.pids = _original_pids
 
 
+def _optimizer_state_to_fqn(optimizer, model) -> dict:
+    """将 optimizer.state_dict() 的 parameter ID key 替换为 FQN (fully qualified name)。
+
+    PyTorch 的 optimizer.state_dict() 使用参数顺序索引作为 key。
+    跨进程传递时，如果只保留这些索引，仍然会依赖当前对象的参数布局；
+    改为 FQN（如 "user_cell.weight_ih"），确保 state 语义稳定且可诊断。
+    """
+    index_to_name = {index: name for index, (name, _) in enumerate(model.named_parameters())}
+
+    osd = optimizer.state_dict()
+    fqn_state = {}
+    for param_index, param_state in osd.get("state", {}).items():
+        name = index_to_name.get(int(param_index), str(param_index))
+        fqn_state[name] = {}
+        for k, v in param_state.items():
+            if isinstance(v, torch.Tensor):
+                fqn_state[name][k] = v.detach().cpu().clone()
+            else:
+                fqn_state[name][k] = v
+
+    # param_groups 中的 params 也替换为 FQN
+    fqn_groups = []
+    for pg in osd.get("param_groups", []):
+        pg_copy = {k: v for k, v in pg.items() if k != "params"}
+        pg_copy["params"] = [index_to_name.get(int(param_index), str(param_index)) for param_index in pg.get("params", [])]
+        fqn_groups.append(pg_copy)
+
+    return {"format": "fqn", "state": fqn_state, "param_groups": fqn_groups}
+
+
+def _optimizer_state_from_fqn(fqn_state: dict, optimizer, model) -> None:
+    """从 FQN 格式的 optimizer state 恢复，加载到 optimizer 中。
+
+    先尝试识别旧的“字符串数字”兼容格式，再处理真正的 FQN 格式。
+    当前 optimizer 的 param_groups 布局保持不变，只替换 state。"""
+
+    state = fqn_state.get("state", {})
+    param_groups = fqn_state.get("param_groups", [])
+
+    # 兼容旧的错误序列化：state key / param_group params 都是字符串数字。
+    if state and all(isinstance(k, str) and k.isdigit() for k in state.keys()):
+        legacy_groups = []
+        for pg in param_groups:
+            pg_copy = {k: v for k, v in pg.items() if k != "params"}
+            pg_copy["params"] = [int(param_index) for param_index in pg.get("params", [])]
+            legacy_groups.append(pg_copy)
+        legacy_state = {int(param_index): param_state for param_index, param_state in state.items()}
+        optimizer.load_state_dict({"state": legacy_state, "param_groups": legacy_groups or optimizer.state_dict()["param_groups"]})
+        return
+
+    name_to_index = {name: index for index, (name, _) in enumerate(model.named_parameters())}
+
+    # FQN → parameter index
+    index_state = {}
+    for name, param_state in state.items():
+        param_index = name_to_index.get(name)
+        if param_index is not None:
+            index_state[param_index] = param_state
+
+    # 保留 optimizer 当前的 param_groups 布局，只替换 state
+    current_groups = optimizer.state_dict()["param_groups"]
+    optimizer.load_state_dict({"state": index_state, "param_groups": current_groups})
+
+
 @dataclass
 class PipelineModelPayload:
     trial_id: int
@@ -123,6 +188,7 @@ class PartitionShardWorker:
         partition_ids: List[int],
         use_bpr: bool = True,
         num_epochs: int = 1,
+        seed_epoch_offset: int = 0,
     ) -> PipelineModelPayload:
         if not partition_ids:
             return payload
@@ -130,7 +196,13 @@ class PartitionShardWorker:
         model, config = self._build_model(payload)
         optimizer = torch.optim.Adam(model.parameters(), lr=config.get("lr", 1e-3))
         if payload.optimizer_state is not None:
-            optimizer.load_state_dict(payload.optimizer_state)
+            # 支持两种格式：老的 param-indexed state_dict（int keys）以及我们改进的 FQN 格式（param name keys）
+            osd = payload.optimizer_state
+            if isinstance(osd, dict) and "state" in osd and any(isinstance(k, str) for k in osd.get("state", {}).keys()):
+                # FQN 格式：将 FQN -> 当前 optimizer 的 param id，然后加载
+                _optimizer_state_from_fqn(osd, optimizer, model)
+            else:
+                optimizer.load_state_dict(osd)
 
         epochs = max(int(num_epochs), 1)
         progress_every = int(self.base_config.get("pipeline_train_progress_every", 100))
@@ -163,7 +235,7 @@ class PartitionShardWorker:
                             loss_mode=tgn_loss_mode,
                             neg_sample_size=config.get("neg_sample_size", 5),
                             graph_ctx=epoch_graph_state,
-                            seed=payload.seed + epoch * 100000 + partition_id,
+                            seed=payload.seed + (seed_epoch_offset + epoch) * 100000,
                         )
                     elif batch_mode == "tbatch":
                         # T-batch 处理
@@ -172,7 +244,7 @@ class PartitionShardWorker:
                             neg_sample_size=config.get("neg_sample_size", 5),
                             batch_size=train_batch_size,
                             graph_ctx=epoch_graph_state,
-                            seed=payload.seed + epoch * 100000 + partition_id,
+                            seed=payload.seed + (seed_epoch_offset + epoch) * 100000,
                         )
                     else:
                         # 串行处理
@@ -182,7 +254,7 @@ class PartitionShardWorker:
                             criterion=criterion,
                             neg_sample_size=config.get("neg_sample_size", 5),
                             graph_ctx=epoch_graph_state,
-                            seed=payload.seed + epoch * 100000 + partition_id,
+                            seed=payload.seed + (seed_epoch_offset + epoch) * 100000,
                             progress_every=progress_every,
                             progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
                                 f"phase=train event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=bpr epoch={epoch + 1}/{epochs}"
@@ -201,7 +273,7 @@ class PartitionShardWorker:
                             aggregator="mean",
                             loss_mode=tgn_loss_mode,
                             graph_ctx=epoch_graph_state,
-                            seed=payload.seed + epoch * 100000 + partition_id,
+                            seed=payload.seed + (seed_epoch_offset + epoch) * 100000,
                         )
                     elif batch_mode == "tbatch":
                         # T-batch 处理
@@ -209,7 +281,7 @@ class PartitionShardWorker:
                             model=model, partition=partition, optimizer=optimizer,
                             batch_size=train_batch_size,
                             graph_ctx=epoch_graph_state,
-                            seed=payload.seed + epoch * 100000 + partition_id,
+                            seed=payload.seed + (seed_epoch_offset + epoch) * 100000,
                         )
                     else:
                         # 串行处理
@@ -236,7 +308,7 @@ class PartitionShardWorker:
             model_state_dict={k: v.cpu() for k, v in model.state_dict().items()},
             runtime_state=runtime_state,
             graph_state=snapshot_graph_state(graph_state) if graph_state is not None else None,
-            optimizer_state=optimizer.state_dict(),
+            optimizer_state=_optimizer_state_to_fqn(optimizer, model),
             seed=payload.seed,
         )
 
@@ -572,121 +644,118 @@ class RayPipelineExecutor:
         stage_workers,
         use_bpr: bool,
         num_train_epochs: int,
+        seed_epoch_offset: int = 0,
     ) -> List[PipelineModelPayload]:
         if not payloads or not train_groups:
             return payloads
-        # 每个 epoch 独立走一遍完整的 stage 流水线（每 stage 只训 1 epoch），
-        # 等价于 serial 训练的多 epoch：epoch 循环在外，partition 顺序在内。
-        # 若只有 1 epoch 则与之前行为完全相同。
+
+        def _single_epoch(current_payloads: List[PipelineModelPayload], epoch_offset: int) -> List[PipelineModelPayload]:
+            stage_partition_ids = [[p.partition_id for p in partitions] for partitions in train_groups]
+            in_flight: Dict[object, Tuple[int, int]] = {}
+            completed: List[PipelineModelPayload] = []
+            last_stage_idx = len(train_groups) - 1
+            stage_total = len(train_groups)
+            pending_by_stage: List[Deque[PipelineModelPayload]] = [deque() for _ in range(stage_total)]
+            pending_by_stage[0] = deque(current_payloads)
+            idle_workers: List[Deque[int]] = [deque(range(len(pool))) for pool in stage_workers]
+            last_heartbeat = time.perf_counter()
+            heartbeat_interval = float(self.base_config.get("pipeline_heartbeat_interval_sec", 5.0))
+            last_progress_events_seen = 0
+
+            while True:
+                progress = False
+                for stage_idx in range(stage_total):
+                    stage_pending = pending_by_stage[stage_idx]
+                    stage_idle = idle_workers[stage_idx]
+                    while stage_pending and stage_idle:
+                        payload = stage_pending.popleft()
+                        worker_idx = stage_idle.popleft()
+                        self._trace_event("train", "dispatch", payload.trial_id, stage_idx, stage_total)
+
+                        ref = stage_workers[stage_idx][worker_idx].run_train_stage_batch.remote(
+                            payload,
+                            stage_partition_ids[stage_idx],
+                            use_bpr=use_bpr,
+                            num_epochs=1,
+                            seed_epoch_offset=epoch_offset,
+                        )
+                        in_flight[ref] = (stage_idx, worker_idx)
+                        progress = True
+
+                if not in_flight:
+                    if progress:
+                        continue
+                    break
+
+                done_refs, _ = ray.wait(list(in_flight.keys()), num_returns=1, timeout=5.0)
+                if not done_refs:
+                    now = time.perf_counter()
+                    progress_delta, last_progress_line = self._scan_worker_progress_events()
+                    if progress_delta > 0:
+                        last_progress_events_seen += progress_delta
+                    if now - last_heartbeat >= heartbeat_interval:
+                        active_by_stage: Dict[int, int] = {}
+                        for stage_idx, _ in in_flight.values():
+                            active_by_stage[stage_idx] = active_by_stage.get(stage_idx, 0) + 1
+                        active_desc = ", ".join(
+                            f"stage {stage_idx + 1}={count}" for stage_idx, count in sorted(active_by_stage.items())
+                        ) or "none"
+                        pending_desc = ", ".join(
+                            f"stage {stage_idx + 1}={len(queue)}" for stage_idx, queue in enumerate(pending_by_stage)
+                        )
+                        if progress_delta > 0:
+                            status = "advancing"
+                        else:
+                            status = "no_new_progress"
+                        print(
+                            f"[pipeline-heartbeat] wall={time.strftime('%H:%M:%S', time.localtime())} "
+                            f"phase=train status={status} progress_events_total={last_progress_events_seen} progress_events_delta={progress_delta} "
+                            f"in_flight={len(in_flight)} active={active_desc} pending={pending_desc}"
+                            + (f" last_progress={last_progress_line}" if last_progress_line else ""),
+                            flush=True,
+                        )
+                        last_heartbeat = now
+                    continue
+                done_ref = done_refs[0]
+                stage_idx, worker_idx = in_flight.pop(done_ref)
+                idle_workers[stage_idx].append(worker_idx)
+                try:
+                    updated_payload = ray.get(done_ref)
+                except Exception as e:
+                    print(f"[ERROR] Ray task failed for train pipeline: {str(e)}", flush=True)
+                    import traceback
+                    traceback.print_exc()
+                    raise
+                self._trace_event("train", "complete", updated_payload.trial_id, stage_idx, stage_total)
+
+                if stage_idx >= last_stage_idx:
+                    completed.append(updated_payload)
+                    continue
+
+                next_stage = stage_idx + 1
+                pending_by_stage[next_stage].append(updated_payload)
+
+            return sorted(completed, key=lambda x: x.trial_id)
+
         if num_train_epochs > 1:
             current = payloads
-            for _ in range(num_train_epochs):
-                # 在每个 epoch 边界重置运行时状态，使 Stage 0 从零开始
-                # user_embeddings/user_last_time（等同于串行的 reset_model_state）。
-                # 同一 epoch 内的 stage 不重置 —— 状态从 stage0 流向 stage1→stage2，
-                # 以便后面的 stage 看到来自前面 partition 的时序上下文。
+            for epoch_index in range(num_train_epochs):
                 epoch_start = [
                     PipelineModelPayload(
                         trial_id=p.trial_id,
                         arch_config=p.arch_config,
-                        model_state_dict=p.model_state_dict,
+                        model_state_dict={k: v.clone() for k, v in p.model_state_dict.items()},
                         runtime_state=None,
-                        graph_state=p.graph_state,
-                        optimizer_state=p.optimizer_state,
+                        graph_state=copy.deepcopy(p.graph_state) if p.graph_state is not None else None,
+                        optimizer_state=copy.deepcopy(p.optimizer_state) if p.optimizer_state is not None else None,
                         seed=p.seed,
                     )
                     for p in current
                 ]
-                current = self._run_train_pipeline(
-                    epoch_start, train_groups, stage_workers, use_bpr, num_train_epochs=1
-                )
+                current = _single_epoch(epoch_start, seed_epoch_offset + epoch_index)
             return current
 
-        stage_partition_ids = [[p.partition_id for p in partitions] for partitions in train_groups]
-        in_flight: Dict[object, Tuple[int, int]] = {}
-        completed: List[PipelineModelPayload] = []
-        last_stage_idx = len(train_groups) - 1
-        stage_total = len(train_groups)
-        pending_by_stage: List[Deque[PipelineModelPayload]] = [deque() for _ in range(stage_total)]
-        pending_by_stage[0] = deque(payloads)
-        idle_workers: List[Deque[int]] = [deque(range(len(pool))) for pool in stage_workers]
-        last_heartbeat = time.perf_counter()
-        heartbeat_interval = float(self.base_config.get("pipeline_heartbeat_interval_sec", 5.0))
-        last_progress_events_seen = 0
-
-        while True:
-            progress = False
-            for stage_idx in range(stage_total):
-                stage_pending = pending_by_stage[stage_idx]
-                stage_idle = idle_workers[stage_idx]
-                while stage_pending and stage_idle:
-                    payload = stage_pending.popleft()
-                    worker_idx = stage_idle.popleft()
-                    self._trace_event("train", "dispatch", payload.trial_id, stage_idx, stage_total)
-                    ref = stage_workers[stage_idx][worker_idx].run_train_stage_batch.remote(
-                        payload,
-                        stage_partition_ids[stage_idx],
-                        use_bpr=use_bpr,
-                        num_epochs=num_train_epochs,
-                    )
-                    in_flight[ref] = (stage_idx, worker_idx)
-                    progress = True
-
-            if not in_flight:
-                if progress:
-                    continue
-                break
-
-            done_refs, _ = ray.wait(list(in_flight.keys()), num_returns=1, timeout=5.0)
-            if not done_refs:
-                now = time.perf_counter()
-                progress_delta, last_progress_line = self._scan_worker_progress_events()
-                if progress_delta > 0:
-                    last_progress_events_seen += progress_delta
-                # 固定间隔打印有意义的心跳：只依据真实进度事件变化判断状态
-                if now - last_heartbeat >= heartbeat_interval:
-                    active_by_stage: Dict[int, int] = {}
-                    for stage_idx, _ in in_flight.values():
-                        active_by_stage[stage_idx] = active_by_stage.get(stage_idx, 0) + 1
-                    active_desc = ", ".join(
-                        f"stage {stage_idx + 1}={count}" for stage_idx, count in sorted(active_by_stage.items())
-                    ) or "none"
-                    pending_desc = ", ".join(
-                        f"stage {stage_idx + 1}={len(queue)}" for stage_idx, queue in enumerate(pending_by_stage)
-                    )
-                    if progress_delta > 0:
-                        status = "advancing"
-                    else:
-                        status = "no_new_progress"
-                    print(
-                        f"[pipeline-heartbeat] wall={time.strftime('%H:%M:%S', time.localtime())} "
-                        f"phase=train status={status} progress_events_total={last_progress_events_seen} progress_events_delta={progress_delta} "
-                        f"in_flight={len(in_flight)} active={active_desc} pending={pending_desc}"
-                        + (f" last_progress={last_progress_line}" if last_progress_line else ""),
-                        flush=True,
-                    )
-                    last_heartbeat = now
-                continue
-            done_ref = done_refs[0]
-            stage_idx, worker_idx = in_flight.pop(done_ref)
-            idle_workers[stage_idx].append(worker_idx)
-            try:
-                updated_payload = ray.get(done_ref)
-            except Exception as e:
-                print(f"[ERROR] Ray task failed for train pipeline: {str(e)}", flush=True)
-                import traceback
-                traceback.print_exc()
-                raise
-            self._trace_event("train", "complete", updated_payload.trial_id, stage_idx, stage_total)
-
-            if stage_idx >= last_stage_idx:
-                completed.append(updated_payload)
-                continue
-
-            next_stage = stage_idx + 1
-            pending_by_stage[next_stage].append(updated_payload)
-
-        return sorted(completed, key=lambda x: x.trial_id)
+        return _single_epoch(payloads, seed_epoch_offset)
 
     def _run_eval_pipeline(
         self,
@@ -1388,3 +1457,94 @@ class RayPipelineExecutor:
                 }
             )
         return results
+
+    def run_train_only(self, arch_configs: List[Dict], num_train_epochs: int = 1) -> List[PipelineModelPayload]:
+        """仅训练（不做分区评估），返回训练后的 payload 列表。
+
+        用于方案 C：Pipeline 分区训练 + 全数据评估。
+        训练完成后，调用方使用 payload 中的 model_state_dict / runtime_state
+        在完整验证集上做评估，消除分区评估带来的架构排名偏差。
+        """
+        if ray is None:
+            raise ImportError("ray is required for execution_mode=ray_pipeline")
+
+        if not ray.is_initialized():
+            ray_address = str(self.base_config.get("ray_address", "")).strip()
+            if ray_address:
+                _safe_ray_init(address=ray_address, ignore_reinit_error=True)
+            else:
+                _safe_ray_init(ignore_reinit_error=True)
+
+        num_stages = int(self.base_config.get("num_pipeline_stages", 1))
+        train_groups = self._group_partitions("train", num_stages)
+        stage_total = len(train_groups)
+
+        # 自动检测 GPU
+        try:
+            gpu_count = int(torch.cuda.device_count() if torch.cuda.is_available() else 0)
+        except Exception:
+            gpu_count = 0
+
+        specified_worker_gpus = float(self.base_config.get("pipeline_worker_gpus", 0.0))
+        if gpu_count > 0 and specified_worker_gpus <= 0.0:
+            self.base_config["pipeline_worker_gpus"] = 1.0
+
+        user_specified_train_workers = bool(str(self.base_config.get("pipeline_stage_train_workers", "")).strip())
+        if gpu_count > 0 and not user_specified_train_workers:
+            train_worker_counts = []
+            remaining_gpus = gpu_count
+            for si in range(stage_total):
+                stage_share = max(1, remaining_gpus // (stage_total - si))
+                train_worker_counts.append(stage_share)
+                remaining_gpus -= stage_share
+        else:
+            train_worker_counts = self._resolve_stage_worker_counts("pipeline_stage_train_workers", stage_total)
+
+        print(
+            f"[RayPipeline] train-only mode: {stage_total} stages, train workers={train_worker_counts}",
+            flush=True,
+        )
+
+        payloads = [self._make_payload(arch, trial_id=idx, seed=int(self.base_config.get("seed", 42)) + idx)
+                     for idx, arch in enumerate(arch_configs)]
+        synthetic_mode = self.base_config.get("dataset", "synthetic") == "synthetic"
+        use_bpr = synthetic_mode
+        train_epochs = max(int(num_train_epochs), 1)
+
+        train_stage_workers = []
+        try:
+            train_stage_workers = [
+                [create_ray_worker(train_groups[idx], self.base_config) for _ in range(train_worker_counts[idx])]
+                for idx in range(stage_total)
+            ]
+            print(
+                f"[RayPipeline] created train workers={[len(pool) for pool in train_stage_workers]}",
+                flush=True,
+            )
+
+            # 多 epoch 训练循环
+            current = payloads
+            for epoch in range(train_epochs):
+                seed_epoch_offset = epoch
+                epoch_start = [
+                    PipelineModelPayload(
+                        trial_id=p.trial_id,
+                        arch_config=p.arch_config,
+                        model_state_dict=p.model_state_dict,
+                        runtime_state=None,
+                        graph_state=p.graph_state,
+                        optimizer_state=p.optimizer_state,
+                        seed=p.seed,
+                    )
+                    for p in current
+                ]
+                current = self._run_train_pipeline(
+                    epoch_start, train_groups, train_stage_workers,
+                    use_bpr=use_bpr, num_train_epochs=1,
+                    seed_epoch_offset=seed_epoch_offset,
+                )
+                print(f"[RayPipeline] train-only epoch {epoch + 1}/{train_epochs} completed", flush=True)
+        finally:
+            self._shutdown_worker_pool(train_stage_workers)
+
+        return sorted(current, key=lambda x: x.trial_id)

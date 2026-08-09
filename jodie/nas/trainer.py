@@ -433,45 +433,111 @@ class GraphNASTrainer:
         executor=None,
         time_budget_sec: float = 0.0,
         search_start_time: float = None,
+        full_eval_interactions=None,
     ) -> List[Dict]:
+        """Pipeline 架构评估。
+
+        当 ``full_eval_interactions`` 不为 None 时（方案 C）：
+        - 训练：Pipeline 分区训练（快）
+        - 评估：在整个 ``full_eval_interactions`` 上评估（准）
+        这消除了分区评估带来的架构排名偏差。
+        """
         own_executor = executor is None
         if own_executor:
             executor = RayPipelineExecutor(self.base_config, partition_plan)
         start = time.time()
-        pipeline_results = executor.run(
-            arch_configs,
-            user_type_prefs=user_type_prefs,
-            item_type=item_type,
-            num_train_epochs=epochs,
-            eval_split=eval_split,
-            time_budget_sec=time_budget_sec,
-            search_start_time=search_start_time,
-        )
-        elapsed = time.time() - start
+
+        if full_eval_interactions is not None:
+            # ── 方案 C：Pipeline 训练 + 全数据评估 ──
+            trained_payloads = executor.run_train_only(
+                arch_configs,
+                num_train_epochs=epochs,
+            )
+            formatted = []
+            for payload in trained_payloads:
+                config = dict(self.base_config)
+                config.update(payload.arch_config)
+                model = build_model(config)
+                device = torch.device(self.base_config.get("device", "cpu"))
+                model = model.to(device)
+
+                # 加载训练后的模型权重和运行时状态
+                model.load_state_dict(payload.model_state_dict)
+                if payload.runtime_state is not None:
+                    try:
+                        model.import_runtime_state(payload.runtime_state)
+                    except AttributeError:
+                        pass
+
+                # 全数据评估
+                selection_metric = self.base_config.get("selection_metric", "mrr")
+                k = int(config.get("k", 10))
+                metrics = evaluate_ranking_metrics(
+                    model,
+                    full_eval_interactions,
+                    k=k,
+                    partitions=None,  # 全局分区 = 全数据
+                )
+                recall_at_k = float(metrics["recall_at_k"])
+                mrr_val = float(metrics["mrr"])
+                if selection_metric == "recall_at_k":
+                    score = recall_at_k
+                else:
+                    score = mrr_val
+                params = sum(p.numel() for p in model.parameters())
+
+                formatted.append(
+                    {
+                        "config": config,
+                        "phase": phase,
+                        "eval_split": eval_split,
+                        "seed": payload.seed,
+                        "score": score,
+                        "val_score": score if eval_split == "val" else None,
+                        "test_score": score if eval_split == "test" else None,
+                        "mrr": mrr_val,
+                        "recall_at_k": recall_at_k,
+                        "params": int(params),
+                        "time_sec": round((time.time() - start) / max(len(trained_payloads), 1), 4),
+                    }
+                )
+        else:
+            # ── 原始模式：Pipeline 训练 + 分区评估 ──
+            pipeline_results = executor.run(
+                arch_configs,
+                user_type_prefs=user_type_prefs,
+                item_type=item_type,
+                num_train_epochs=epochs,
+                eval_split=eval_split,
+                time_budget_sec=time_budget_sec,
+                search_start_time=search_start_time,
+            )
+            elapsed = time.time() - start
+
+            formatted = []
+            for row in pipeline_results:
+                config = dict(self.base_config)
+                config.update(row["config"])
+                model = build_model(config)
+                params = sum(p.numel() for p in model.parameters())
+                formatted.append(
+                    {
+                        "config": config,
+                        "phase": phase,
+                        "eval_split": eval_split,
+                        "seed": int(self.base_config.get("seed", 42)) + row["trial_id"],
+                        "score": float(row["score"]),
+                        "val_score": float(row["score"]) if eval_split == "val" else None,
+                        "test_score": float(row["score"]) if eval_split == "test" else None,
+                        "mrr": float(row["mrr"]),
+                        "recall_at_k": float(row["recall_at_k"]),
+                        "params": int(params),
+                        "time_sec": round(elapsed / max(len(pipeline_results), 1), 4),
+                    }
+                )
+
         if own_executor:
             executor.shutdown()
-
-        formatted = []
-        for row in pipeline_results:
-            config = dict(self.base_config)
-            config.update(row["config"])
-            model = build_model(config)
-            params = sum(p.numel() for p in model.parameters())
-            formatted.append(
-                {
-                    "config": config,
-                    "phase": phase,
-                    "eval_split": eval_split,
-                    "seed": int(self.base_config.get("seed", 42)) + row["trial_id"],
-                    "score": float(row["score"]),
-                    "val_score": float(row["score"]) if eval_split == "val" else None,
-                    "test_score": float(row["score"]) if eval_split == "test" else None,
-                    "mrr": float(row["mrr"]),
-                    "recall_at_k": float(row["recall_at_k"]),
-                    "params": int(params),
-                    "time_sec": round(elapsed / max(len(pipeline_results), 1), 4),
-                }
-            )
         return formatted
 
     def _search_pipeline_async(
@@ -851,6 +917,7 @@ class GraphNASTrainer:
                     executor=pipeline_executor,
                     time_budget_sec=time_budget_sec,
                     search_start_time=search_start_time,
+                    full_eval_interactions=val_data,  # 方案C：全数据评估
                 )
                 batch_end = time.time()
                 results.extend(batch_results)
@@ -923,6 +990,7 @@ class GraphNASTrainer:
                 epochs=rerank_epochs,
                 time_budget_sec=time_budget_sec,
                 search_start_time=search_start_time,
+                full_eval_interactions=val_data,  # 方案C：全数据评估
             )
             results.extend(rerank_results)
             selected = sorted(rerank_results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)[0]

@@ -225,8 +225,8 @@ TGN_WINDOW_SIZE = 10.0
 TGN_LOSS_MODE = "all"           # "all" | "last"
 EVAL_FROZEN = False
 
-# ---- 分区 (20000事件: train≈14000, 每500条一个分区≈28个分区) ----
-PARTITION_SIZE = 500             # 每个分区约500个交互 (0=自动/不分)
+# ---- 分区 (20000事件: train≈14000, 每个分区约2000个交互≈7个分区) ----
+PARTITION_SIZE = 2000             # ⬆ 方案A: 500→2000，减少训练偏差 (0=自动/不分)
 PARTITION_OVERLAP = 0.0          # 分区重叠比例 [0, 1)
 
 # ---- 流水线 ----
@@ -256,9 +256,10 @@ FAMILY_BALANCE_PER_MODEL = 1
 
 # ---- 启用的策略 (可注释不需要的) ----
 ENABLE_STRATEGIES = [
-    # "serial",              # 复用: test=0.8561 ✅
-    # "pipeline_naive",      # 复用: test=0.7000 (已跑完)
-    "pipeline_smart",        # ← 只跑这个，修复后重跑
+    # "serial",              # 本次跳过
+    # "data_parallel",       # 本次跳过
+    "pipeline_naive",      # 方案A: partition_size=2000
+    "pipeline_smart",      # 方案A: partition_size=2000
 ]
 
 # =============================================================================
