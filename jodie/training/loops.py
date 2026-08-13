@@ -133,12 +133,13 @@ def train_partition_bpr(
     neg_sample_size: int = 5,
     graph_ctx: Optional[Dict] = None,
     seed: Optional[int] = None,
+    epoch: int = 0,
     progress_every: int = 0,
     progress_callback=None,
 ) -> float:
     """在单个分区上串行 BPR 训练（一次处理一个交互）。"""
     device = _model_device(model)
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed) if seed is not None else None
     total_loss = 0.0
 
     interaction_total = len(partition.interactions)
@@ -151,11 +152,20 @@ def train_partition_bpr(
         t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
         f = interaction.features.unsqueeze(0).to(device)
 
-        neg_items = []
-        while len(neg_items) < neg_sample_size:
-            neg = int(rng.integers(0, _num_items(model)))
-            if neg != interaction.item_id:
-                neg_items.append(neg)
+        # ── 优先使用预分配的负样本（解决 Pipeline RNG 重置偏差）──
+        if epoch in interaction.neg_samples_by_epoch:
+            neg_items = list(interaction.neg_samples_by_epoch[epoch])
+        elif rng is not None:
+            neg_items = []
+            while len(neg_items) < neg_sample_size:
+                neg = int(rng.integers(0, _num_items(model)))
+                if neg != interaction.item_id:
+                    neg_items.append(neg)
+        else:
+            raise RuntimeError(
+                f"No precomputed neg samples for epoch {epoch} and no RNG seed provided. "
+                f"Pass seed or precompute neg samples during data loading."
+            )
         neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
 
         optimizer.zero_grad()
@@ -271,6 +281,7 @@ def train_model(
                     neg_sample_size=neg_sample_size,
                     graph_ctx=epoch_graph_ctx,
                     seed=_partition_seed(seed, partition.partition_id, epoch),
+                    epoch=epoch,
                 )
 
         avg_loss = total_loss / max(total_events, 1)

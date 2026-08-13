@@ -255,6 +255,7 @@ class PartitionShardWorker:
                             neg_sample_size=config.get("neg_sample_size", 5),
                             graph_ctx=epoch_graph_state,
                             seed=payload.seed + (seed_epoch_offset + epoch) * 100000,
+                            epoch=epoch,
                             progress_every=progress_every,
                             progress_callback=lambda idx, total, current_partition_id=partition_id: self._trace_progress(
                                 f"phase=train event=interaction_progress trial={payload.trial_id} partition={current_partition_id} processed={idx} total={total} metric=bpr epoch={epoch + 1}/{epochs}"
@@ -1231,6 +1232,8 @@ class RayPipelineExecutor:
     def _make_payload(self, arch_config: Dict, trial_id: int, seed: int) -> PipelineModelPayload:
         config = dict(self.base_config)
         config.update(arch_config)
+        # ★ 修复：设种子后建模型，保证每个 trial 初始权重独立且可复现
+        torch.manual_seed(seed)
         model = build_model(config)
         runtime_state = model.export_runtime_state() if hasattr(model, "export_runtime_state") else None
         # jodie_rnn 不使用动态图（与 Serial 训练的 graph_ctx=None 保持一致）

@@ -8,6 +8,7 @@ import os
 import urllib.request
 from typing import Dict, List, Tuple
 
+import numpy as np
 import torch
 
 from .synthetic import Interaction
@@ -74,6 +75,9 @@ def load_public_dataset(
     feature_dim: int,
     max_events: int = 0,
     local_data_path: str = "",
+    precompute_neg_seed: int | None = None,
+    precompute_neg_epochs: int = 20,
+    precompute_neg_sample_size: int = 5,
 ) -> Tuple[List[Interaction], int, int]:
     if feature_dim <= 0:
         raise ValueError("feature_dim must be > 0")
@@ -148,4 +152,20 @@ def load_public_dataset(
     used_items = {ev.item_id for ev in interactions}
     num_users = max(used_users) + 1
     num_items = max(used_items) + 1
+
+    # ── 预生成负样本（解决 Pipeline RNG 重置偏差）──────────────────
+    # 在数据加载阶段，用与 Serial 训练完全相同的 RNG 序列，
+    # 为每条交互预分配每个 epoch 的负样本。Pipeline 训练时直接读取，
+    # 不再现场生成随机数，彻底消除分区边界 RNG 重置导致的偏差。
+    if precompute_neg_seed is not None:
+        for epoch in range(precompute_neg_epochs):
+            rng = np.random.default_rng(precompute_neg_seed + epoch * 100000)
+            for inter in interactions:
+                negs: List[int] = []
+                while len(negs) < precompute_neg_sample_size:
+                    neg = int(rng.integers(0, num_items))
+                    if neg != inter.item_id:
+                        negs.append(neg)
+                inter.neg_samples_by_epoch[epoch] = negs
+
     return interactions, num_users, num_items

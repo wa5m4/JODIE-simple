@@ -134,12 +134,17 @@ class GraphNASTrainer:
                 seed=self.base_config.get("seed", 42),
             )
         else:
+            # 预生成负样本的 seed = base_config.seed（与 Serial 训练一致）
+            precompute_seed = self.base_config.get("seed", 42)
             interactions, num_users, num_items = load_public_dataset(
                 dataset_name=dataset_name,
                 dataset_dir=self.base_config.get("dataset_dir", "data/public"),
                 feature_dim=feature_dim,
                 max_events=max_events,
                 local_data_path=self.base_config.get("local_data_path", ""),
+                precompute_neg_seed=precompute_seed,
+                precompute_neg_epochs=20,
+                precompute_neg_sample_size=5,
             )
             self.base_config["num_users"] = num_users
             self.base_config["num_items"] = num_items
@@ -457,7 +462,10 @@ class GraphNASTrainer:
             for payload in trained_payloads:
                 config = dict(self.base_config)
                 config.update(payload.arch_config)
+                # ★ 修复：保存/恢复 RNG 状态，避免 build_model 污染下一个 trial 的初始化
+                rng_state = torch.get_rng_state()
                 model = build_model(config)
+                torch.set_rng_state(rng_state)
                 device = torch.device(self.base_config.get("device", "cpu"))
                 model = model.to(device)
 
@@ -696,14 +704,17 @@ class GraphNASTrainer:
                       f"in_flight={in_flight}, submitted={total_submitted}", flush=True)
                 last_print = now_t
 
-        # flush 剩余 update_buffer（使用存储的原始 logprob）
+        # flush 剩余 update_buffer
+        # ★ 修复：必须优先用 compute_logprob 重算 logprob（off-policy）
+        # 存储的原始 logprob 计算图引用旧版本 logits，此时 logits 已被前面
+        # 的 optimizer.step() 修改过（inplace），backward 会报 version 冲突
         if update_buffer and hasattr(controller, "reinforce_step"):
             for arch_cfg, sc, stored_lp in update_buffer:
-                if stored_lp is not None:
-                    controller.reinforce_step(stored_lp, sc)
-                elif hasattr(controller, "compute_logprob"):
+                if hasattr(controller, "compute_logprob"):
                     logprob = controller.compute_logprob(arch_cfg)
                     controller.reinforce_step(logprob, sc)
+                elif stored_lp is not None:
+                    controller.reinforce_step(stored_lp, sc)
 
         pipeline_executor.shutdown_persistent_pool()
         return results
@@ -940,17 +951,14 @@ class GraphNASTrainer:
                             result["config"].get("model", "unknown"),
                         ])
 
-                batch_samples = [
-                    (logprob, result["score"])
-                    for logprob, result in zip(logprobs, batch_results)
-                    if logprob is not None
-                ]
-                if batch_samples and hasattr(controller, "reinforce_step_batch"):
-                    controller.reinforce_step_batch(batch_samples)
-                else:
-                    for logprob, score in batch_samples:
-                        if hasattr(controller, "reinforce_step"):
-                            controller.reinforce_step(logprob, score)
+                # ★ 修复：逐 trial 更新 controller（与 serial 路径一致）
+                # 必须用 compute_logprob 重新计算 logprob，因为上一个 trial 的
+                # optimizer.step() 已修改 logits，batch 中后续的原始 logprob
+                # computation graph 会失效（inplace version mismatch）
+                for arch_cfg, result in zip(arch_batch, batch_results):
+                    if hasattr(controller, "reinforce_step") and hasattr(controller, "compute_logprob"):
+                        logprob = controller.compute_logprob(arch_cfg)
+                        controller.reinforce_step(logprob, result["score"])
 
                 total_generated += len(batch_results)
                 print(f"[Coarse Phase] Progress: {total_generated}/{coarse_trials} trials completed", flush=True)

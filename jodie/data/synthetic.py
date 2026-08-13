@@ -2,7 +2,7 @@
 数据模块：生成带用户偏好的交互数据，并初始化事件级动态图状态。
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Dict, List, Set, Tuple
 
 import numpy as np
@@ -17,6 +17,9 @@ class Interaction:
     user_id: int # 用户ID
     item_id: int # 商品ID
     features: torch.Tensor # 交互特征向量
+    neg_samples_by_epoch: Dict[int, List[int]] = field(default_factory=dict)
+    # ↑ 预分配的负样本：{epoch: [neg_item_id, ...]}。
+    # 在数据加载时一次性生成，训练时直接读取，避免 Pipeline 各分区 RNG 重置导致偏差。
 
 
 def generate_synthetic_data(

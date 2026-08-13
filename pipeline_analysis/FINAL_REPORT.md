@@ -1,106 +1,94 @@
-# Pipeline 偏差问题：最终报告
+# Pipeline 准确率问题：完整修复历程与最终结论
 
-**日期**: 2026-08-09（精确根因确认）
-**诊断脚本**: `diagnose_v2_precise.py`
-**状态**: 根因已精确到代码行，修复方向已明确
-
----
-
-## 执行摘要
-
-**JODIE NAS 中的 Pipeline 并行策略存在不可修复的结构性偏差，导致选出的架构 test_score 从 0.8561（Serial）跌至 0.7000（Pipeline），损失 0.156。**
-
-经过五轮实验，根因已精确到代码行级别：
-
-> **每个 Pipeline 分区调用 `train_model_ce` 时都会执行 `rng = np.random.default_rng(seed)`，重新初始化 RNG。即使所有分区使用相同的 seed，RNG 状态也在每个分区边界被重置。这导致分区 1+ 的负采样序列与 Serial 完全不同，训练轨迹发散。不同架构对此偏差的敏感度不同，最终排名完全颠倒。**
-
-**推荐方案**：NAS 加速使用 Data Parallel（2x 加速，零偏差，test_score=0.8561 与 Serial 完全一致）。
+**日期**: 2026-08-13（四策略补跑完成）
+**最终状态**: ✅ 修复成功，四策略结果完全一致
 
 ---
 
-## 1. 问题概述
+## 最终数据对比（修复后 · 四策略综合）
 
-### 1.1 现象
+### 核心指标
 
-| 策略 | test_score | 选出的参数量 | 架构配置 |
-|------|-----------|-------------|---------|
-| Serial | **0.8561** | 133K | ALL OFF |
-| Data Parallel | **0.8561** | 133K | ALL OFF |
-| Pipeline Naive | **0.7000** | 402K | ALL ON |
-| Pipeline Smart | **0.6687** | 402K | ALL ON |
+| 策略 | 耗时 | val_score | **test_score** | test_mrr | test_recall@10 | 参数量 | 架构 | 加速比 |
+|------|------|:---------:|:--------------:|:--------:|:--------------:|:------:|------|:------:|
+| **Serial** (串行基线) | 25,965s (7.2h) | 0.8648 | **0.8561** | 0.8561 | 0.9893 | 133,888 | jodie_rnn (all OFF) | 1.0× |
+| **Data Parallel** (3 workers) | 15,746s (4.4h) | 0.7521 | **0.8561** | 0.8561 | 0.9893 | 133,888 | jodie_rnn (all OFF) | **1.6×** |
+| **Pipeline Naive** (3 stages × 1,1,1) | 16,783s (4.7h) | 0.8267 | **0.8561** | 0.8561 | 0.9893 | 133,888 | jodie_rnn (all OFF) | **1.5×** |
+| **Pipeline Smart** (1 stage × 3 workers) | **11,113s (3.1h)** | 0.8267 | **0.8561** | 0.8561 | 0.9893 | 133,888 | jodie_rnn (all OFF) | **2.3×** |
 
-差距 **0.156**，选出的架构从 133K 极简变为 402K 全功能。
+**四个策略选出的架构完全一致，test_score 完全一致 (0.8561)。Pipeline Smart 加速 2.3×，为最优策略。**
 
-### 1.2 系统架构
+> 注：val_score 仅用于搜索阶段的架构选择，不同策略的 val 排名略有差异（RL 控制器探索路径不同），
+> 但最终选出架构在 test 集上的分数一致。**test_score 为最终评判标准**。
 
-JODIE RNN 模型通过 BPR 损失训练，每次交互需随机采样 5 个负样本物品来计算损失：
-```
-BPR loss = -log(σ(score_pos - score_neg))
-```
+### 分阶段耗时明细
 
-负采样通过 `np.random.default_rng(seed)` 生成。Pipeline 训练将数据切分为 28 个分区 × 500 交互，由 3 阶段 Ray worker 流水线处理。每个 worker 独立调用 `train_model_ce`。
+| 策略 | 粗搜索 50 trials | 重排序 8×5 epochs + 最终测试 | 总计 |
+|------|:----------------:|:---------------------------:|:----:|
+| Serial | 18,125s | 7,840s | 25,965s |
+| Data Parallel | 10,620s (1.7×) | 5,126s (1.5×) | 15,746s |
+| Pipeline Naive | 11,864s (1.5×) | 4,919s (1.6×) | 16,783s |
+| Pipeline Smart | **6,939s (2.6×)** | **4,173s (1.9×)** | **11,113s** |
+
+Smart 在粗搜索阶段加速最明显（2.6×）：异步池让 3 个 worker 始终满载，无批次同步等待。
+
+### 修复前 vs 修复后
+
+| 指标 | 修复前 | 修复后 |
+|------|:------:|:------:|
+| Serial test_score | 0.8561 | 0.8561 |
+| Data Parallel test_score | 0.8561 | 0.8561 |
+| Pipeline Naive test_score | **0.7000** | **0.8561** |
+| Pipeline Smart test_score | **0.6687** | **0.8561** |
+| Pipeline 选出架构 | 402K all ON（错误） | 133K all OFF（正确） |
+| 四策略一致性 | ❌ 不一致 | ✅ 完全一致 |
+
+### 结果文件
+
+- Serial + Pipeline Naive: [`results/20260811_204240/comparison.json`](../results/20260811_204240/comparison.json)
+- Data Parallel: [`results/20260812_153045/comparison.json`](../results/20260812_153045/comparison.json)（DP 部分）
+- Pipeline Smart: [`results/20260813_103010/comparison.json`](../results/20260813_103010/comparison.json)
 
 ---
 
-## 2. 实验历史（共 5 轮）
+## 修复历程
 
-### 实验 1：首次全策略对比（2026-08-06）
+### 阶段 1：问题发现（2026-08-05~06）
 
-**运行**: `run_all.log`，partition_size=500
+**现象**：首次全策略对比实验 (`run_all.log`)，partition_size=500。
 
-| 策略 | test_score | 架构 | 耗时 |
-|------|-----------|------|------|
-| Serial | **0.8561** | 133K all OFF | 29,296s |
-| Data Parallel | **0.8561** | 133K all OFF | 13,542s |
-| Pipeline Naive | 0.7000 | 402K all ON | 3,776s |
-| Pipeline Smart | 0.6687 | 402K all ON | 2,798s |
+| 策略 | test_score | 架构 |
+|------|-----------|------|
+| Serial | **0.8561** | 133K all OFF |
+| Data Parallel | **0.8561** | 133K all OFF |
+| Pipeline Naive | 0.7000 | 402K all ON |
+| Pipeline Smart | 0.6687 | 402K all ON |
 
-**发现**: Pipeline 与 Serial 选出不同的架构，test_score 差距 0.156。
+Pipeline 选出的架构完全不同，test_score 差距 **0.156**。
 
-### 实验 2：Seed 修复（2026-08-06~07）
+**文件**: [`PIPELINE_BIAS_ANALYSIS.md`](PIPELINE_BIAS_ANALYSIS.md)
 
-**假设**: `seed + epoch*100000 + partition_id` 中的 `+ partition_id` 导致各分区使用不同 RNG。
+---
 
-**修改**: 去掉 `+ partition_id`，所有分区使用相同 seed。涉及 `ray_pipeline.py` 5 处修改。
+### 阶段 2：五个被证伪的假说（2026-08-06~09）
 
-**结果**: ❌ **完全无效。** 同一架构、同一 test_score（0.7000）。
+逐个提出假说并验证：
 
-**日志**: `run_all_seedfix.log`
+| # | 假说 | 实验 | 结论 |
+|---|------|------|:--:|
+| 1 | 负采样 seed 含 `+partition_id` 导致分区间 RNG 不同 | 去掉 partition_id，重跑 (`run_all_seedfix.log`) | ❌ 无效 |
+| 2 | 分区太小，训练分布偏差 | partition_size 500→2000 | ❌ 无效 |
+| 3 | 模型前向/反向算子有 bug | 逐算子对比 (`diagnose_pipeline_divergence.py`) | ❌ max_diff=0.00 |
+| 4 | Ray worker 间 state transfer 精度损失 | Roundtrip 验证 (`verify_optimizer_state_roundtrip.py`) | ❌ 零损失 |
+| 5 | 分区评估偏差（分区评估低估小模型） | 全数据评估 Plan C (`test_plan_c.py`, `run_all_planc.log`) | ❌ 无效 |
 
-### 实验 3：方案 A — 增大 partition_size（2026-08-09）
+**关键文件**: [`diagnose_pipeline_divergence.py`](diagnose_pipeline_divergence.py), [`verify_optimizer_state_roundtrip.py`](verify_optimizer_state_roundtrip.py), [`PIPELINE_DIVERGENCE_ANALYSIS.md`](PIPELINE_DIVERGENCE_ANALYSIS.md), [`PIPELINE_RUNALL_SUMMARY.md`](PIPELINE_RUNALL_SUMMARY.md)
 
-**假设**: 更大的分区使训练更接近全数据分布。
+---
 
-**修改**: `PARTITION_SIZE` 500 → **2000**（4x），仅跑 pipeline。
+### 阶段 3：RNG 重置假说（2026-08-09）— 部分正确，但方向错误
 
-**结果**: ❌ **完全无效。** 所有分数与 psize=500 逐项相同。
-
-| 指标 | psize=500 | psize=2000 |
-|------|-----------|------------|
-| Pipeline Naive val_score | 0.7802 | **0.7802** |
-| Pipeline Naive test_score | 0.7000 | **0.7000** |
-| 选中架构 | 402K all ON | **402K all ON** |
-
-**日志**: `run_all_partition2000.log`
-
-### 实验 4：方案 C — 全数据评估（2026-08-08~09）
-
-**假设**: 分区评估低估小模型，全数据评估可纠正排名。
-
-**修改**: 新增 `run_train_only()` 方法，pipeline 训练后用全数据评估。51 条 "train-only" 日志确认代码活跃。
-
-**结果**: ❌ **完全无效。** 所有分数与旧运行完全相同。
-
-**验证脚本**: `test_plan_c.py`（1阶段有效，3阶段无效）
-
-### 实验 5：精确诊断 v2 — 定位根因代码行（2026-08-09）
-
-**方法**: 新诊断脚本 `diagnose_v2_precise.py`：
-- Serial 和 Pipeline 使用**完全相同**的初始权重、相同 seed
-- 对比**所有** 14,000 步，而非仅前 30 步
-- 直接验证负采样序列是否一致
-
-**结果**: ✅ **精确定位根因。**
+**精确诊断 v2** (`diagnose_v2_precise.py`) 发现：
 
 ```
 第一个交互（分区0，step 0）:
@@ -112,183 +100,226 @@ BPR loss = -log(σ(score_pos - score_neg))
   Pipeline neg samples: [1, 16, 13, 9, 9]  (RNG 重置!) ❌ 不同!
 ```
 
-**Forward 输出验证**: 给定相同输入和相同负采样 → `max_diff=0.00`（算子完全正确）。
+**当时的结论**：每分区 `rng = np.random.default_rng(seed)` 导致 BPR 负采样在分区边界重复。结论写入当时的旧版 `FINAL_REPORT.md`（已被本版覆盖）。
+
+**文件**: [`diagnose_v2_precise.py`](diagnose_v2_precise.py)
 
 ---
 
-## 3. 精确根因
+### 阶段 4：关键转折 — 发现 public_csv 不用 BPR（2026-08-10）
 
-### 3.1 代码层面的因果链
+**单架构训练一致性测试** (`test_l2_divergence.py`, `test_ray_pipeline_match.py`) 揭示：
 
-**Step 1**: `ray_pipeline.py` 中，每个分区调用 `_single_epoch` 时传入相同 seed（已修复，无 `+ partition_id`）：
-```python
-# ray_pipeline.py (line 238, 247, 257, 276, 284)
-seed=payload.seed + (seed_epoch_offset + epoch) * 100000
-# → 所有分区 seed 相同
-```
+- **Serial ≡ Pipeline** 训练结果完全一致（MRR **0.8487636143**，embedding **-0.0065195826**，diff=0）
+- 原因：`public_csv` 使用 **L2/CE loss**，不需要负采样，因此 RNG 重置不影响训练
+- RNG 假说只适用于 BPR 训练路径（synthetic 模式），不适用于 public_csv
 
-**Step 2**: `loops.py` 中，`train_model_ce` 每次被调用时创建**新的 RNG 实例**：
-```python
-# loops.py (line 141)
-rng = np.random.default_rng(seed)
-# → 每个分区重新初始化，RNG 状态回到起点
-```
+**这意味着**：RNG 重置不是 public_csv 上 Pipeline 搜索偏差的根因。偏差一定在搜索层面，而非训练层面。
 
-**Step 3**: 负采样使用此 RNG：
-```python
-# loops.py (line 154-158)
-while len(neg_items) < neg_sample_size:
-    neg = int(rng.integers(0, num_items))
-    # 分区0: 第 1-2500 个随机数 (500交互 × 5负样本)
-    # 分区1: 又是第 1-2500 个随机数 ← RNG 重置!
-```
-
-**Step 4**: 不同负采样 → 不同梯度 → 模型发散。
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                                                                  │
-│  Serial 训练 (14,000 交互):                                       │
-│    rng(42) → [1,16,13,9,9, ..., 18,1,14,1,11, ..., ...]          │
-│    └─ 持续消费 14,000×5 = 70,000 个随机数                          │
-│                                                                  │
-│  Pipeline 训练 (28 分区 × 500 交互):                               │
-│    分区 0: rng(42) → [1,16,13,9,9, ..., ...]  消费 2,500 个       │
-│    分区 1: rng(42) → [1,16,13,9,9, ..., ...]  又从头开始!         │
-│    分区 2: rng(42) → [1,16,13,9,9, ..., ...]  又从头开始!         │
-│    ...                                                            │
-│    分区27: rng(42) → [1,16,13,9,9, ..., ...]  又从头开始!         │
-│                                                                  │
-│  每个分区的前 2,500 个随机数完全相同 → 负采样分布严重偏斜            │
-│                                                                  │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### 3.2 为什么这是结构性问题
-
-RNG 状态无法在 Ray worker 之间共享，因为：
-1. Ray worker 是**独立进程**，运行在不同 GPU 上
-2. Pipeline 各阶段**并行执行**（stage 1 处理分区 1 时，stage 2 正在处理分区 0）
-3. 即使传递 RNG state 作为 payload 的一部分，并行执行时的时序不确定性导致无法精确复现 serial 的 RNG 消费序列
-
-**这不是 bug，而是 Pipeline 并行范式的固有限制。**
-
-### 3.3 为什么这会导致架构排名颠倒
-
-负采样偏差改变了训练动态，而不同架构对这种偏差的敏感度不同：
-
-- **大模型 (402K, all ON)**: static_embeddings 和 time_proj 提供额外的参数容量，可以"吸收"负采样偏差。偏差被建模为系统性的物品偏好，大模型有足够容量去拟合它。
-- **小模型 (133K, all OFF)**: 完全依赖 RNN 动态嵌入。负采样偏差直接污染 RNN 状态更新，导致嵌入质量下降。
-
-在 Serial 训练中（无偏差），小模型泛化更好（奥卡姆剃刀）。在 Pipeline 训练中（有偏差），大模型可以把偏差"吸收"掉，表现得更好。排名因此颠倒。
-
-### 3.4 排除的假说（完整列表）
-
-| 假说 | 实验 | 结论 |
-|------|------|------|
-| RNN 算子实现有 bug | 算子逐一对比 (v1) + forward 对比 (v2) | ❌ 排除：max_diff=0.00 |
-| State transfer 精度损失 | Roundtrip 验证 | ❌ 排除：零精度损失 |
-| Per-partition seed 差异 | Seed 修复（去掉 +partition_id） | ❌ 排除：结果不变 |
-| 分区太小 | partition_size 500→2000 (4x) | ❌ 排除：结果逐项相同 |
-| 分区评估偏差 | 全数据评估（Plan C） | ❌ 排除：结果不变 |
-| **Per-partition RNG 重置** | **v2 精确诊断** | ✅ **确认根因** |
+**文件**: [`test_l2_divergence.py`](test_l2_divergence.py), [`test_ray_pipeline_match.py`](test_ray_pipeline_match.py)
 
 ---
 
-## 4. 为什么 Data Parallel 没有这个问题
+### 阶段 5：定位真正的三个根因（2026-08-10~11）
 
-Data Parallel 的关键区别：
+对比 Serial 和 Pipeline 的搜索代码路径（`trainer.py`），精确定位三个差异：
 
-1. **不重置 RNG**: Data Parallel 的每个 worker 处理全数据的一个随机子集（而非时间连续分区），但 RNG 是全局共享的或独立初始化的
-2. **梯度同步**: Worker 间同步梯度，使更新方向与 Serial 一致
-3. **全数据评估**: val_score 基于全数据
+#### 根因 1：`_make_payload` 未设种子 → 所有 Pipeline trial 初始权重相关
 
-**结果**: DP 选出与 Serial 完全相同的架构（133K all OFF），test_score=0.8561。
+**文件**: [`jodie/nas/ray_pipeline.py`](jodie/nas/ray_pipeline.py), 函数 `_make_payload()`
 
----
-
-## 5. 修复方案（更新版）
-
-### ~~方案 A：增大 partition_size~~ ❌ 已测试，无效
-
-psize=2000 (4x) 结果与 psize=500 逐项相同。
-
-### ~~方案 C：全数据评估~~ ❌ 已测试，无效
-
-全数据评估无法修复训练层面的 RNG 偏差。
-
-### 方案 B：两阶段搜索（可行）
-
-```
-Phase 1: Pipeline 粗筛 100 trials × 1 epoch → Top 20
-Phase 2: Serial 精筛 Top 20 × 2 epochs → Top 8
-Phase 3: Serial rerank Top 8 × 5 epochs → 最终架构
-```
-
-优点：保留 Pipeline 速度用于粗筛，Serial 保证最终质量。
-缺点：Pipeline 粗筛仍有偏差，可能漏掉 Serial 下的好架构。
-
-### 方案 D：Data Parallel 替代 Pipeline（推荐 ✅）
-
-Data Parallel 已验证：
-- 2x+ 加速（13,542s vs Serial 29,296s）
-- 零排名偏差（选出架构与 Serial 完全相同）
-- test_score=0.8561 与 Serial 完全一致
-
-### 方案 E：传递并恢复 RNG 状态（理论可行，工程复杂）
-
-在 `PipelineModelPayload` 中增加 `rng_state`，每个分区结束后保存 RNG 状态，传递给下一分区恢复：
 ```python
-# 分区结束时
-payload.rng_state = rng.bit_generator.state
-# 下一分区开始时
-rng.bit_generator.state = payload.rng_state
+# 修复前：build_model 前未设 seed
+def _make_payload(self, arch_config, trial_id, seed):
+    config = dict(self.base_config)
+    config.update(arch_config)
+    model = build_model(config)  # ← 使用全局 RNG 当前状态，与之前 trial 相关
+
+# 修复后
+def _make_payload(self, arch_config, trial_id, seed):
+    torch.manual_seed(seed)      # ✅ 每个 trial 独立初始化
+    config = dict(self.base_config)
+    config.update(arch_config)
+    model = build_model(config)
 ```
 
-但这要求：
-- 分区必须**严格串行**执行（放弃流水线并行优势）
-- RNG state 必须与数据消费完全同步
-- 任何 reordering 都会破坏同步
+Serial 路径在 `_train_and_eval` 中先 `_set_seed(trial_seed)` 再 `build_model`，Pipeline 没有这一步。
 
-本质上等于放弃 Pipeline 并行，退化为 Serial。
+#### 根因 2：评估循环中冗余 `build_model` 污染全局 RNG
+
+**文件**: [`jodie/nas/trainer.py`](jodie/nas/trainer.py), 函数 `evaluate_arch_pipeline()`
+
+```python
+# 修复前：build_model 消费 RNG 后权重立即被 load_state_dict 覆盖，但 RNG 状态已污染
+config = dict(self.base_config)
+config.update(payload.arch_config)
+model = build_model(config)          # ← 消费了 RNG
+model.load_state_dict(payload.state) # ← 权重被覆盖，但 RNG 已污染
+
+# 修复后：保存/恢复 RNG
+rng_state = torch.get_rng_state()
+model = build_model(config)          # 消费 RNG 不影响后续
+torch.set_rng_state(rng_state)       # ✅ 恢复
+model.load_state_dict(payload.state)
+```
+
+每个 trial 评估时多调用一次 `build_model`，累计 50+ 次 → 下一 batch 的 `_make_payload` 中 `build_model` 获得的初始权重完全偏离 Serial。
+
+#### 根因 3：Controller 批量更新 vs 逐 trial 更新
+
+**文件**: [`jodie/nas/trainer.py`](jodie/nas/trainer.py), 函数 `search_pipeline()`
+
+```python
+# 修复前：batch 模式，每 4 个 trial 统一更新一次
+batch_samples = [(logprob, score) for ...]
+controller.reinforce_step_batch(batch_samples)
+
+# 修复后：逐 trial 更新（与 serial 一致），使用 compute_logprob 做 off-policy 校正
+for arch_cfg, result in zip(arch_batch, batch_results):
+    logprob = controller.compute_logprob(arch_cfg)  # ✅ 重新计算，避免 inplace 冲突
+    controller.reinforce_step(logprob, result["score"])
+```
+
+Serial 搜索每完成一个 trial 就更新 controller；Pipeline 攒 4 个 trial 才更新一次。反馈频率不同 → 控制器探索路径不同 → 选出的架构不同。
+
+**文件**: [`test_minimal_search.py`](test_minimal_search.py)（最小搜索验证）
 
 ---
 
-## 6. 文件索引
+### 阶段 6：验证与最终确认（2026-08-11~12）
 
-所有文件位于 `pipeline_analysis/` 目录。
+#### 最小搜索测试（4 trials × 1 epoch）
+
+| 策略 | 状态 | 耗时 |
+|------|:--:|------|
+| Serial | ✅ 完成 | 1019s |
+| Pipeline Naive | ✅ 完成（controller 更新无崩溃） | 896s |
+
+#### 完整 50-trial 测试
+
+| 策略 | test_score | test_mrr | 架构 | 耗时 |
+|------|:---------:|:--------:|------|------|
+| Serial | **0.8561** | **0.8561** | jodie_rnn, 133K | 25,965s |
+| Pipeline Naive | **0.8561** | **0.8561** | jodie_rnn, 133K | 16,783s |
+
+**Serial ≡ Pipeline Naive，结果完全一致。Pipeline 加速 1.5×。**
+
+**结果文件**: [`results/20260811_204240/comparison.json`](../results/20260811_204240/comparison.json)
+
+---
+
+### 阶段 7：四策略补跑 — Smart 异步池 flush 的 inplace bug（2026-08-12~13）
+
+补跑 Data Parallel 与 Pipeline Smart（1 stage × 3 workers）：
+
+#### 最小测试（4 策略 × 4 trials）— 全部通过
+
+| 策略 | 状态 | best |
+|------|:--:|------|
+| Serial | ✅ | 0.7906 |
+| Data Parallel | ✅ | 0.4479 |
+| Pipeline Naive | ✅ | 0.7019 |
+| Pipeline Smart | ✅ | 0.7906 |
+
+#### Data Parallel 全量（2026-08-12）
+
+✅ 完成，耗时 15,746s，test_score=0.8561，架构与 Serial 完全一致。
+
+#### Pipeline Smart 全量首次失败：inplace version 冲突
+
+```
+RuntimeError: one of the variables needed for gradient computation has been
+modified by an inplace operation: [torch.FloatTensor [2]] is at version 12;
+expected version 11 instead.
+    at trainer.py:711 → controller.reinforce_step(stored_lp, sc)
+```
+
+**根因**：Smart 异步路径在搜索末尾 flush 剩余 `update_buffer` 时，
+**优先使用了采样时保存的原始 logprob**（`stored_lp`），其计算图引用的 logits
+已被前面 12 次 `optimizer.step()` inplace 修改（version 11 → 12），backward 失败。
+
+最小测试没有暴露此问题：4 trials ÷ 2 arch/step 恰好整除，flush 路径从未被触发。
+全量 50 trials ÷ 4 arch/step = 12 次批量更新 + 最后 flush 2 个 → 触发崩溃。
+
+**修复**（[`jodie/nas/trainer.py`](jodie/nas/trainer.py) `_search_pipeline_async` 末尾）：
+
+```python
+# 修复前：优先使用存储的原始 logprob（计算图引用旧版本 logits）
+if stored_lp is not None:
+    controller.reinforce_step(stored_lp, sc)
+elif hasattr(controller, "compute_logprob"):
+    logprob = controller.compute_logprob(arch_cfg)
+    controller.reinforce_step(logprob, sc)
+
+# 修复后：优先用 compute_logprob 重算 logprob（off-policy）
+if hasattr(controller, "compute_logprob"):
+    logprob = controller.compute_logprob(arch_cfg)  # ✅ 基于当前 logits 重算
+    controller.reinforce_step(logprob, sc)
+elif stored_lp is not None:
+    controller.reinforce_step(stored_lp, sc)
+```
+
+**验证**：
+
+1. [`test_smart_flush.py`](test_smart_flush.py) — 5 trials × 2 arch/step → 2 次批量更新 + 最后 flush 1 个，✅ 通过（730s，best=0.7906）
+2. 全量 50-trial 补跑 — ✅ 完成（[`run_all_smart_fix.log`](../run_all_smart_fix.log)），test_score=0.8561
+
+#### 最终四策略结果（见文首表格）
+
+**四个策略选出完全相同的架构（jodie_rnn, 133K, all OFF），test_score 完全一致 (0.8561)。**
+
+---
+
+## 错误结论的反思
+
+原始 FINAL_REPORT.md 的错误在于：
+
+1. **找到了 RNG 重置问题**（真实存在），但 **public_csv 用 L2 loss 不受此影响**
+2. **把 BPR 训练路径的 bug 当作 public_csv 的根因**，导致花了大量时间在预分配负样本方案上
+3. **应该更早做单架构训练一致性测试** — 这能立即证明训练本身没问题，偏差在搜索层面
+
+正确的方法是"**二分排除法**"：
+- 先验证训练是否一致（单架构 Serial vs Pipeline）→ ✅ 一致
+- 再找搜索循环中的差异（代码对比 Serial vs Pipeline 搜索路径）→ 找到 3 个根因
+- Smart 异步路径的 flush bug 则是"**最小测试覆盖不足**"的教训：4 % 2 = 0 恰好整除，
+  测试没有触达最后 flush 分支。最小测试的 trial 数应设计为**不整除** arch_per_step。
+
+---
+
+## 最终结论
+
+**四种搜索策略（Serial / Data Parallel / Pipeline Naive / Pipeline Smart）在 NAS 搜索中结果一致。**
+
+三个搜索层面的 RNG/控制器差异是导致 Pipeline 选错架构的真正原因：
+1. `_make_payload` 中 `build_model` 前未设种子
+2. `evaluate_arch_pipeline` 中冗余 `build_model` 污染 RNG
+3. Controller 批量更新 vs 逐 trial 更新（+ 存储 logprob 的 inplace 冲突，含 Smart flush 变体）
+
+修复后：
+- **四策略 test_score 完全一致** (0.8561)
+- **选出的架构完全一致** (jodie_rnn, all OFF, 133K)
+- **加速比**：Pipeline Smart **2.3×** > Data Parallel 1.6× > Pipeline Naive 1.5×
+- **推荐 Pipeline Smart (1 stage × 3 workers)** 作为 NAS 加速策略：最快且结果与 Serial 一致
+
+---
+
+## 文件索引
 
 | 文件 | 说明 |
 |------|------|
-| `README.md` | 实验时间线索引 |
-| `FINAL_REPORT.md` | 本文件 — 最终报告 |
-| `PIPELINE_DIVERGENCE_ANALYSIS.md` | 早期根因分析（含 Leaderboard 对比） |
-| `PIPELINE_RUNALL_SUMMARY.md` | 各轮实验数据汇总 |
-| `PIPELINE_BIAS_ANALYSIS.md` | 初步偏差分析 |
-| **`diagnose_v2_precise.py`** | ⭐ **精确诊断 v2** — 定位 RNG 重置为根因 |
-| `diagnose_pipeline_divergence.py` | 诊断 v1 — 仅前 30 步对比（有缺陷） |
+| `diagnose_v2_precise.py` | 精确诊断 v2 — 定位 per-partition RNG 重置 |
+| `diagnose_pipeline_divergence.py` | 诊断 v1 — 算子对比 |
+| [`test_l2_divergence.py`](test_l2_divergence.py) | ⭐ L2 loss 训练一致性验证（Serial ≡ Pipeline） |
+| [`test_ray_pipeline_match.py`](test_ray_pipeline_match.py) | ⭐ Ray Pipeline 训练一致性验证（MRR diff=0） |
+| [`test_minimal_search.py`](test_minimal_search.py) | ⭐ 最小搜索测试（4 策略，验证 controller 修复） |
+| [`test_smart_flush.py`](test_smart_flush.py) | ⭐ Smart flush 路径最小测试（5 trials 不整除） |
+| [`test_plan_c.py`](test_plan_c.py) | 方案 C 全数据评估验证 |
 | `verify_optimizer_state_roundtrip.py` | State transfer 精度验证 |
-| `verify_pipeline_fix.py` | 早期验证脚本 |
-| `test_plan_c.py` | 方案 C 快速验证 |
-| `run_all.log` | 首次全策略对比日志 (2026-08-06) |
-| `run_all_seedfix.log` | Seed 修复实验日志 (2026-08-07) |
-| `run_all_planc.log` | 方案 C 全量实验日志 (2026-08-09) |
-
----
-
-## 7. 结论
-
-**Pipeline 分区训练与 Serial 全数据训练之间的偏差根因是：每个分区独立初始化 RNG（`loops.py:141` — `rng = np.random.default_rng(seed)`），导致负采样序列在分区边界重复，训练轨迹偏离 Serial。这是 Pipeline 并行范式的结构性限制，在保持并行的前提下无法修复。**
-
-**推荐**：NAS 搜索直接使用 Data Parallel——已实现，2x 加速，零偏差，test_score=0.8561。
-
----
-
-## 8. 实验记录
-
-- [x] 首次全策略对比 → 发现偏差
-- [x] Seed 修复（去掉 +partition_id）→ ❌ 无效
-- [x] 方案 A（partition_size=2000）→ ❌ 无效
-- [x] 方案 C（全数据评估）→ ❌ 无效
-- [x] **精确诊断 v2** → ✅ **根因定位：per-partition RNG 重置**
-- [ ] 建议：切换到 Data Parallel 或实现两阶段搜索
+| [`../results/20260811_204240/comparison.json`](../results/20260811_204240/comparison.json) | ⭐ Serial + Pipeline Naive 最终结果 |
+| [`../results/20260812_153045/comparison.json`](../results/20260812_153045/comparison.json) | ⭐ Data Parallel 最终结果 |
+| [`../results/20260813_103010/comparison.json`](../results/20260813_103010/comparison.json) | ⭐ Pipeline Smart 最终结果 |
+| `run_all.log` | 首次全策略对比（修复前） |
+| `run_all_seedfix.log` | Seed 修复实验 |
+| `run_all_planc.log` | 方案 C 全量实验 |
+| [`../run_all_dp_smart.log`](../run_all_dp_smart.log) | DP+Smart 补跑（Smart 首次失败日志） |
+| [`../run_all_smart_fix.log`](../run_all_smart_fix.log) | Smart 修复后补跑（成功） |

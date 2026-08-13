@@ -1,0 +1,33 @@
+
+======================================================================
+  JODIE GraphNAS 全策略对比
+  2026-08-12 15:27:28
+======================================================================
+
+  [预检] 正在验证运行环境...
+  [预检] ✓ 数据文件: data/public/mooc.csv (39.1 MB)
+  [预检] ✓ CUDA 可用: True, 可见GPU数: 8
+  [预检] ✓ Ray 已安装 (version=2.40.0)
+  [预检] ✓ Pipeline Naive: 3 stages × [1, 1, 1] workers (固定)
+  [预检] ✓ Pipeline Smart: 手动配置
+
+  当前配置:
+    搜索空间: rnn_only  搜索模式: rl
+    数据集: public_csv  选择指标: mrr
+    粗搜索: 50 trials × 2 epochs
+    重排序: top 8 × 5 epochs
+    GPU: 0,1,2  流水线Naive: 3stages×1,1,1workers
+    流水线Smart: 手动  DP workers: 3
+    时间预算: 无限制(全量运行)  启用策略: ['serial', 'pipeline_naive', 'data_parallel', 'pipeline_smart']
+
+  结果目录: results/20260812_152728
+
+  配置快照已保存: results/20260812_152728/config.json
+
+
+======================================================================
+  策略 1/4: Serial (串行搜索)
+  2026-08-12 15:27:28
+======================================================================
+
+[Timing] Timing log: results/20260812_152728/serial/timing_log.csv

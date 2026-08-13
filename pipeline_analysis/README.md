@@ -2,6 +2,11 @@
 
 按时间顺序排列的诊断实验和报告。
 
+> ⚠️ **最新结论请以 [`FINAL_REPORT.md`](FINAL_REPORT.md) 为准**（2026-08-13 更新）。
+> 下方"核心结论"中的 loops.py:141 RNG 假说已被证伪（public_csv 用 L2 loss，不受负采样 RNG 影响）；
+> 真正的根因在搜索层面（3 个 controller/RNG 差异 + Smart flush inplace bug），修复后四策略
+> test_score 完全一致 (0.8561)。
+
 ---
 
 ## 实验时间线

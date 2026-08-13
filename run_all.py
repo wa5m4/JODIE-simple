@@ -236,8 +236,9 @@ NUM_PIPELINE_STAGES = 3                              # Naive 用的阶段数 (3 
 ARCHITECTURES_PER_STEP = 4                            # 每批次架构数
 PIPELINE_STAGE_TRAIN_WORKERS = "1,1,1"                # Naive: 每 stage 1 worker
 PIPELINE_STAGE_EVAL_WORKERS = "1,1,1"                 # Naive: 每 stage 1 eval worker
-SMART_ENABLE_AUTO_PIPELINE_CONFIG = True              # Smart: 开启自动配置 (会选择最优)
-SMART_PIPELINE_STAGE_TRAIN_WORKERS = ""               # Smart: 空=自动决定 worker 分配
+SMART_ENABLE_AUTO_PIPELINE_CONFIG = False             # Smart: 关闭自动，手动指定 1stage×3worker
+SMART_PIPELINE_STAGE_TRAIN_WORKERS = "3"              # Smart: 1 stage × 3 workers
+SMART_NUM_PIPELINE_STAGES = 1                         # Smart: 1 stage
 STAGE_BALANCE_STRATEGY = "cost"                       # DP 最小化阶段间成本方差
 
 # ---- GPU (3卡: 0,1,2) ----
@@ -256,10 +257,7 @@ FAMILY_BALANCE_PER_MODEL = 1
 
 # ---- 启用的策略 (可注释不需要的) ----
 ENABLE_STRATEGIES = [
-    # "serial",              # 本次跳过
-    # "data_parallel",       # 本次跳过
-    "pipeline_naive",      # 方案A: partition_size=2000
-    "pipeline_smart",      # 方案A: partition_size=2000
+    "pipeline_smart",      # Pipeline Smart: 1stage×3workers
 ]
 
 # =============================================================================
@@ -306,9 +304,9 @@ def build_base_config(strategy: str, output_dir: str, pipeline_mode: Optional[st
 
     # 根据策略选择 pipeline 配置
     if strategy == "pipeline_smart":
-        # Smart: 自动选择最优 stage/worker 分配 + 异步池
+        # Smart: 1 stage × 3 workers (手动指定)
         enable_auto = SMART_ENABLE_AUTO_PIPELINE_CONFIG
-        num_stages = NUM_PIPELINE_STAGES  # 给个初始值, auto 可能覆盖
+        num_stages = SMART_NUM_PIPELINE_STAGES
         train_workers = SMART_PIPELINE_STAGE_TRAIN_WORKERS
         eval_workers = ""
         pipeline_md = pipeline_mode if pipeline_mode else "smart"
@@ -496,9 +494,11 @@ def run_pipeline_smart(output_dir: str) -> Tuple[Dict, List[Dict], float]:
     base_config = build_base_config("pipeline_smart", output_dir, pipeline_mode="smart")
     trainer = GraphNASTrainer(base_config)
 
-    # Smart 的 RL inplace bug 尚未完全修复，暂时用 random controller
     search_space = get_search_space(SEARCH_SPACE)
-    controller = RandomGraphNASController(search_space, seed=SEED)
+    if SEARCH_MODE == "rl":
+        controller = RLGraphNASController(search_space, seed=SEED, lr=CONTROLLER_LR)
+    else:
+        controller = RandomGraphNASController(search_space, seed=SEED)
 
     coarse_trials = COARSE_TRIALS
     coarse_epochs = COARSE_EPOCHS
