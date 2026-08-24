@@ -31,3 +31,7 @@ venv/
 
 # 数据集 CSV (不提交到 git)
 data/public/*.csv
+
+# 论文参考 PDF 与提取文本(导师内部资料/论文版权,不进 git)
+论文/*.pdf
+论文/*.txt
