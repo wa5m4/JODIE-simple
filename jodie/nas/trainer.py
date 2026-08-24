@@ -462,10 +462,7 @@ class GraphNASTrainer:
             for payload in trained_payloads:
                 config = dict(self.base_config)
                 config.update(payload.arch_config)
-                # ★ 修复：保存/恢复 RNG 状态，避免 build_model 污染下一个 trial 的初始化
-                rng_state = torch.get_rng_state()
                 model = build_model(config)
-                torch.set_rng_state(rng_state)
                 device = torch.device(self.base_config.get("device", "cpu"))
                 model = model.to(device)
 
@@ -951,14 +948,17 @@ class GraphNASTrainer:
                             result["config"].get("model", "unknown"),
                         ])
 
-                # ★ 修复：逐 trial 更新 controller（与 serial 路径一致）
-                # 必须用 compute_logprob 重新计算 logprob，因为上一个 trial 的
-                # optimizer.step() 已修改 logits，batch 中后续的原始 logprob
-                # computation graph 会失效（inplace version mismatch）
-                for arch_cfg, result in zip(arch_batch, batch_results):
-                    if hasattr(controller, "reinforce_step") and hasattr(controller, "compute_logprob"):
-                        logprob = controller.compute_logprob(arch_cfg)
-                        controller.reinforce_step(logprob, result["score"])
+                batch_samples = [
+                    (logprob, result["score"])
+                    for logprob, result in zip(logprobs, batch_results)
+                    if logprob is not None
+                ]
+                if batch_samples and hasattr(controller, "reinforce_step_batch"):
+                    controller.reinforce_step_batch(batch_samples)
+                else:
+                    for logprob, score in batch_samples:
+                        if hasattr(controller, "reinforce_step"):
+                            controller.reinforce_step(logprob, score)
 
                 total_generated += len(batch_results)
                 print(f"[Coarse Phase] Progress: {total_generated}/{coarse_trials} trials completed", flush=True)

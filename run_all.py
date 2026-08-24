@@ -257,7 +257,7 @@ FAMILY_BALANCE_PER_MODEL = 1
 
 # ---- 启用的策略 (可注释不需要的) ----
 ENABLE_STRATEGIES = [
-    "pipeline_smart",      # Pipeline Smart: 1stage×3workers
+    "pipeline_naive",      # 消融:fidelity 三修复关闭,serial 配置,MOOC
 ]
 
 # =============================================================================

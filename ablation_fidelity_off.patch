@@ -1,0 +1,67 @@
+diff --git a/jodie/nas/ray_pipeline.py b/jodie/nas/ray_pipeline.py
+index a5103e7..7256671 100644
+--- a/jodie/nas/ray_pipeline.py
++++ b/jodie/nas/ray_pipeline.py
+@@ -1232,8 +1232,6 @@ class RayPipelineExecutor:
+     def _make_payload(self, arch_config: Dict, trial_id: int, seed: int) -> PipelineModelPayload:
+         config = dict(self.base_config)
+         config.update(arch_config)
+-        # ★ 修复：设种子后建模型，保证每个 trial 初始权重独立且可复现
+-        torch.manual_seed(seed)
+         model = build_model(config)
+         runtime_state = model.export_runtime_state() if hasattr(model, "export_runtime_state") else None
+         # jodie_rnn 不使用动态图（与 Serial 训练的 graph_ctx=None 保持一致）
+diff --git a/jodie/nas/trainer.py b/jodie/nas/trainer.py
+index c3f087b..db0c93f 100644
+--- a/jodie/nas/trainer.py
++++ b/jodie/nas/trainer.py
+@@ -462,10 +462,7 @@ class GraphNASTrainer:
+             for payload in trained_payloads:
+                 config = dict(self.base_config)
+                 config.update(payload.arch_config)
+-                # ★ 修复：保存/恢复 RNG 状态，避免 build_model 污染下一个 trial 的初始化
+-                rng_state = torch.get_rng_state()
+                 model = build_model(config)
+-                torch.set_rng_state(rng_state)
+                 device = torch.device(self.base_config.get("device", "cpu"))
+                 model = model.to(device)
+
+@@ -951,14 +948,17 @@ class GraphNASTrainer:
+                             result["config"].get("model", "unknown"),
+                         ])
+
+-                # ★ 修复：逐 trial 更新 controller（与 serial 路径一致）
+-                # 必须用 compute_logprob 重新计算 logprob，因为上一个 trial 的
+-                # optimizer.step() 已修改 logits，batch 中后续的原始 logprob
+-                # computation graph 会失效（inplace version mismatch）
+-                for arch_cfg, result in zip(arch_batch, batch_results):
+-                    if hasattr(controller, "reinforce_step") and hasattr(controller, "compute_logprob"):
+-                        logprob = controller.compute_logprob(arch_cfg)
+-                        controller.reinforce_step(logprob, result["score"])
++                batch_samples = [
++                    (logprob, result["score"])
++                    for logprob, result in zip(logprobs, batch_results)
++                    if logprob is not None
++                ]
++                if batch_samples and hasattr(controller, "reinforce_step_batch"):
++                    controller.reinforce_step_batch(batch_samples)
++                else:
++                    for logprob, score in batch_samples:
++                        if hasattr(controller, "reinforce_step"):
++                            controller.reinforce_step(logprob, score)
+
+                 total_generated += len(batch_results)
+                 print(f"[Coarse Phase] Progress: {total_generated}/{coarse_trials} trials completed", flush=True)
+diff --git a/run_all.py b/run_all.py
+index f5f1b27..082e15f 100644
+--- a/run_all.py
++++ b/run_all.py
+@@ -257,7 +257,7 @@ FAMILY_BALANCE_PER_MODEL = 1
+
+ # ---- 启用的策略 (可注释不需要的) ----
+ ENABLE_STRATEGIES = [
+-    "pipeline_smart",      # Pipeline Smart: 1stage×3workers
++    "pipeline_naive",      # 消融:fidelity 三修复关闭,serial 配置,MOOC
+ ]
+
+ # =============================================================================
