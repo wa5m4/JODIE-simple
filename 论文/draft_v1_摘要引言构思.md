@@ -216,7 +216,10 @@
 4. 措辞对齐:"biased"→"**unreliable**"、开句 bias→failure——已验证的机制是评分被污染(不可信),不是有方向的偏袒;段 3 末句同步改 "so biased"→"so unreliable"
 5. t-Batch 微例从"可选"变**必需**(引 JODIE,新颖性地雷):段 3 末句承诺了 "violates RAW",段 4 必须兑现——两个例子分工:微例兑现 RAW 承诺,0.8561/0.7000 兑现"选错架构"承诺
 6. 遗留风险(已查证 git):BATCH_MODE 在 fb591ff 从 tbatch 改为 serial;首次对比(阶段 1,08-05~06)早于该切换(ATTEMPTS_LOG 尝试 10)→ **0.7000 那次是 tbatch 时代的跑法**,混杂了 tbatch 放大的训练态偏差(④⑤:tbatch 每 epoch 仅 ~14 步,epoch 边界动量断裂被放大,3 数据集系统性偏袒 static-on)+ 搜索态 bug(①②③)。最终 serial 配置下 ④⑤ 已无效(单架构训练 diff=0)。→ **干净消融**(serial 配置下仅关闭三修复、重跑 Pipeline Naive)是段 4 案例能否站住的**判据**:0.7000 复现 → 机制归因干净;不复现 → 案例段必须改写成 tbatch 故事或复合故事。列入实验表最高优先级
+
+   **→ 消融结果(2026-08-24,判据命中第 1 行)**:服务器(8 GPU,16299.7s ≈ 4.5h)以 serial 配置重跑 Pipeline Naive,**唯一变量 = 关闭三修复** → 再次选出 402K 全开架构(emb=128 / rnn / linear / static=on / norm=on),test = 0.69999。**三修复效应独立成立,段 4 机制句定稿,该消融进实验表 C2。** 附带证据:0.69999 与修复前 0.7000 精确重合(最终测试走同一串行评估路径、同架构、同 seed=42)→ 评估本身确定,分数差异全部来自搜索选择;证据文件在服务器提交 07fe26e(ablation/fidelity-off 分支):summary.txt / best_arch.json / leaderboard.csv / run_ablation_fidelity_off.log
 7. 待确认:MOOC 的引用、test MRR 是否就是论文要报的指标(与实验表统一)
+8. 判据升级(2026-08-24,用户提出):"最终选出的架构相同"≠"搜索未被干扰"——终点之外还要看搜索轨迹(采样序列/leaderboard 分布)与评分一致性(同一架构在两次运行中的分数差)。单因素消融 f1/f2/f3(各关一个修复)按三层观察判读;"Each deviation is negligible in isolation" 需要轨迹证据支撑,不能只看终点。运行说明见 ABLATION_FACTOR_GUIDE.md
 
 **段 5 — 三个挑战**(Challenge I/II/III 正式陈述,用数据管理话术):
 - Challenge I:temporal data dependency——递归状态更新造成交互流上的写后读依赖,朴素并行破坏语义
