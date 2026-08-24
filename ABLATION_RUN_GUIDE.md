@@ -25,19 +25,31 @@
 
 ---
 
-## 2. 前置检查(服务器上)
+## 2. 服务器部署(方案 A:检出消融分支)
+
+**已采用方案 A**:消融代码(4 处改动)已推送到 GitHub,服务器检出分支即可,**不需要手动改任何代码**。
 
 ```bash
 cd <项目目录>
-git log --oneline -1      # 应显示 ccab680 修复pipeline准确率bug
-git status                # 应干净(无未提交改动)
+git fetch origin
+git checkout ablation/fidelity-off    # 消融分支:4 处改动 + 本说明
+git status                            # 应干净;若有本地改动先 git stash 保存
 ```
 
-如果服务器代码不是 ccab680,先 `git pull` 同步到 refactored 分支最新版再开始。
+检出后验证:
+
+```bash
+git log --oneline -1        # 应看到 90245bf(消融实验提交)或包含它的 merge 提交
+sed -n '/ENABLE_STRATEGIES/,/]/p' run_all.py   # 应只出现 "pipeline_naive"
+```
+
+> 服务器原有的 refactored 分支保持不动;跑完 `git checkout refactored` 即自动恢复(见第 8 节)。
 
 ---
 
 ## 3. 应用改动(共 4 处,只改这些,别的任何配置都不许动)
+
+> **方案 A 下本节已由分支完成,直接跳到第 4 节核对清单。** 本节仅作改动内容存档,供"手动改回"或对照参考。
 
 ### 改动 1:run_all.py —— 只跑 pipeline_naive
 
@@ -179,3 +191,5 @@ nohup python run_all.py > run_ablation_fidelity_off.log 2>&1 &
 跑完后**立即把第 3 节的四处改动改回去**(恢复三修复 + ENABLE_STRATEGIES 改回原值),或直接 `git checkout -- run_all.py jodie/nas/trainer.py jodie/nas/ray_pipeline.py`,并用 `git status` 确认服务器代码回到干净状态,再跑其他实验。
 
 否则之后的正式实验会在"修复被关掉"的代码上跑,数据全废。
+
+**方案 A 更简单**:直接 `git checkout refactored` 切回原分支即可(消融分支原封不动保留,随时可切回来)。
