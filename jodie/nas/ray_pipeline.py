@@ -1232,8 +1232,7 @@ class RayPipelineExecutor:
     def _make_payload(self, arch_config: Dict, trial_id: int, seed: int) -> PipelineModelPayload:
         config = dict(self.base_config)
         config.update(arch_config)
-        # ★ 修复：设种子后建模型，保证每个 trial 初始权重独立且可复现
-        torch.manual_seed(seed)
+        # f1 消融：关闭修复①(种子纪律),其余修复保持开启
         model = build_model(config)
         runtime_state = model.export_runtime_state() if hasattr(model, "export_runtime_state") else None
         # jodie_rnn 不使用动态图（与 Serial 训练的 graph_ctx=None 保持一致）
