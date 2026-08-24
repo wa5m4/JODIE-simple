@@ -462,10 +462,8 @@ class GraphNASTrainer:
             for payload in trained_payloads:
                 config = dict(self.base_config)
                 config.update(payload.arch_config)
-                # ★ 修复：保存/恢复 RNG 状态，避免 build_model 污染下一个 trial 的初始化
-                rng_state = torch.get_rng_state()
+                # f2 消融：关闭修复②(RNG 保存/恢复),其余修复保持开启
                 model = build_model(config)
-                torch.set_rng_state(rng_state)
                 device = torch.device(self.base_config.get("device", "cpu"))
                 model = model.to(device)
 
