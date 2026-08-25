@@ -1,0 +1,12 @@
+切换到一个新分支 'ablation/f1-seed-off'
+分支 'ablation/f1-seed-off' 设置为跟踪来自 'origin' 的远程分支 'ablation/f1-seed-off'。
+=== F1 END ===
+切换到一个新分支 'ablation/f2-rng-off'
+分支 'ablation/f2-rng-off' 设置为跟踪来自 'origin' 的远程分支 'ablation/f2-rng-off'。
+=== F2 END ===
+切换到一个新分支 'ablation/f3-batch-off'
+分支 'ablation/f3-batch-off' 设置为跟踪来自 'origin' 的远程分支 'ablation/f3-batch-off'。
+=== F3 END ===
+切换到分支 'refactored'
+您的分支与上游分支 'origin/refactored' 一致。
+=== ALL DONE ===
