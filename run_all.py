@@ -220,7 +220,7 @@ LR = 1e-3
 NEG_SAMPLE_SIZE = 5
 K = 10
 SELECTION_METRIC = "mrr"        # "mrr" | "recall_at_k"
-BATCH_MODE = "stale_batch"      # "serial" | "tbatch" | "tgn" | "stale_batch"  ← stale_batch 消融:唯一变量=批处理模式
+BATCH_MODE = "tbatch"          # "serial" | "tbatch" | "tgn" | "stale_batch"  ← t-Batch 桥梁臂:冲突消解批处理(读不到旧账)
 TRAIN_BATCH_SIZE = 32
 TGN_WINDOW_SIZE = 10.0
 TGN_LOSS_MODE = "all"           # "all" | "last"
