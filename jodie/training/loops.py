@@ -281,6 +281,7 @@ def train_model(
                     batch_size=batch_size,
                     seed=_partition_seed(seed, partition.partition_id, epoch),
                     graph_ctx=epoch_graph_ctx,
+                    epoch=epoch,
                 )
             else:  # 串行
                 total_loss += train_partition_bpr(
@@ -496,6 +497,7 @@ def train_partition_bpr_stale_batch(
     batch_size: int = 32,
     seed: Optional[int] = None,
     graph_ctx=None,
+    epoch: int = 0,
 ) -> float:
     """stale_batch BPR 训练：连续交互直接切块，批内所有交互对批前状态
     计算预测（deferred 前向），批末统一写回。
@@ -503,9 +505,12 @@ def train_partition_bpr_stale_batch(
     与 t-Batch 的对照：t-Batch 保证批内节点唯一（冲突无关）；stale_batch
     允许同批重复节点，后出现的交互读到批前旧嵌入——朴素分批破坏写后读
     （RAW）依赖的机制（见引言段 4 微例）。
+
+    负样本优先使用预分配的 ``neg_samples_by_epoch``（与串行路径一致），
+    保证消融实验中负样本集合与 serial 完全相同——唯一变量只剩批处理模式。
     """
     device = _model_device(model)
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed) if seed is not None else None
     criterion = BPRLoss()
     total_loss = 0.0
 
@@ -520,11 +525,20 @@ def train_partition_bpr_stale_batch(
             t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
             f = interaction.features.unsqueeze(0).to(device)
 
-            neg_items = []
-            while len(neg_items) < neg_sample_size:
-                neg = int(rng.integers(0, _num_items(model)))
-                if neg != interaction.item_id:
-                    neg_items.append(neg)
+            # ── 优先使用预分配的负样本（与串行路径一致,消除负样本来源差异）──
+            if epoch in interaction.neg_samples_by_epoch:
+                neg_items = list(interaction.neg_samples_by_epoch[epoch])
+            elif rng is not None:
+                neg_items = []
+                while len(neg_items) < neg_sample_size:
+                    neg = int(rng.integers(0, _num_items(model)))
+                    if neg != interaction.item_id:
+                        neg_items.append(neg)
+            else:
+                raise RuntimeError(
+                    f"No precomputed neg samples for epoch {epoch} and no RNG seed provided. "
+                    f"Pass seed or precompute neg samples during data loading."
+                )
             neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
 
             pred_emb, new_user_emb, new_item_emb, new_user_c, new_item_c = _stale_forward(
