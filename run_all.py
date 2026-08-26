@@ -91,10 +91,11 @@ SELECTION_METRIC    : 架构选择指标
     说明: 决定搜索结果按哪个指标排序
 
 BATCH_MODE          : 训练批量模式
-    选项: "serial" | "tbatch" | "tgn"
-    说明: serial=逐个交互, tbatch=贪心唯一节点批处理, tgn=时间窗口批处理
+    选项: "serial" | "tbatch" | "tgn" | "stale_batch"
+    说明: serial=逐个交互, tbatch=贪心唯一节点批处理, tgn=时间窗口批处理,
+          stale_batch=朴素分批(连续切块、批内读批前状态,破坏 RAW)
 
-TRAIN_BATCH_SIZE    : 批量训练大小 (仅 tbatch/tgn)
+TRAIN_BATCH_SIZE    : 批量训练大小 (仅 tbatch/tgn/stale_batch)
     选项: 整数 (如 32)
 
 TGN_WINDOW_SIZE     : TGN时间窗口时长 (仅 BATCH_MODE="tgn")
@@ -219,7 +220,7 @@ LR = 1e-3
 NEG_SAMPLE_SIZE = 5
 K = 10
 SELECTION_METRIC = "mrr"        # "mrr" | "recall_at_k"
-BATCH_MODE = "serial"           # "serial" | "tbatch" | "tgn"
+BATCH_MODE = "stale_batch"      # "serial" | "tbatch" | "tgn" | "stale_batch"  ← stale_batch 消融:唯一变量=批处理模式
 TRAIN_BATCH_SIZE = 32
 TGN_WINDOW_SIZE = 10.0
 TGN_LOSS_MODE = "all"           # "all" | "last"
@@ -257,7 +258,7 @@ FAMILY_BALANCE_PER_MODEL = 1
 
 # ---- 启用的策略 (可注释不需要的) ----
 ENABLE_STRATEGIES = [
-    "pipeline_smart",      # Pipeline Smart: 1stage×3workers
+    "pipeline_naive",      # stale_batch 消融:唯一变量=批处理模式,策略同五档消融
 ]
 
 # =============================================================================

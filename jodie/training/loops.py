@@ -18,7 +18,7 @@ import torch.nn.functional as F
 from jodie.data.synthetic import Interaction, clone_graph_state_template
 from jodie.data.temporal_partition import TemporalPartition
 
-from .batching import _create_t_batches, _create_time_windows
+from .batching import _chunk_batches, _create_t_batches, _create_time_windows
 
 
 # ────────────────────────────────────────────────────────────
@@ -272,6 +272,16 @@ def train_model(
                     seed=_partition_seed(seed, partition.partition_id, epoch),
                     graph_ctx=epoch_graph_ctx,
                 )
+            elif batch_mode == "stale_batch":
+                total_loss += train_partition_bpr_stale_batch(
+                    model=model,
+                    partition=partition,
+                    optimizer=optimizer,
+                    neg_sample_size=neg_sample_size,
+                    batch_size=batch_size,
+                    seed=_partition_seed(seed, partition.partition_id, epoch),
+                    graph_ctx=epoch_graph_ctx,
+                )
             else:  # 串行
                 total_loss += train_partition_bpr(
                     model=model,
@@ -329,6 +339,15 @@ def train_model_ce(
                 )
             elif batch_mode == "tbatch" or batch_training:
                 total_loss += train_partition_ce_batch(
+                    model=model,
+                    partition=partition,
+                    optimizer=optimizer,
+                    batch_size=batch_size,
+                    seed=_partition_seed(seed, partition.partition_id, epoch),
+                    graph_ctx=epoch_graph_ctx,
+                )
+            elif batch_mode == "stale_batch":
+                total_loss += train_partition_ce_stale_batch(
                     model=model,
                     partition=partition,
                     optimizer=optimizer,
@@ -424,6 +443,144 @@ def train_partition_ce_batch(
             pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
             target_emb = _item_embeddings_for_loss(model, iid).to(device)
             batch_losses.append(((pred_emb - target_emb) ** 2).sum(dim=-1).mean())
+
+        total_batch_loss = sum(batch_losses)
+        total_batch_loss.backward(retain_graph=True)
+        optimizer.step()
+        total_loss += total_batch_loss.item()
+
+    return total_loss
+
+
+# ────────────────────────────────────────────────────────────
+# stale_batch 训练循环（朴素分批：不做冲突消解）
+# ────────────────────────────────────────────────────────────
+
+
+def _stale_writeback(model, staged_writes):
+    """批末统一写回 staged 的嵌入/时间戳/胞状态。
+
+    同节点在批内多次出现时，最后一次写入生效——朴素实现的批语义。
+    与 process_interaction(deferred=False) 写回的表完全一致。
+    """
+    for uid, iid, t, new_user_emb, new_item_emb, new_user_c, new_item_c in staged_writes:
+        model.user_embeddings[uid] = new_user_emb.detach()
+        model.item_embeddings[iid] = new_item_emb.detach()
+        model.user_last_time[uid] = t
+        model.item_last_time[iid] = t
+        if new_user_c is not None:
+            model.user_cell_state[uid] = new_user_c.detach()
+            model.item_cell_state[iid] = new_item_c.detach()
+
+
+def _stale_forward(model, uid, iid, t, f, interaction):
+    """批内单交互前向：对批前状态计算预测与更新（deferred，不写回）。"""
+    pred_emb, _ = model.predict(uid, query_time=interaction.timestamp)
+    if getattr(model, "cell_type", "") == "lstm":
+        new_user_emb, new_item_emb, new_user_c, new_item_c = model.process_interaction(
+            uid, iid, t, f, deferred=True, return_cell_state=True
+        )
+    else:
+        new_user_emb, new_item_emb = model.process_interaction(
+            uid, iid, t, f, deferred=True
+        )
+        new_user_c = new_item_c = None
+    return pred_emb, new_user_emb, new_item_emb, new_user_c, new_item_c
+
+
+def train_partition_bpr_stale_batch(
+    model,
+    partition: TemporalPartition,
+    optimizer,
+    neg_sample_size: int = 5,
+    batch_size: int = 32,
+    seed: Optional[int] = None,
+    graph_ctx=None,
+) -> float:
+    """stale_batch BPR 训练：连续交互直接切块，批内所有交互对批前状态
+    计算预测（deferred 前向），批末统一写回。
+
+    与 t-Batch 的对照：t-Batch 保证批内节点唯一（冲突无关）；stale_batch
+    允许同批重复节点，后出现的交互读到批前旧嵌入——朴素分批破坏写后读
+    （RAW）依赖的机制（见引言段 4 微例）。
+    """
+    device = _model_device(model)
+    rng = np.random.default_rng(seed)
+    criterion = BPRLoss()
+    total_loss = 0.0
+
+    for batch in _chunk_batches(partition.interactions, batch_size):
+        optimizer.zero_grad()
+        batch_losses = []
+        staged_writes = []
+
+        for interaction in batch:
+            uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+            iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+            t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
+            f = interaction.features.unsqueeze(0).to(device)
+
+            neg_items = []
+            while len(neg_items) < neg_sample_size:
+                neg = int(rng.integers(0, _num_items(model)))
+                if neg != interaction.item_id:
+                    neg_items.append(neg)
+            neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
+
+            pred_emb, new_user_emb, new_item_emb, new_user_c, new_item_c = _stale_forward(
+                model, uid, iid, t, f, interaction
+            )
+            pos_emb = new_item_emb.detach().to(device)
+            neg_emb = _item_embeddings_for_loss(model, neg_ids).detach().to(device).unsqueeze(0)
+            batch_losses.append(criterion(pred_emb, pos_emb, neg_emb))
+            staged_writes.append(
+                (uid, iid, t, new_user_emb, new_item_emb, new_user_c, new_item_c)
+            )
+
+        _stale_writeback(model, staged_writes)
+
+        total_batch_loss = sum(batch_losses)
+        total_batch_loss.backward(retain_graph=True)
+        optimizer.step()
+        total_loss += total_batch_loss.item()
+
+    return total_loss
+
+
+def train_partition_ce_stale_batch(
+    model,
+    partition: TemporalPartition,
+    optimizer,
+    batch_size: int = 32,
+    seed: Optional[int] = None,
+    graph_ctx=None,
+) -> float:
+    """stale_batch CE/L2 训练：同 BPR 版——批内所有交互对批前状态计算，
+    批末统一写回。"""
+    device = _model_device(model)
+    total_loss = 0.0
+
+    for batch in _chunk_batches(partition.interactions, batch_size):
+        optimizer.zero_grad()
+        batch_losses = []
+        staged_writes = []
+
+        for interaction in batch:
+            uid = torch.tensor([interaction.user_id], dtype=torch.long, device=device)
+            iid = torch.tensor([interaction.item_id], dtype=torch.long, device=device)
+            t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
+            f = interaction.features.unsqueeze(0).to(device)
+
+            pred_emb, new_user_emb, new_item_emb, new_user_c, new_item_c = _stale_forward(
+                model, uid, iid, t, f, interaction
+            )
+            target_emb = new_item_emb.to(device)
+            batch_losses.append(((pred_emb - target_emb) ** 2).sum(dim=-1).mean())
+            staged_writes.append(
+                (uid, iid, t, new_user_emb, new_item_emb, new_user_c, new_item_c)
+            )
+
+        _stale_writeback(model, staged_writes)
 
         total_batch_loss = sum(batch_losses)
         total_batch_loss.backward(retain_graph=True)

@@ -61,6 +61,28 @@ def _create_t_batches(interactions: List, batch_size: int) -> List[List]:
     return batches
 
 
+def _chunk_batches(interactions: List, batch_size: int) -> List[List]:
+    """
+    将交互序列直接按连续顺序切块（不做冲突消解）。
+
+    与 ``_create_t_batches`` 的对照：t-Batch 保证每个批次内用户/物品 ID
+    不重复（冲突无关）；本函数允许同批出现重复节点——批内后出现的交互
+    读到批前旧嵌入（stale read），破坏交互流上的写后读（RAW）依赖。
+    这正是朴素分批实现的样子。
+
+    Args:
+        interactions: 按时间排序的交互列表。
+        batch_size:   每个批次的最大交互数。
+
+    Returns:
+        批次列表，每个批次是一个交互列表。
+    """
+    return [
+        interactions[i : i + batch_size]
+        for i in range(0, len(interactions), batch_size)
+    ]
+
+
 def _create_time_windows(
     interactions: List[Interaction], window_size: float
 ) -> List[List[Interaction]]:

@@ -19,8 +19,10 @@ from jodie.training.loops import (
     BPRLoss,
     train_partition_bpr,
     train_partition_bpr_batch,
+    train_partition_bpr_stale_batch,
     train_partition_ce,
     train_partition_ce_batch,
+    train_partition_ce_stale_batch,
 )
 from jodie.training.metrics import (
     evaluate_partition_ranking,
@@ -246,6 +248,15 @@ class PartitionShardWorker:
                             graph_ctx=epoch_graph_state,
                             seed=payload.seed + (seed_epoch_offset + epoch) * 100000,
                         )
+                    elif batch_mode == "stale_batch":
+                        # 朴素分批：连续切块、批内读批前状态（破坏 RAW）
+                        train_partition_bpr_stale_batch(
+                            model=model, partition=partition, optimizer=optimizer,
+                            neg_sample_size=config.get("neg_sample_size", 5),
+                            batch_size=train_batch_size,
+                            graph_ctx=epoch_graph_state,
+                            seed=payload.seed + (seed_epoch_offset + epoch) * 100000,
+                        )
                     else:
                         # 串行处理
                         criterion = BPRLoss()
@@ -279,6 +290,14 @@ class PartitionShardWorker:
                     elif batch_mode == "tbatch":
                         # T-batch 处理
                         train_partition_ce_batch(
+                            model=model, partition=partition, optimizer=optimizer,
+                            batch_size=train_batch_size,
+                            graph_ctx=epoch_graph_state,
+                            seed=payload.seed + (seed_epoch_offset + epoch) * 100000,
+                        )
+                    elif batch_mode == "stale_batch":
+                        # 朴素分批：连续切块、批内读批前状态（破坏 RAW）
+                        train_partition_ce_stale_batch(
                             model=model, partition=partition, optimizer=optimizer,
                             batch_size=train_batch_size,
                             graph_ctx=epoch_graph_state,
