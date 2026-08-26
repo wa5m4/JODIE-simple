@@ -271,6 +271,7 @@ def train_model(
                     batch_size=batch_size,
                     seed=_partition_seed(seed, partition.partition_id, epoch),
                     graph_ctx=epoch_graph_ctx,
+                    epoch=epoch,
                 )
             elif batch_mode == "stale_batch":
                 total_loss += train_partition_bpr_stale_batch(
@@ -381,11 +382,17 @@ def train_partition_bpr_batch(
     batch_size: int = 32,
     seed: Optional[int] = None,
     graph_ctx=None,
+    epoch: int = 0,
 ) -> float:
     """t-Batch BPR 训练：每个批次中节点 ID 唯一，单独前向传播每个
-    交互，然后在聚合的批次损失上反向传播。"""
+    交互，然后在聚合的批次损失上反向传播。
+
+    负样本优先使用预分配的 ``neg_samples_by_epoch``（与串行路径一致），
+    保证消融实验中负样本集合与 serial/stale_batch 完全相同——
+    唯一变量只剩批处理模式。
+    """
     device = _model_device(model)
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(seed) if seed is not None else None
     criterion = BPRLoss()
     total_loss = 0.0
 
@@ -399,11 +406,20 @@ def train_partition_bpr_batch(
             t = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
             f = interaction.features.unsqueeze(0).to(device)
 
-            neg_items = []
-            while len(neg_items) < neg_sample_size:
-                neg = int(rng.integers(0, _num_items(model)))
-                if neg != interaction.item_id:
-                    neg_items.append(neg)
+            # ── 优先使用预分配的负样本（与串行路径一致,消除负样本来源差异）──
+            if epoch in interaction.neg_samples_by_epoch:
+                neg_items = list(interaction.neg_samples_by_epoch[epoch])
+            elif rng is not None:
+                neg_items = []
+                while len(neg_items) < neg_sample_size:
+                    neg = int(rng.integers(0, _num_items(model)))
+                    if neg != interaction.item_id:
+                        neg_items.append(neg)
+            else:
+                raise RuntimeError(
+                    f"No precomputed neg samples for epoch {epoch} and no RNG seed provided. "
+                    f"Pass seed or precompute neg samples during data loading."
+                )
             neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
 
             pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)

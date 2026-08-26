@@ -247,6 +247,7 @@ class PartitionShardWorker:
                             batch_size=train_batch_size,
                             graph_ctx=epoch_graph_state,
                             seed=payload.seed + (seed_epoch_offset + epoch) * 100000,
+                            epoch=epoch,
                         )
                     elif batch_mode == "stale_batch":
                         # 朴素分批：连续切块、批内读批前状态（破坏 RAW）
