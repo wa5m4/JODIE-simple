@@ -220,7 +220,7 @@ LR = 1e-3
 NEG_SAMPLE_SIZE = 5
 K = 10
 SELECTION_METRIC = "mrr"        # "mrr" | "recall_at_k"
-BATCH_MODE = "stale_batch"      # "serial" | "tbatch" | "tgn" | "stale_batch"  ← stale_batch 消融:唯一变量=批处理模式
+BATCH_MODE = "serial"           # "serial" | "tbatch" | "tgn" | "stale_batch"  ← smart-async 重跑:保持与基线一致的保真训练协议,唯一变量=搜索策略
 TRAIN_BATCH_SIZE = 32
 TGN_WINDOW_SIZE = 10.0
 TGN_LOSS_MODE = "all"           # "all" | "last"
@@ -258,7 +258,7 @@ FAMILY_BALANCE_PER_MODEL = 1
 
 # ---- 启用的策略 (可注释不需要的) ----
 ENABLE_STRATEGIES = [
-    "pipeline_naive",      # stale_batch 消融:唯一变量=批处理模式,策略同五档消融
+    "pipeline_smart",      # smart-async 重跑:异步生成+训练机制在修复全开协议下的复证(唯一变量=搜索策略)
 ]
 
 # =============================================================================
