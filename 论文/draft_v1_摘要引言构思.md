@@ -184,30 +184,24 @@
 5. 评审建议段末加 "we introduce DepTGL" 预告句——**不采纳**:按 DynaHB 模板方法在段 6 出场(段 3 → 段 4 case study → 段 5 挑战 → 段 6 提出方法),提前预告预支段 6、抢段 4-5 的悬念;段 3 的预告任务已由末句完成
 6. snapshot vs 事件流(JODIE 是事件流)的区别没提——放 Section 2 展开,但评审会追问,Section 2 要主动交代
 
-**段 4 — Case study(导师硬性要求,带具体数值)初稿 v1(2026-08-23)**:
+**段 4 — Case study(导师硬性要求,带具体数值)v4(2026-08-26,数字待 stale_batch 消融)**:
 
 > This failure is not hypothetical. On the MOOC dataset [ref], we ran the
 > same NAS search twice, once evaluating candidate architectures with
 > serial training and once with a naive parallelization that spreads
-> training across three workers by migrating model state. The serial
-> search converges to a compact architecture with 133K parameters, whose
-> test MRR is 0.8561. The parallel search instead selects an architecture
-> three times larger — 402K parameters, with static embeddings and
-> projection layers enabled — whose test MRR is only 0.7000, a drop of
-> 0.156. The cause is not a single large error: the parallel search
-> manages random state differently from serial search — trials draw from
-> shared random streams instead of independent seeds, redundant model
-> rebuilds perturb the streams consumed by later trials, and the
-> controller is updated in batches rather than after each trial. Each
-> deviation is negligible in isolation, but they compound across the
-> search: the evaluation scores no longer faithfully reflect the quality
-> of the candidate architectures, and the search converges to the wrong
-> architecture. Naively batching training is hazardous too: with
-> consecutive interactions (u1,i1), (u1,i2), (u2,i1), a naive batch
+> training across three workers and batches interactions without
+> respecting their temporal dependencies. The serial search converges to
+> a compact architecture with 133K parameters, whose test MRR is 0.8561.
+> The parallel search instead selects [待补:错误架构参数量/特征], whose
+> test MRR is only [待补], a drop of [待补]. Consider a single batch of
+> consecutive interactions (u1,i1), (u1,i2), (u2,i1): the naive batch
 > processes the first two against the same pre-batch embedding, so
 > (u1,i2) misses the update that serial training applies first — the
 > read-after-write dependency along the interaction stream is violated
-> [ref].
+> [ref]. Predictions computed from such stale states no longer faithfully
+> reflect the quality of the candidate architectures: the biased scores
+> distort the leaderboard, and the search converges to the wrong
+> architecture.
 
 **写作观察(段 4 v2,按用户质疑修正机制句)**:
 1. 开句 "This failure is not hypothetical" 直接兑现段 3 末句的预告(as the following example shows...)——case study 是"法庭举证段",举证对象是段 2 的 thesis、段 3 的断言
@@ -220,6 +214,20 @@
    **→ 消融结果(2026-08-24,判据命中第 1 行)**:服务器(8 GPU,16299.7s ≈ 4.5h)以 serial 配置重跑 Pipeline Naive,**唯一变量 = 关闭三修复** → 再次选出 402K 全开架构(emb=128 / rnn / linear / static=on / norm=on),test = 0.69999。**三修复效应独立成立,段 4 机制句定稿,该消融进实验表 C2。** 附带证据:0.69999 与修复前 0.7000 精确重合(最终测试走同一串行评估路径、同架构、同 seed=42)→ 评估本身确定,分数差异全部来自搜索选择;证据文件在服务器提交 07fe26e(ablation/fidelity-off 分支):summary.txt / best_arch.json / leaderboard.csv / run_ablation_fidelity_off.log
 7. 待确认:MOOC 的引用、test MRR 是否就是论文要报的指标(与实验表统一)
 8. 判据升级(2026-08-24,用户提出):"最终选出的架构相同"≠"搜索未被干扰"——终点之外还要看搜索轨迹(采样序列/leaderboard 分布)与评分一致性(同一架构在两次运行中的分数差)。单因素消融 f1/f2/f3(各关一个修复)按三层观察判读;"Each deviation is negligible in isolation" 需要轨迹证据支撑,不能只看终点。运行说明见 ABLATION_FACTOR_GUIDE.md
+9. 定位风险(评审必问,2026-08-26,用户提出):"①② 是你们自己代码的 bug,修了 bug 论文还有什么贡献?"——回答框架:①② 是 bug,但不是**机械性 bug**(笔误/off-by-one),而是**结构性陷阱**:沉默(单 trial 一切正常、不报错,只在搜索级显现;单架构训练 Serial≡Pipeline diff=0 为证)、同源(①②③ 是同一个结构空洞的三实例——搜索没有随机状态协议)、单独致命(协议零冗余,五档消融为证)、普遍(任何朴素并行实现都会踩,不是本代码特有事故)。**论证"多数人会这么设计"(评审判据:naive 设计→贡献成立;自家缺陷→不算)的三条证据**:① 朴素写法=教科书写法——build-then-load 是通用模式、批量 REINFORCE 是 Williams 1992 原始算法(ENAS 等都用)、共享随机流是 Ray 默认行为,三处无一处独创怪写法;② 失败沉默(不崩不报错、单 trial 正常)→ 朴素设计必然带雷上线;③ "仔细点设个种子就行"的反驳不成立——f2 消融中种子纪律仍开启、只关 ② 照样翻车(402K/0.7000),证明协议≠设种子一件事,必须框架显式执行整份协议。注意:此论证在论文中要**显式写出来**,不能只断言。论文写法:段 4 的 bug 是"**病例**"(量化损失 0.156/选错架构,证明坑值得防),C2 的框架机制是"**疫苗**"(种子纪律/状态迁移保 RNG/离策略更新做成框架内置,让这类错误**写不出来**,而不是"这次写对了");消融证明每个机制必要(单独关闭即翻车 → 不是过度工程)。代码注释里的"★ 修复"仅内部用语,论文一律称 mechanism/fidelity mechanism,不称 fix/bugfix。
+10. **段 4 v3(2026-08-26,按单因素消融证据 + 用户定位决定改写)**:
+    1. **定位决定(用户,2026-08-26)**:①② 在论文里"先当作 bug"描述——不把"build-then-load 是行业习惯"当作贡献论证写进正文;note 9 的病例/疫苗框架与三条证据保留为评审防御材料,不预支。措辞区分:"bug/flaw" 用于描述朴素并行实现的行为;DepTGL 自身的机制仍称 mechanism(与 note 9 一致)。
+    2. **删除 "The cause is not a single large error" + "Each deviation is negligible in isolation, but they compound"**——被单因素消融证伪:f1-off 与 f2-off 各自单独翻车(402K/0.69999),"单独即致命",不是"单看可忽略、合起来才坏"。
+    3. **③(批量 controller 更新)从因果句移除**——f3-off 终点正确(133K/0.8561)且评分波动在噪声包络内(max 0.0845 ≤ 0.0887 天花板)→ 它是负对照,进实验表,不进案例段因果句。摘要里"off-policy controller updates" 作为机制保留。
+    4. **新因果句**:共享随机流耦合(① 种子纪律 + ② build 扰动流),"Either flaw alone suffices to derail the search";新增第三层观察数字:同一架构分数跨运行差最高 0.166(噪声天花板 0.089)→ 证明分数本身被污染,呼应"不要只看终点"。
+    5. 正文 0.7000 = 干净消融 0.69999 的四舍五入;实验表报原始值 0.69999。
+    6. **未写进段 4**:修复后搜索 bit-identical 可复现(两次全开运行轨迹逐位一致)——按"段 6 前不预告方法"原则(段 3 写作观察第 5 条),留给段 6/实验表。
+11. **段 4 v4(2026-08-26,用户定位决定:bug 不进概述)**:
+    1. ①② 随机状态 bug 从段 4 因果句**整体移除**——bug 是工程事故,撑不起 intro 的论点(评审会说"修了 bug 不就行了,要框架干嘛");intro 案例必须归因于固有机制(RAW)。
+    2. 归因换成:朴素分批(stale_batch,不做冲突消解)破坏写后读依赖。微例从段末 "too" 位置**提升为因果说明**(紧跟失败数字,解释机理),末句 "Predictions computed from such stale states..." 收尾。
+    3. **数字改为待补**:原 402K/0.7000 的干净归因是 bug(serial 配置下只关三修复复现 0.69999),不能用于 RAW 归因。需要"唯一变量=批处理模式"的干净对照:BATCH_MODE=stale_batch、修复全开、pipeline_naive,其余与五档消融一致。运行说明见 RAW_ABLATION_GUIDE.md。
+    4. bug 故事(五档消融梯:全关/f1/f2/f3 + 噪声天花板 0.089 vs 污染 0.166)整体移出 intro,归实验章 C2。
+    5. **ripple effect(写段 5 时处理)**:段 5 Challenge II(evaluation fidelity)的 intro 级动机同样不能讲 bug 故事,需抽象陈述(并行评估必须跨后端保持同一分数;跨进程状态迁移的偏差会累积)——具体证据在实验章。
 
 **段 5 — 三个挑战**(Challenge I/II/III 正式陈述,用数据管理话术):
 - Challenge I:temporal data dependency——递归状态更新造成交互流上的写后读依赖,朴素并行破坏语义
