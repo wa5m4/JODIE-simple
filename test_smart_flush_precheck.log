@@ -1,0 +1,106 @@
+============================================================
+Pipeline Smart flush 路径最小测试
+  5 trials × 1 epoch, 2 arch/step → 2 批更新 + flush 1 个
+============================================================
+
+======================================================================
+[GraphNAS] Starting search pipeline
+[GraphNAS] Coarse trials: 5, epochs: 1
+[GraphNAS] Rerank top-k: 0, epochs: 0
+======================================================================
+
+[Timing] Timing log: /tmp/test_smart_flush/timing_log.csv
+[Smart] Using manual allocation: stages=1, workers=3
+2026-08-26 18:24:28,613	INFO worker.py:1812 -- Started a local Ray instance. View the dashboard at [1m[32mhttp://127.0.0.1:8265 [39m[22m
+[36m(PartitionShardWorker pid=2967640)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(PartitionShardWorker pid=2967640)[0m   return torch.load(io.BytesIO(b))
+[AsyncPool] started: 1 stages, workers=[3]
+[Smart] Progress: 0/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 0/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 0/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 0/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 0/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 0/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 0/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 0/5 completed, in_flight=3, submitted=4
+/usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(io.BytesIO(b))
+[36m(PartitionShardWorker pid=2967636)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 3x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(PartitionShardWorker pid=2967636)[0m   return torch.load(io.BytesIO(b))[32m [repeated 3x across cluster][0m
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 100/1999 (5.0%)] elapsed=0.3s, est.remain=5.5s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 200/1999 (10.0%)] elapsed=0.5s, est.remain=4.8s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 300/1999 (15.0%)] elapsed=0.8s, est.remain=4.4s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 400/1999 (20.0%)] elapsed=1.0s, est.remain=4.1s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 500/1999 (25.0%)] elapsed=1.3s, est.remain=3.8s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 600/1999 (30.0%)] elapsed=1.5s, est.remain=3.5s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 700/1999 (35.0%)] elapsed=1.8s, est.remain=3.3s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 800/1999 (40.0%)] elapsed=2.0s, est.remain=3.0s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 900/1999 (45.0%)] elapsed=2.3s, est.remain=2.8s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1000/1999 (50.0%)] elapsed=2.5s, est.remain=2.5s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1100/1999 (55.0%)] elapsed=2.7s, est.remain=2.2s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1200/1999 (60.0%)] elapsed=3.0s, est.remain=2.0s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1300/1999 (65.0%)] elapsed=3.2s, est.remain=1.7s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1400/1999 (70.0%)] elapsed=3.5s, est.remain=1.5s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1500/1999 (75.0%)] elapsed=3.7s, est.remain=1.2s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1600/1999 (80.0%)] elapsed=4.0s, est.remain=1.0s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1700/1999 (85.0%)] elapsed=4.2s, est.remain=0.7s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1800/1999 (90.0%)] elapsed=4.5s, est.remain=0.5s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1900/1999 (95.0%)] elapsed=4.7s, est.remain=0.2s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=1 partitions=[7]] [Interaction 1999/1999 (100.0%)] elapsed=5.0s, est.remain=0.0s, partition=7
+[Smart] Progress: 1/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 1/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 1/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 1/5 completed, in_flight=3, submitted=4
+[Smart] Progress: 1/5 completed, in_flight=3, submitted=4
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 100/1999 (5.0%)] elapsed=0.2s, est.remain=2.9s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 200/1999 (10.0%)] elapsed=0.3s, est.remain=2.7s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 300/1999 (15.0%)] elapsed=0.4s, est.remain=2.5s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 400/1999 (20.0%)] elapsed=0.6s, est.remain=2.4s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 500/1999 (25.0%)] elapsed=0.7s, est.remain=2.2s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 600/1999 (30.0%)] elapsed=0.9s, est.remain=2.1s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 700/1999 (35.0%)] elapsed=1.1s, est.remain=2.0s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 800/1999 (40.0%)] elapsed=1.2s, est.remain=1.8s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 900/1999 (45.0%)] elapsed=1.4s, est.remain=1.7s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1000/1999 (50.0%)] elapsed=1.5s, est.remain=1.5s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1100/1999 (55.0%)] elapsed=1.7s, est.remain=1.4s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1200/1999 (60.0%)] elapsed=1.8s, est.remain=1.2s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1300/1999 (65.0%)] elapsed=2.0s, est.remain=1.1s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1400/1999 (70.0%)] elapsed=2.1s, est.remain=0.9s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1500/1999 (75.0%)] elapsed=2.3s, est.remain=0.8s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1600/1999 (80.0%)] elapsed=2.4s, est.remain=0.6s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1700/1999 (85.0%)] elapsed=2.6s, est.remain=0.5s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1800/1999 (90.0%)] elapsed=2.7s, est.remain=0.3s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1900/1999 (95.0%)] elapsed=2.9s, est.remain=0.2s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=3 partitions=[7]] [Interaction 1999/1999 (100.0%)] elapsed=3.1s, est.remain=0.0s, partition=7
+[Smart] Progress: 2/5 completed, in_flight=3, submitted=5
+[Smart] Progress: 2/5 completed, in_flight=3, submitted=5
+[Smart] Progress: 2/5 completed, in_flight=3, submitted=5
+[Smart] Progress: 2/5 completed, in_flight=3, submitted=5
+[36m(PartitionShardWorker pid=2967640)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(PartitionShardWorker pid=2967640)[0m   return torch.load(io.BytesIO(b))
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=7
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 100/1999 (5.0%)] elapsed=1.3s, est.remain=24.0s, partition=7
+[Smart] Progress: 2/5 completed, in_flight=3, submitted=5
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 200/1999 (10.0%)] elapsed=2.6s, est.remain=23.0s, partition=7
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 300/1999 (15.0%)] elapsed=3.8s, est.remain=21.2s, partition=7
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 400/1999 (20.0%)] elapsed=4.8s, est.remain=19.3s, partition=7
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 500/1999 (25.0%)] elapsed=6.1s, est.remain=18.3s, partition=7
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 600/1999 (30.0%)] elapsed=7.2s, est.remain=16.9s, partition=7
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 700/1999 (35.0%)] elapsed=8.4s, est.remain=15.6s, partition=7
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 800/1999 (40.0%)] elapsed=9.7s, est.remain=14.5s, partition=7
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 900/1999 (45.0%)] elapsed=10.9s, est.remain=13.3s, partition=7
+[Smart] Progress: 2/5 completed, in_flight=3, submitted=5
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 1000/1999 (50.0%)] elapsed=12.0s, est.remain=12.0s, partition=7
+[36m(PartitionShardWorker pid=2967636)[0m [trial=4 partitions=[7]] [Interaction 200/1999 (10.0%)] elapsed=0.4s, est.remain=3.6s, partition=7[32m [repeated 4x across cluster][0m
+[Smart] Progress: 3/5 completed, in_flight=2, submitted=5
+[36m(PartitionShardWorker pid=2967640)[0m [trial=0 partitions=[7]] [Interaction 1600/1999 (80.0%)] elapsed=19.5s, est.remain=4.9s, partition=7[32m [repeated 23x across cluster][0m
+[Smart] Progress: 4/5 completed, in_flight=1, submitted=5
+[36m(PartitionShardWorker pid=2967636)[0m [trial=2 partitions=[7]] [Interaction 1/1999 (0.1%)] elapsed=0.0s, est.remain=199.8s, partition=7[32m [repeated 5x across cluster][0m
+[Smart] Progress: 4/5 completed, in_flight=1, submitted=5
+[Smart] Progress: 5/5 completed, in_flight=0, submitted=5
+[Final Test] Evaluating best architecture on test set using Serial training (fit=train+val, test=test, epochs=1)
+Epoch 1/1 | L2 Loss: 20.2158
+✅ Smart flush 测试通过: 460s, best=0.7906, trials=5
+[36m(PartitionShardWorker pid=2967636)[0m [trial=2 partitions=[7]] [Interaction 1999/1999 (100.0%)] elapsed=4.5s, est.remain=0.0s, partition=7[32m [repeated 20x across cluster][0m
