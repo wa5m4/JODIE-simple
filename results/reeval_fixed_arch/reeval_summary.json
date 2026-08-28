@@ -1,0 +1,30 @@
+{
+  "133K_baseline_pick": {
+    "arch": {
+      "model": "jodie_rnn",
+      "embedding_dim": 128,
+      "memory_cell": "rnn",
+      "time_proj": "off",
+      "use_static_embeddings": "off",
+      "normalize_state": "off"
+    },
+    "test_mrr": 0.856121275963994,
+    "test_recall_at_k": 0.9892526868282929,
+    "params": 133888,
+    "time_sec": 1026.9
+  },
+  "147K_stale_pick": {
+    "arch": {
+      "model": "jodie_rnn",
+      "embedding_dim": 64,
+      "memory_cell": "rnn",
+      "time_proj": "off",
+      "use_static_embeddings": "on",
+      "normalize_state": "off"
+    },
+    "test_mrr": 0.6013923229371874,
+    "test_recall_at_k": 0.9097725568607848,
+    "params": 147840,
+    "time_sec": 1029.8
+  }
+}

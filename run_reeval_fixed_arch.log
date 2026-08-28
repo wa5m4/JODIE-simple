@@ -1,0 +1,16 @@
+[Reeval] 数据就绪: train+val=15999, test=4001, batch_mode=serial, seed=42
+[Reeval] 133K_baseline_pick: {'model': 'jodie_rnn', 'embedding_dim': 128, 'memory_cell': 'rnn', 'time_proj': 'off', 'use_static_embeddings': 'off', 'normalize_state': 'off'}
+Epoch 1/5 | L2 Loss: 20.2158
+Epoch 2/5 | L2 Loss: 18.8256
+Epoch 3/5 | L2 Loss: 18.6899
+Epoch 4/5 | L2 Loss: 18.6237
+Epoch 5/5 | L2 Loss: 18.5802
+[Reeval] 133K_baseline_pick: test_mrr=0.8561212760  recall@10=0.9892526868  params=133888  time=1026.9s
+[Reeval] 147K_stale_pick: {'model': 'jodie_rnn', 'embedding_dim': 64, 'memory_cell': 'rnn', 'time_proj': 'off', 'use_static_embeddings': 'on', 'normalize_state': 'off'}
+Epoch 1/5 | L2 Loss: 11.2988
+Epoch 2/5 | L2 Loss: 10.5988
+Epoch 3/5 | L2 Loss: 10.4147
+Epoch 4/5 | L2 Loss: 10.2728
+Epoch 5/5 | L2 Loss: 10.1973
+[Reeval] 147K_stale_pick: test_mrr=0.6013923229  recall@10=0.9097725569  params=147840  time=1029.8s
+[Reeval] 完成 → results/reeval_fixed_arch/reeval_summary.json
