@@ -11,7 +11,7 @@
 三层观察,不要只看最终选出的架构:第一层·终点(最终架构 + test)、第二层·轨迹(50 个 coarse 采样序列 / top-8 集合 / leaderboard 分布)、第三层·评分(同一架构的 val 分数差 vs 噪声天花板)。
 
 **双臂设计(trio 归因)**:serial 基准(已有)→ t-Batch 桥梁臂 → stale_batch 臂。
-t-Batch 与 stale_batch 批粒度、每批一更新的优化器语义**完全相同**,唯一区别是批内是否做冲突消解(能否读到旧账)。若 t-Batch ≈ serial 而 stale_batch 大跌,归因钉死在 stale read 上——"分批本身无害,不懂依赖的分批才有害"。这正是旗舰贡献 C2(评估保真度)最硬的一组证据。
+t-Batch 与 stale_batch 批粒度、每批一更新的优化器语义**完全相同**,唯一区别是批内是否做冲突消解(能否读到旧账)。若 t-Batch ≈ serial 而 stale_batch 大跌,归因钉死在 stale read 上——"分批本身无害,不懂依赖的分批才有害"。这正是 C1 系统保真度协议(评估保真度 2026-08-27 并入系统后)最硬的一组证据——同时充当段 4 case study 的归因数字。
 
 ## 1. 分支与唯一变量
 
@@ -19,7 +19,7 @@ t-Batch 与 stale_batch 批粒度、每批一更新的优化器语义**完全相
 |---|---|---|---|
 | 基准(已有) | refactored | serial | 133K / 0.8561 |
 | t-Batch 桥梁臂 | `ablation/tbatch` | `tbatch` | ≈ 133K / ≈ 0.8561 |
-| stale_batch 臂 | `ablation/stale-batch` | `stale_batch` | 选错架构 / 掉分 |
+| stale_batch 臂 | `ablation/stale-batch` | `stale_batch` | 选错架构 / 掉分(已实锤,见 §7) |
 
 - **stale_batch**:朴素分批——连续交互直接切块(不查冲突),批内所有交互对**批前状态**计算(deferred 前向),批末统一写回(同节点最后写入生效)。同批重复节点 → 后出现的交互读到旧嵌入 → 破坏 RAW。
 - **t-Batch**:贪心冲突消解分批——批内节点 ID 唯一,批内永远读不到旧账,前向语义与串行一致。
@@ -74,3 +74,18 @@ git checkout refactored
 
 - 已跑五档:全关 402K/0.69999、f1 402K/0.69999、f2 402K/0.69999、f3 133K/0.8561(负对照)、修复全开 ×2(bit-identical 133K/0.8561)
 - 本次(第六档,双臂):stale_batch → RAW 单独效应;t-Batch → 桥梁(证明分批本身无害)
+
+## 7. 结果与补测(2026-08-28,全部实锤)
+
+三臂终点:
+
+| 臂 | 选中架构 | 保真 val | 各自报告的 test | 真实串行 test |
+|---|---|---|---|---|
+| serial 基准 | 133,888(emb128/static-off) | 0.8267 | 0.8561(串行) | 0.856121275963994 |
+| t-Batch 桥梁 | 133,888(同家族) | 0.8646 | 0.8793(tbatch 训练) | — |
+| stale_batch | 147,840(emb64/static-on) | 0.9649 | 0.9335(stale 训练) | **0.6014** |
+
+- **评分污染(第三层)**:同一 147K 架构,保真 val 0.6194(tbatch)/0.6284(serial)vs stale 0.9649 → **+0.345**;stale 自报 test 0.9335 vs 真实串行 0.6014 → **+0.332**。val/test 污染幅度一致 = 同一机制(stale read 压低动态嵌入 → static=on 被系统性高估),贯穿搜索评分与最终测试。
+- **选择洗牌 + 掉分(第一层)**:stale 选的 147K 架构保真 val 仅 0.62(排不进前 8),真实串行 test 0.6014 vs 基线 0.8561 = **-0.2547**。原预言"选错架构 / 掉分"成立,且多一层"坏选择带完美成绩单"(val 0.9649 + 自报 test 0.9335)。
+- **补测分支**:`ablation/reeval-fixed-arch`(基于 origin/refactored + `reeval_fixed_arch.py`)。133K 探针复现 0.856121275963994(bit-identical)→ 补测路径 = 基线协议确认。
+- **陷阱教训**:两臂日志写 "Serial training",但 `_train_and_eval` 的 batch_mode 取自 `base_config`(各臂自己的模式)——最终测试实为 stale/tbatch 训练。判读必须落到代码,不能只看日志文案。

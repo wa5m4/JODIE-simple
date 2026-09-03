@@ -1,0 +1,215 @@
+% ======================================================================
+%  VLDB 模板 (基于 ACM acmart，版本 2020-08-03)
+%  本注释版帮助你快速修改并编译自己的论文
+% ======================================================================
+% ---------- 1. 选择文档格式 ----------
+% sigconf：ACM 会议标准格式（双栏，10pt 字）
+% nonacm：告诉模版我们不是 ACM 的正式出版物，而是 VLDB（PVLDB 系列）
+% 这一行绝对不能改！
+\documentclass[sigconf, nonacm]{acmart}
+
+%% ---------- 2. VLDB 需要的变量（投稿时可以暂时不改，最终版再填）----------
+% ---- 论文专用信息 ----
+% 你的论文 DOI（如果没有就保持 XX.XX/XXX.XX）
+\newcommand\vldbdoi{XX.XX/XXX.XX}
+% 你的论文在 PVLDB 卷中的页码（录用后会通知，投稿时留 XXX-XXX）
+\newcommand\vldbpages{XXX-XXX}
+\newcommand\vldbvolume{14}        % 卷号（投稿时用当前卷号，如 14）
+\newcommand\vldbissue{1}          % 期号
+\newcommand\vldbyear{2026}        % 年份
+% ---- 这两个变量会自动取你的作者和短标题，无需改动 ----
+% ---- 作品公开链接（可选） ----
+% 如果你有公开的代码/数据，把 URL_TO_YOUR_ARTIFACTS 换成你的网址
+% 如果没有就留空，即 \newcommand\vldbavailabilityurl{}
+\newcommand\vldbavailabilityurl{URL_TO_YOUR_ARTIFACTS}
+% ---- 页码样式 ----
+% plain：审稿版显示页码（方便审稿人引用）
+% empty：最终版不显示页码
+\newcommand\vldbpagestyle{plain}
+% ========== 3. 文档正式开始 ==========
+\begin{document}
+% ---------- 3.1 标题 ----------
+% 把花括号里的内容改成你的论文题目
+\title{A Pipeline Strategy for Dynamic Graph Neural Network Architecture Search}
+
+%% ---------- 3.2 作者和单位 ----------
+%% 每一个作者由以下部分组成：
+%%   \author{姓名}
+%%   \orcid{0000-0000-0000-0000}          % 可选，如果没有就删除这一行
+%%   \affiliation{                        % 单位信息
+%%     \institution{学校/机构}
+%%     \streetaddress{地址}                % 可不写
+%%     \city{城市}
+%%     \state{州/省}                       % 可不写
+%%     \country{国家}
+%%     \postcode{邮编}                     % 可不写
+%%   }
+%%   \email{邮箱}                         % 可以有多个 \email
+%% 多个作者直接重复上述块，顺序排列即可。
+%%
+%% 注意：如果两个作者属于同一单位，最简单的方法是各自写一遍单位信息。
+\author{Haoyu Wang}
+\affiliation{%
+  \institution{SDU}
+  \city{ShanDong}
+  \country{China}
+}
+\email{1778942923@qq.com}
+
+
+
+
+
+%% ---------- 3.3 摘要 ----------
+\begin{abstract}
+  Praesent imperdiet, lacus ...
+\end{abstract}
+%% ---------- 3.4 生成标题区域 ----------
+%% 这行命令一定要放在 \begin{abstract} 之后，它会输出标题、作者、摘要
+\maketitle
+%% ========== 4. VLDB 自动生成的页脚信息（绝对不要修改！） ==========
+%% 这一大段代码负责在首页底部生成：
+%%   - 推荐的引用格式
+%%   - 版权声明（CC 协议）
+%%   - 你的 DOI 和页码
+%% 虽然写着 "do not modify"，但你不需要理解，保留它即可。
+%%% do not modify the following VLDB block %%%
+%%% VLDB block start %%%
+\pagestyle{\vldbpagestyle}
+\begingroup\small\noindent\raggedright\textbf{PVLDB Reference Format:}\\
+\vldbauthors. \vldbtitle. PVLDB, \vldbvolume(\vldbissue): \vldbpages, \vldbyear.\\
+\href{https://doi.org/\vldbdoi}{doi:\vldbdoi}
+\endgroup
+\begingroup
+\renewcommand\thefootnote{}\footnote{\noindent
+This work is licensed under the Creative Commons BY-NC-ND 4.0 International License. Visit \url{https://creativecommons.org/licenses/by-nc-nd/4.0/} to view a copy of this license. For any use beyond those covered by this license, obtain permission by emailing \href{mailto:info@vldb.org}{info@vldb.org}. Copyright is held by the owner/author(s). Publication rights licensed to the VLDB Endowment. \\
+\raggedright Proceedings of the VLDB Endowment, Vol. \vldbvolume, No. \vldbissue\ %
+ISSN 2150-8097. \\
+\href{https://doi.org/\vldbdoi}{doi:\vldbdoi} \\
+}\addtocounter{footnote}{-1}\endgroup
+%%% VLDB block end %%%
+%%% 如果设置了作品公开链接，这里会自动显示
+%%% do not modify the following VLDB block %%%
+%%% VLDB block start %%%
+\ifdefempty{\vldbavailabilityurl}{}{
+\vspace{.3cm}
+\begingroup\small\noindent\raggedright\textbf{PVLDB Artifact Availability:}\\
+The source code, data, and/or other artifacts have been made available at \url{\vldbavailabilityurl}.
+\endgroup
+}
+%%% VLDB block end %%%
+%% ========== 5. 正文 ==========
+%% 从这里开始写你自己的论文内容。
+%% 所有内容都写在各个 \section{} 里面。
+%% 注意：\section 是一级标题，\subsection 是二级标题。
+\section{Introduction}
+% 引言部分
+Lorem ipsum dolor sit amet... 
+
+
+\section{Core Structural Elements}
+% 核心结构说明（这部分教你如何插入图表、公式、列表等）
+% 实际写作时应删除或替换为你自己的内容 
+
+\subsection{Figures}
+% 如何插入图片的示例
+Aliquam justo ante, pretium vel mollis sed, consectetur accumsan nibh. Nulla sit amet sollicitudin est. Etiam ullamcorper diam a sapien lacinia faucibus. Duis vulputate, nisl nec tincidunt volutpat, erat orci eleifend diam, eget semper risus est eget nisl. Donec non odio id neque pharetra ultrices sit amet id purus. Nulla non dictum tellus, id ullamcorper libero. Curabitur vitae nulla dapibus, ornare dolor in, efficitur enim. Cras fermentum facilisis elit vitae egestas. Nam vulputate est non tellus efficitur pharetra. Vestibulum ligula est, varius in suscipit vel, porttitor id massa. Nulla placerat feugiat augue, id blandit urna pretium nec. Nulla velit sem, tempor vel mauris ut, porta commodo quam \autoref{fig:duck}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\linewidth]{figures/duck}
+  \caption{An illustration of a Mallard Duck. Picture from Mabel Osgood Wright, \textit{Birdcraft}, published 1897.}
+  \label{fig:duck}
+\end{figure}
+
+\begin{table*}[t]
+  \caption{A double column table.}
+  \label{tab:commands}
+  \begin{tabular}{ccl}
+    \toprule
+    A Wide Command Column & A Random Number & Comments\\
+    \midrule
+    \verb|\tabular| & 100& The content of a table \\
+    \verb|\table|  & 300 & For floating tables within a single column\\
+    \verb|\table*| & 400 & For wider floating tables that span two columns\\
+    \bottomrule
+  \end{tabular}
+\end{table*}
+
+\subsection{Tables}
+
+Curabitur vitae nulla dapibus, ornare dolor in, efficitur enim. Cras fermentum facilisis elit vitae egestas. Mauris porta, neque non rutrum efficitur, odio odio faucibus tortor, vitae imperdiet metus quam vitae eros. Proin porta dictum accumsan \autoref{tab:commands}.
+
+Duis cursus maximus facilisis. Integer euismod, purus et condimentum suscipit, augue turpis euismod libero, ac porttitor tellus neque eu enim. Nam vulputate est non tellus efficitur pharetra. Aenean molestie tristique venenatis. Nam congue pulvinar vehicula. Duis lacinia mollis purus, ac aliquet arcu dignissim ac \autoref{tab:freq}. 
+
+\begin{table}[hb]% h asks to places the floating element [h]ere.
+  \caption{Frequency of Special Characters}
+  \label{tab:freq}
+  \begin{tabular}{ccl}
+    \toprule
+    Non-English or Math & Frequency & Comments\\
+    \midrule
+    \O & 1 in 1000& For Swedish names\\
+    $\pi$ & 1 in 5 & Common in math\\
+    \$ & 4 in 5 & Used in business\\
+    $\Psi^2_1$ & 1 in 40\,000 & Unexplained usage\\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+Nulla sit amet enim tortor. Ut non felis lectus. Aenean quis felis faucibus, efficitur magna vitae. Curabitur ut mauris vel augue tempor suscipit eget eget lacus. Sed pulvinar lobortis dictum. Aliquam dapibus a velit.
+
+\subsection{Listings and Styles}
+
+Aenean malesuada fringilla felis, vel hendrerit enim feugiat et. Proin dictum ante nec tortor bibendum viverra. Curabitur non nibh ut mauris egestas ultrices consequat non odio.
+
+\begin{itemize}
+\item Duis lacinia mollis purus, ac aliquet arcu dignissim ac. Vivamus accumsan sollicitudin dui, sed porta sem consequat.
+\item Curabitur ut mauris vel augue tempor suscipit eget eget lacus. Sed pulvinar lobortis dictum. Aliquam dapibus a velit.
+\item Curabitur vitae nulla dapibus, ornare dolor in, efficitur enim.
+\end{itemize}
+
+Ut sagittis, massa nec rhoncus dignissim, urna ipsum vestibulum odio, ac dapibus massa lorem a dui. Nulla sit amet enim tortor. Ut non felis lectus. Aenean quis felis faucibus, efficitur magna vitae. 
+
+\begin{enumerate}
+\item Duis lacinia mollis purus, ac aliquet arcu dignissim ac. Vivamus accumsan sollicitudin dui, sed porta sem consequat.
+\item Curabitur ut mauris vel augue tempor suscipit eget eget lacus. Sed pulvinar lobortis dictum. Aliquam dapibus a velit.
+\item Curabitur vitae nulla dapibus, ornare dolor in, efficitur enim.
+\end{enumerate}
+
+Cras fermentum facilisis elit vitae egestas. Mauris porta, neque non rutrum efficitur, odio odio faucibus tortor, vitae imperdiet metus quam vitae eros. Proin porta dictum accumsan. Aliquam dapibus a velit. Curabitur vitae nulla dapibus, ornare dolor in, efficitur enim. Ut maximus mi id arcu ultricies feugiat. Phasellus facilisis purus ac ipsum varius bibendum.
+
+\subsection{Math and Equations}
+
+Curabitur vitae nulla dapibus, ornare dolor in, efficitur enim. Cras fermentum facilisis elit vitae egestas. Nam vulputate est non tellus efficitur pharetra. Vestibulum ligula est, varius in suscipit vel, porttitor id massa. Cras facilisis suscipit orci, ac tincidunt erat.
+\begin{equation}
+  \lim_{n\rightarrow \infty}x=0
+\end{equation}
+
+Sed pulvinar lobortis dictum. Aliquam dapibus a velit porttitor ultrices. Ut maximus mi id arcu ultricies feugiat. Phasellus facilisis purus ac ipsum varius bibendum. Aenean a quam at massa efficitur tincidunt facilisis sit amet felis. 
+\begin{displaymath}
+  \sum_{i=0}^{\infty} x + 1
+\end{displaymath}
+
+Suspendisse molestie ultricies tincidunt. Praesent metus ex, tempus quis gravida nec, consequat id arcu. Donec maximus fermentum nulla quis maximus.
+\begin{equation}
+  \sum_{i=0}^{\infty}x_i=\int_{0}^{\pi+2} f
+\end{equation}
+
+Curabitur vitae nulla dapibus, ornare dolor in, efficitur enim. Cras fermentum facilisis elit vitae egestas. Nam vulputate est non tellus efficitur pharetra. Vestibulum ligula est, varius in suscipit vel, porttitor id massa. Cras facilisis suscipit orci, ac tincidunt erat.
+
+\section{Citations}
+
+Some examples of references. A paginated journal article~\cite{Abril07}, an enumerated journal article~\cite{Cohen07}, a reference to an entire issue~\cite{JCohen96}, a monograph (whole book) ~\cite{Kosiur01}, a monograph/whole book in a series (see 2a in spec. document)~\cite{Harel79}, a divisible-book such as an anthology or compilation~\cite{Editor00} followed by the same example, however we only output the series if the volume number is given~\cite{Editor00a} (so Editor00a's series should NOT be present since it has no vol. no.), a chapter in a divisible book~\cite{Spector90}, a chapter in a divisible book in a series~\cite{Douglass98}, a multi-volume work as book~\cite{Knuth97}, an article in a proceedings (of a conference, symposium, workshop for example) (paginated proceedings article)~\cite{Andler79}, a proceedings article with all possible elements~\cite{Smith10}, an example of an enumerated proceedings article~\cite{VanGundy07}, an informally published work~\cite{Harel78}, a doctoral dissertation~\cite{Clarkson85}, a master's thesis~\cite{anisi03}, an finally two online documents or world wide web resources~\cite{Thornburg01, Ablamowicz07}.
+
+\begin{acks}
+ This work was supported by the [...] Research Fund of [...] (Number [...]). Additional funding was provided by [...] and [...]. We also thank [...] for contributing [...].
+\end{acks}
+
+%\clearpage
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{sample}
+
+\end{document}
+\endinput

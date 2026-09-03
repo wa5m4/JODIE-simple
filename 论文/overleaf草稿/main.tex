@@ -1,0 +1,266 @@
+% ======================================================================
+%  DepTGL 论文草稿 —— 依据 示例.tex(VLDB / ACM acmart 模板)规范化
+%  只填写:摘要 v4 + 引言 8 段(均为 2026-08-28 讨论后的最新版)
+%  内容来源:
+%    - 论文/draft_v2_摘要.md(摘要 v4,两处挂账同步点见文内 TODO 注释)
+%    - 论文/draft_v2_引言.md(两轮逐句批改后)
+%  占位清单与使用说明见 README.md
+% ======================================================================
+% ---------- 1. 选择文档格式 ----------
+% sigconf：ACM 会议标准格式（双栏，10pt 字）
+% nonacm：告诉模版我们不是 ACM 的正式出版物，而是 VLDB（PVLDB 系列）
+% 这一行绝对不能改！
+\documentclass[sigconf, nonacm]{acmart}
+
+%% ---------- 2. VLDB 需要的变量（投稿时可以暂时不改，最终版再填）----------
+% ---- 论文专用信息 ----
+% 你的论文 DOI（如果没有就保持 XX.XX/XXX.XX）
+\newcommand\vldbdoi{XX.XX/XXX.XX}
+% 你的论文在 PVLDB 卷中的页码（录用后会通知，投稿时留 XXX-XXX）
+\newcommand\vldbpages{XXX-XXX}
+\newcommand\vldbvolume{19}        % 卷号（当前 2025-2026 卷；示例里的 14 已过时，投稿时以 VLDB 官网为准）
+\newcommand\vldbissue{1}          % 期号
+\newcommand\vldbyear{2026}        % 年份
+% ---- 这两个变量会自动取你的作者和短标题，无需改动 ----
+% ---- 作品公开链接（可选） ----
+% 没有公开代码/数据就留空（示例里的 URL_TO_YOUR_ARTIFACTS 会打印到页脚，已清空）
+\newcommand\vldbavailabilityurl{}
+% ---- 页码样式 ----
+% plain：审稿版显示页码（方便审稿人引用）
+% empty：最终版不显示页码
+\newcommand\vldbpagestyle{plain}
+% ========== 3. 文档正式开始 ==========
+\begin{document}
+% ---------- 3.1 标题 ----------
+% TODO: DepTGL 全称待确认（待确认问题 #1）
+\title{DepTGL: A NAS System for Temporal Graph Neural Networks}
+
+%% ---------- 3.2 作者和单位 ----------
+\author{Haoyu Wang}
+\affiliation{%
+  \institution{SDU}
+  \city{ShanDong}
+  \country{China}
+}
+\email{1778942923@qq.com}
+
+%% ---------- 3.3 摘要 ----------
+\begin{abstract}
+  Temporal Graph Neural Networks (TGNNs) such as JODIE have achieved
+  state-of-the-art performance on temporal interaction prediction tasks.
+  However, designing TGNN architectures requires labor-intensive manual
+  tuning over a large hyperparameter space, and existing neural
+  architecture search (NAS) frameworks target static GNNs, whose training
+  assumes i.i.d. samples and thus cannot handle the temporal data
+  dependencies inherent in interaction streams. Searching over hundreds
+  of candidate architectures demands parallel execution, yet naively
+  parallelizing TGNN training breaks the read-after-write (RAW)
+  dependencies among consecutive interactions, yielding biased
+  architecture scores that cause NAS to select inferior architectures.
+  % TODO(挂账同步点 1,等批改摘要时定):"among consecutive interactions" → "among interactions"
+  We introduce \texttt{DepTGL}, an NAS system for TGNNs built on three
+  techniques: (i) faithful execution, where parallel training respects
+  the stream's RAW dependencies and a random-state protocol --- per-trial
+  seed discipline, RNG-preserving state migration, and off-policy
+  controller updates --- makes every backend reproduce the serial
+  search's scores and selection;
+  % TODO(挂账同步点 2,等批改摘要时定):"scores and selection" → "selection"
+  (ii) a pipeline strategy that
+  partitions the interaction stream into cost-balanced stages while
+  preserving RAW semantics at stage boundaries; and (iii) asynchronous
+  architecture generation that overlaps candidate generation with
+  training in a persistent worker pool. Extensive experiments on X
+  datasets with Y model families show that DepTGL achieves up to
+  3.0$\times$ speedup over its synchronous counterpart without degrading
+  search accuracy.
+  % TODO: X datasets / Y model families ← 完整实验表（阶段3）
+\end{abstract}
+%% ---------- 3.4 生成标题区域 ----------
+%% 这行命令一定要放在 \begin{abstract} 之后，它会输出标题、作者、摘要
+\maketitle
+%% ========== 4. VLDB 自动生成的页脚信息（绝对不要修改！） ==========
+%%% do not modify the following VLDB block %%%
+%%% VLDB block start %%%
+\pagestyle{\vldbpagestyle}
+\begingroup\small\noindent\raggedright\textbf{PVLDB Reference Format:}\\
+\vldbauthors. \vldbtitle. PVLDB, \vldbvolume(\vldbissue): \vldbpages, \vldbyear.\\
+\href{https://doi.org/\vldbdoi}{doi:\vldbdoi}
+\endgroup
+\begingroup
+\renewcommand\thefootnote{}\footnote{\noindent
+This work is licensed under the Creative Commons BY-NC-ND 4.0 International License. Visit \url{https://creativecommons.org/licenses/by-nc-nd/4.0/} to view a copy of this license. For any use beyond those covered by this license, obtain permission by emailing \href{mailto:info@vldb.org}{info@vldb.org}. Copyright is held by the owner/author(s). Publication rights licensed to the VLDB Endowment. \\
+\raggedright Proceedings of the VLDB Endowment, Vol. \vldbvolume, No. \vldbissue\ %
+ISSN 2150-8097. \\
+\href{https://doi.org/\vldbdoi}{doi:\vldbdoi} \\
+}\addtocounter{footnote}{-1}\endgroup
+%%% VLDB block end %%%
+%%% 如果设置了作品公开链接，这里会自动显示
+%%% do not modify the following VLDB block %%%
+%%% VLDB block start %%%
+\ifdefempty{\vldbavailabilityurl}{}{
+\vspace{.3cm}
+\begingroup\small\noindent\raggedright\textbf{PVLDB Artifact Availability:}\\
+The source code, data, and/or other artifacts have been made available at \url{\vldbavailabilityurl}.
+\endgroup
+}
+%%% VLDB block end %%%
+%% ========== 5. 正文 ==========
+%% 本版只填写摘要 + 引言；第 2-7 节骨架待阶段 2-3 逐节补。
+\section{Introduction}
+
+Temporal interaction data are ubiquitous in services such as
+recommendation systems, social networks, and question-answering
+platforms. Each record is a (user, item, timestamp) event. Temporal
+Graph Neural Networks (TGNNs) such as JODIE \cite{jodie} and TGN
+\cite{tgn} achieve state-of-the-art performance for future-interaction
+prediction. As each interaction arrives, they recursively update the
+embeddings of the participating user and item, so a node's latest
+embedding summarizes its interaction history.
+
+However, choosing a TGNN architecture is far from trivial. A TGNN
+exposes a large hyperparameter space (aggregation functions, temporal
+decay functions, memory cells, time projection), and manual tuning is
+labor-intensive and error-prone. Neural Architecture Search (NAS)
+automates architecture design. For static GNNs, NAS frameworks such as
+GraphNAS \cite{graphnas} find architectures that rival or outperform
+hand-designed ones. Yet these frameworks cannot be directly applied to
+temporal graphs. Static GNN training assumes i.i.d. samples, so
+mini-batches can be processed in arbitrary order and in parallel. TGNN
+training is different: each interaction rewrites the embeddings of its
+user and item, and subsequent interactions must read the values just
+written, creating read-after-write (RAW) dependencies along the
+stream. TGNN training is thus inherently sequential. Since NAS must
+evaluate hundreds or thousands of candidates, serial training is
+prohibitively slow and parallel execution is essential. The central
+challenge is to enable parallel TGNN training that respects RAW
+dependencies and does not otherwise bias architecture evaluation.
+
+Several frameworks support TGNN training. Single-machine frameworks
+such as PyGT \cite{pygt}, CacheG \cite{cacheg}, and PiPAD \cite{pipad}
+optimize caching, embedding reuse, and pipelined parallelism, but are
+limited by the resources of a single machine. Distributed frameworks
+such as ESDG \cite{esdg} and DynaHB \cite{dynahb} scale TGNN training
+across multiple machines through partitioning and communication
+avoidance. These systems, however, train and evaluate a fixed
+architecture; they do not compare candidates. NAS, in contrast, must
+evaluate hundreds or thousands of candidates, and none of these
+systems provides a search strategy or evaluation mechanism for this
+purpose. To the best of our knowledge, no NAS framework exists for
+temporal GNNs. The natural approach, then, is to parallelize candidate
+evaluation on top of existing training frameworks. As we demonstrate
+next, doing so naively violates the read-after-write (RAW)
+dependencies of temporal training. The resulting scores are so biased
+that NAS selects the wrong architecture.
+
+This failure is not hypothetical. On the MOOC dataset \cite{mooc}, we
+ran the same NAS search three times. All three runs used the same
+three-worker parallel search framework; the only variable was how each
+candidate's training forms its batches: serial processing (one
+interaction at a time, in stream order), conflict-free batching (each
+batch contains unique nodes), or naive batching (consecutive
+interactions are chunked without conflict resolution). The serial
+search converges to a compact architecture with 133K parameters and a
+test MRR of 0.8561. The conflict-free search selects the same
+architecture, confirming that batching itself is harmless. The naive
+search instead selects a 147K architecture that relies on static
+embeddings; its serial re-training achieves a test MRR of only 0.6014,
+a drop of 0.2547. Consider a batch of consecutive interactions
+$(u_1,i_1)$, $(u_1,i_2)$, $(u_2,i_1)$. Naive batching processes the
+first two against the same pre-batch embedding, so $(u_1,i_2)$ misses
+the update that serial training would have applied first. The RAW
+dependency along the stream is violated \cite{jodie}.
+% TODO: "violated [ref]" 的引用出处按引用策略定（暂用 JODIE，冲突概念出处）
+Worse, the failure is self-concealing: under naive evaluation the same
+architecture scores 0.96 on validation, whereas faithful evaluation
+yields 0.62, and the test MRR it reports under its own naive
+evaluation, 0.9335, even exceeds the serial search's 0.8561.
+Predictions computed from stale states systematically overrate
+architectures that rely on static features, distort the leaderboard,
+and drive NAS toward the wrong architecture.
+
+\paragraph{Challenge I: Temporal Data Dependency.}
+Interactions that touch the same node form read-after-write (RAW)
+dependencies because training rewrites node embeddings as interactions
+arrive. Static NAS frameworks assume i.i.d. samples and process
+batches in arbitrary order; applied to TGNNs, out-of-order or
+interleaved batches read stale states and produce scores that do not
+reflect a candidate's true quality. Existing conflict-free batching
+speeds up training but does not guarantee faithful scores --- an open
+problem in NAS evaluation.
+
+\paragraph{Challenge II: Evaluation Fidelity.}
+NAS compares architectures by score, so the relative ranking of
+candidates must not depend on which backend evaluates them. Parallel
+backends evaluate candidates in different processes and pipeline
+stages and migrate model and optimizer state across process
+boundaries. Small deviations in random state and update cadence
+accumulate into systematic score bias, distorting the leaderboard and
+causing search to converge to an architecture favored by the
+evaluation artifact rather than by the data.
+
+\paragraph{Challenge III: Skewed Workloads.}
+Temporal partitions are structurally uneven: the numbers of new users
+per partition, and hence the cost of processing each partition, vary
+widely across partitions (by up to 4$\times$ on MOOC), causing static
+worker allocation to leave some workers idle while others become
+stragglers. An evaluator must balance stages cheaply, without an
+expensive profiling pass per candidate.
+% 数字来源(2026-09-03, partition_stats.py):new users 每分区 max/min =
+% 1.83× (20K) / 4.09× (100K) / 114× (全量);事件数严格均匀(1.00, count 策略),
+% 故原 "interaction counts vary widely" 表述已删;句内 4× 锚定 100K。
+
+To address these challenges, we present \texttt{DepTGL}, an NAS
+system for temporal GNNs. DepTGL searches a JODIE-family architecture
+space using a REINFORCE controller and evaluates candidates through
+interchangeable execution backends (serial, data-parallel, pipeline,
+asynchronous) that share a common evaluation interface. Three
+techniques address these challenges while improving efficiency. First,
+\textbf{faithful execution} addresses Challenges I and II. Parallel
+training respects the stream's RAW dependencies, and a random-state
+protocol enforces evaluation fidelity by construction. As a result,
+every backend reproduces the serial search's selection. Second, a
+\textbf{pipeline strategy} addresses Challenge III by partitioning the
+interaction stream into stages and balancing them according to
+estimated partition cost. This keeps workers saturated under skewed
+workloads without violating RAW semantics at stage boundaries. Third,
+an \textbf{asynchronous generation engine} maintains a persistent
+worker pool in which candidate generation overlaps candidate training,
+so GPUs rarely idle and the search completes in a fraction of the
+serial wall-clock time.
+
+In summary, this paper makes the following contributions:
+\begin{itemize}
+\item \textbf{A NAS system for temporal GNNs.} \texttt{DepTGL} is an
+end-to-end framework that searches a JODIE-family architecture space
+using a REINFORCE controller and evaluates candidates through
+interchangeable execution backends (serial, data-parallel, pipeline,
+asynchronous). Faithful execution is a design property: parallel
+training respects RAW dependencies, and a random-state protocol
+ensures that every backend reproduces the serial search's selection
+(Challenges I and II).
+\item \textbf{A pipeline strategy} that partitions the interaction
+stream into cost-balanced stages and preserves RAW semantics at stage
+boundaries, keeping workers saturated under skewed workloads
+(Challenge III).
+\item \textbf{An asynchronous generation engine} that overlaps
+candidate generation with training in a persistent worker pool,
+achieving a 3.0$\times$ speedup over the synchronous pipeline without
+degrading search accuracy.
+\end{itemize}
+
+The remainder of this paper is organized as follows. Section 2 reviews
+related work. Section 3 introduces preliminaries on temporal graphs,
+JODIE-style training, and NAS. Section 4 presents an overview of
+\texttt{DepTGL}. Section 5 describes faithful parallel execution,
+including the pipeline strategy and asynchronous generation engine.
+Section 6 reports experimental results, and Section 7 concludes.
+
+% ========== 6. 参考文献 ==========
+% TODO: 补 sample.bib（9 条:jodie / tgn / graphnas / pygt / cacheg / pipad /
+%       esdg / dynahb / mooc）。未补之前文中 \cite 显示为 [?]，属正常。
+% TODO: 致谢（\begin{acks}...\end{acks}）待基金信息确定后补。
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{sample}
+
+\end{document} 
+\endinput
