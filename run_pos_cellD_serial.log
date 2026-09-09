@@ -1,0 +1,103 @@
+
+======================================================================
+  JODIE GraphNAS 全策略对比
+  2026-09-09 02:32:54
+======================================================================
+
+  [预检] 正在验证运行环境...
+  [预检] ✓ 数据文件: data/public/mooc.csv (39.1 MB)
+  [预检] ✓ CUDA 可用: True, 可见GPU数: 3
+  [预检] ✓ Ray 已安装 (version=2.40.0)
+  [预检] ✓ Pipeline Naive: 3 stages × [1, 1, 1] workers (固定)
+  [预检] ✓ Pipeline Smart: 手动配置
+
+  当前配置:
+    搜索空间: rnn_only  搜索模式: rl
+    数据集: public_csv  选择指标: mrr
+    粗搜索: 12 trials × 2 epochs
+    重排序: top 0 × 5 epochs
+    GPU: 0,1,2  流水线Naive: 3stages×1,1,1workers
+    流水线Smart: 手动  DP workers: 3
+    时间预算: 无限制(全量运行)  启用策略: ['serial']
+
+  结果目录: results/20260909_023255
+
+  配置快照已保存: results/20260909_023255/config.json
+
+
+======================================================================
+  策略 1/4: Serial (串行搜索)
+  2026-09-09 02:32:55
+======================================================================
+
+[Timing] Timing log: results/20260909_023255/serial/timing_log.csv
+Epoch 1/2 | L2 Loss: 48.1118
+Epoch 2/2 | L2 Loss: 45.6746
+[Coarse 1/12] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.1433
+Epoch 1/2 | L2 Loss: 0.8691
+Epoch 2/2 | L2 Loss: 0.8463
+[Coarse 2/12] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.4054
+Epoch 1/2 | L2 Loss: nan
+Epoch 2/2 | L2 Loss: nan
+[Coarse 3/12] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1460
+Epoch 1/2 | L2 Loss: 0.8443
+Epoch 2/2 | L2 Loss: 0.6805
+[Coarse 4/12] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.2957
+Epoch 1/2 | L2 Loss: 0.9815
+Epoch 2/2 | L2 Loss: 0.9954
+[Coarse 5/12] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2856
+Epoch 1/2 | L2 Loss: 1.0410
+Epoch 2/2 | L2 Loss: 0.9482
+[Coarse 6/12] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.3800
+Epoch 1/2 | L2 Loss: nan
+Epoch 2/2 | L2 Loss: nan
+[Coarse 7/12] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1460
+Epoch 1/2 | L2 Loss: 0.1228
+Epoch 2/2 | L2 Loss: 0.1145
+[Coarse 8/12] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.2673
+Epoch 1/2 | L2 Loss: 0.8680
+Epoch 2/2 | L2 Loss: 0.8489
+[Coarse 9/12] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.3310
+Epoch 1/2 | L2 Loss: 3.6087
+Epoch 2/2 | L2 Loss: 3.4776
+[Coarse 10/12] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.4760
+Epoch 1/2 | L2 Loss: 0.3229
+Epoch 2/2 | L2 Loss: 0.3035
+[Coarse 11/12] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.2954
+Epoch 1/2 | L2 Loss: 0.1162
+Epoch 2/2 | L2 Loss: 0.1067
+[Coarse 12/12] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3551
+Epoch 1/2 | L2 Loss: 4.5967
+Epoch 2/2 | L2 Loss: 4.4644
+  [serial] 结果已保存到: results/20260909_023255/serial/serial
+
+  [serial] ✓ 完成 — 耗时 6408.3s, val_score=0.4760
+
+
+======================================================================
+  生成最终对比报告
+  2026-09-09 04:19:44
+======================================================================
+
+
+  对比报告 (Markdown): results/20260909_023255/comparison.md
+  对比数据 (JSON):    results/20260909_023255/comparison.json
+
+======================================================================
+  最终结果摘要
+  2026-09-09 04:19:44
+======================================================================
+
+  策略                 耗时  val_score test_score   test_mrr              模型
+  ------------ -------- ---------- ---------- ---------- ---------------
+  Serial        6408.3s     0.4760 0.3669629623612499 0.3669629623612499       jodie_rnn
+
+
+  总耗时: 6409.3s (106.8min)
+  成功策略: ['serial']
+  结果目录: results/20260909_023255
+
+======================================================================
+  全部完成 — 2026-09-09 04:19:44
+======================================================================
+

@@ -120,4 +120,5 @@ comparison.json 里每个策略的 coarse / rerank / final 阶段耗时 → 画"
 - 08-13:FINAL_REPORT 四策略一致(PipeSmart 11,112s / 2.3×),但流水线本身(naive)输给 DP
 - 08-24~28:五档消融 + 双臂消融 + 补测,全部以 pipeline_naive 为载体(3 stage × 1)完成;段 4 数字全部实锤
 - 08-26~27:smart-async 复证(3.0×、位级一致)→ C3 定稿
-- 09-03:本指南建立;Phase 1 未跑 ← **下一步从这里开始**
+- 09-03:本指南建立;Phase 1 未跑
+- 09-08/09:Phase 1 完成(7/7 run,链条 04:20 结束;GPU 争抢与 CUDA_VISIBLE_DEVICES 事故均已解决)。结果与判读见 `positioning/RESULTS_20260909.md`;论文同步见 `论文/draft_v2_实验结果_C2.md`。**C2 判定:部分成立** —— naive/smart 0.85→1.13 跨 1(反超);naive/DP 2.73→0.93(未反超);绝对加速比 100K 塌缩至 1.17-1.42×。Phase 2(变量隔离)待定
