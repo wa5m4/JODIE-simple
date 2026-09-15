@@ -1,4 +1,4 @@
-# DepTGL 论文:引言(assembled v2)
+# PipeTGL 论文:引言(assembled v2)
 
 > **组装日期**:2026-08-28;当日逐句批改(外部修改意见,采纳记录见 v1 文件"九、逐句批改")
 > **来源**:`draft_v1_摘要引言构思.md` 各段最新候选稿(构思、批改、观察记录保留在 v1 文件)
@@ -117,8 +117,8 @@
 
 ## 段 6:我们的方案
 
-> To address these challenges, we present \texttt{DepTGL}, an NAS
-> system for temporal GNNs. DepTGL searches a JODIE-family architecture
+> To address these challenges, we present \texttt{PipeTGL}, an NAS
+> system for temporal GNNs. PipeTGL searches a JODIE-family architecture
 > space using a REINFORCE controller and evaluates candidates through
 > interchangeable execution backends (serial, data-parallel, pipeline,
 > asynchronous) that share a common evaluation interface. Three
@@ -140,7 +140,7 @@
 
 > In summary, this paper makes the following contributions:
 >
-> - **A NAS system for temporal GNNs.** \texttt{DepTGL} is an end-to-end
+> - **A NAS system for temporal GNNs.** \texttt{PipeTGL} is an end-to-end
 >   framework that searches a JODIE-family architecture space using a
 >   REINFORCE controller and evaluates candidates through
 >   interchangeable execution backends (serial, data-parallel, pipeline,
@@ -162,6 +162,6 @@
 > The remainder of this paper is organized as follows. Section 2 reviews
 > related work. Section 3 introduces preliminaries on temporal graphs,
 > JODIE-style training, and NAS. Section 4 presents an overview of
-> \texttt{DepTGL}. Section 5 describes faithful parallel execution,
+> \texttt{PipeTGL}. Section 5 describes faithful parallel execution,
 > including the pipeline strategy and asynchronous generation engine.
 > Section 6 reports experimental results, and Section 7 concludes.

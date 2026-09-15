@@ -1,8 +1,8 @@
 % ======================================================================
-%  DepTGL 论文草稿 —— 依据 示例.tex(VLDB / ACM acmart 模板)规范化
-%  只填写:摘要 v4 + 引言 8 段(均为 2026-08-28 讨论后的最新版)
+%  PipeTGL 论文草稿 —— 依据 示例.tex(VLDB / ACM acmart 模板)规范化
+%  只填写:摘要 v6 + 引言 8 段(2026-09-15 框架重定位:pipeline 系统 + 三 baseline)
 %  内容来源:
-%    - 论文/draft_v2_摘要.md(摘要 v4,两处挂账同步点见文内 TODO 注释)
+%    - 论文/draft_v2_摘要.md(摘要 v6,2026-09-15:pipeline 系统框架 + 异步为流水线独有)
 %    - 论文/draft_v2_引言.md(两轮逐句批改后)
 %  占位清单与使用说明见 README.md
 % ======================================================================
@@ -32,8 +32,8 @@
 % ========== 3. 文档正式开始 ==========
 \begin{document}
 % ---------- 3.1 标题 ----------
-% TODO: DepTGL 全称待确认（待确认问题 #1）
-\title{DepTGL: A NAS System for Temporal Graph Neural Networks}
+% TODO: PipeTGL 全称待确认（待确认问题 #1）
+\title{PipeTGL: A NAS System for Temporal Graph Neural Networks}
 
 %% ---------- 3.2 作者和单位 ----------
 \author{Haoyu Wang}
@@ -55,25 +55,40 @@
   dependencies inherent in interaction streams. Searching over hundreds
   of candidate architectures demands parallel execution, yet naively
   parallelizing TGNN training breaks the read-after-write (RAW)
-  dependencies among consecutive interactions, yielding biased
+  dependencies among interactions, yielding biased
   architecture scores that cause NAS to select inferior architectures.
-  % TODO(挂账同步点 1,等批改摘要时定):"among consecutive interactions" → "among interactions"
-  We introduce \texttt{DepTGL}, an NAS system for TGNNs built on three
-  techniques: (i) faithful execution, where parallel training respects
-  the stream's RAW dependencies and a random-state protocol --- per-trial
-  seed discipline, RNG-preserving state migration, and off-policy
-  controller updates --- makes every backend reproduce the serial
-  search's scores and selection;
-  % TODO(挂账同步点 2,等批改摘要时定):"scores and selection" → "selection"
-  (ii) a pipeline strategy that
-  partitions the interaction stream into cost-balanced stages while
-  preserving RAW semantics at stage boundaries; and (iii) asynchronous
-  architecture generation that overlaps candidate generation with
-  training in a persistent worker pool. Extensive experiments on X
-  datasets with Y model families show that DepTGL achieves up to
-  3.0$\times$ speedup over its synchronous counterpart without degrading
-  search accuracy.
-  % TODO: X datasets / Y model families ← 完整实验表（阶段3）
+  We introduce \texttt{PipeTGL}, a pipeline-based NAS system for TGNNs.
+  PipeTGL evaluates candidates through a pipeline executor, and drives
+  three baselines --- serial training, data-parallel training, and
+  architecture-parallel evaluation --- through the same search harness
+  (identical controller, search space, and trial counts), so the
+  execution strategy is the only variable across comparisons. PipeTGL is
+  built on three techniques: (i) faithful execution, where parallel
+  training respects the stream's RAW dependencies and a random-state
+  protocol --- per-trial seed discipline, RNG-preserving state
+  migration, and off-policy controller updates --- makes every backend
+  reproduce the serial search's selection; (ii) a pipeline strategy
+  that partitions the interaction stream into cost-balanced stages
+  while preserving RAW semantics at stage boundaries; and (iii) an
+  asynchronous generation engine, unique to the pipeline structure,
+  that overlaps candidate generation with training in a persistent
+  worker pool. A seven-cell experimental study spanning data sizes
+  (20K--200K interactions), GPU counts (2--3), and search spaces
+  (rnn-only and mixed) shows that the synchronous pipeline always beats
+  the data-parallel baseline (1.06--2.48$\times$) and approaches the
+  architecture-parallel baseline as load grows (throughput ratio
+  0.65--0.99), while the asynchronous pipeline crosses the
+  architecture-parallel baseline by 1.15--1.38$\times$ and beats the
+  serial baseline in every tested cell (up to 2.3$\times$); synchronous
+  strategies stay bit-identical with the serial reference at 20K and
+  mutually consistent at every scale, the asynchronous pipeline
+  preserves the serial search's selection in all four tested cells, and
+  the data-parallel baseline diverges from the reference in four of
+  five cells.
+  % TODO(2026-09-15): 数字均为 09-15 全量核验的 coarse trials/h 口径
+  % (positioning/SUMMARY_20260915.md);2.3× 锚定 naive_async/serial
+  % (D 2.32×/F 2.31×,4/4 cell 保真位级一致)。smart_async 降级为探索性
+  % 边界探针(建议 Section 6 一行 ablation)。H/E 出数后复核本段。
 \end{abstract}
 %% ---------- 3.4 生成标题区域 ----------
 %% 这行命令一定要放在 \begin{abstract} 之后，它会输出标题、作者、摘要
@@ -133,7 +148,7 @@ stream. TGNN training is thus inherently sequential. Since NAS must
 evaluate hundreds or thousands of candidates, serial training is
 prohibitively slow and parallel execution is essential. The central
 challenge is to enable parallel TGNN training that respects RAW
-dependencies and does not otherwise bias architecture evaluation.
+dependencies.
 
 Several frameworks support TGNN training. Single-machine frameworks
 such as PyGT \cite{pygt}, CacheG \cite{cacheg}, and PiPAD \cite{pipad}
@@ -181,77 +196,108 @@ and drive NAS toward the wrong architecture.
 \paragraph{Challenge I: Temporal Data Dependency.}
 Interactions that touch the same node form read-after-write (RAW)
 dependencies because training rewrites node embeddings as interactions
-arrive. Static NAS frameworks assume i.i.d. samples and process
-batches in arbitrary order; applied to TGNNs, out-of-order or
-interleaved batches read stale states and produce scores that do not
-reflect a candidate's true quality. Existing conflict-free batching
-speeds up training but does not guarantee faithful scores --- an open
-problem in NAS evaluation.
+arrive. Out-of-order or interleaved parallel processing reads stale
+states and produces scores that do not reflect a candidate's true
+quality; existing conflict-free batching speeds up training but does
+not guarantee faithful scores. Parallel training must therefore
+preserve the RAW dependency chain along the stream.
 
-\paragraph{Challenge II: Evaluation Fidelity.}
-NAS compares architectures by score, so the relative ranking of
-candidates must not depend on which backend evaluates them. Parallel
-backends evaluate candidates in different processes and pipeline
-stages and migrate model and optimizer state across process
-boundaries. Small deviations in random state and update cadence
-accumulate into systematic score bias, distorting the leaderboard and
-causing search to converge to an architecture favored by the
-evaluation artifact rather than by the data.
-
-\paragraph{Challenge III: Skewed Workloads.}
+\paragraph{Challenge II: Skewed Workloads.}
 Temporal partitions are structurally uneven: the numbers of new users
-per partition, and hence the cost of processing each partition, vary
-widely across partitions (by up to 4$\times$ on MOOC), causing static
-worker allocation to leave some workers idle while others become
-stragglers. An evaluator must balance stages cheaply, without an
-expensive profiling pass per candidate.
+per partition --- and hence the cost of processing each partition ---
+grow from 1.83$\times$ at 20K interactions to 114.5$\times$ at the
+full MOOC stream, while event counts stay uniform. Static worker
+allocation leaves some workers idle while others become stragglers,
+and candidates differ in their cost profiles, so an evaluator must
+balance stages cheaply, without an expensive profiling pass per
+candidate.
 % 数字来源(2026-09-03, partition_stats.py):new users 每分区 max/min =
-% 1.83× (20K) / 4.09× (100K) / 114× (全量);事件数严格均匀(1.00, count 策略),
-% 故原 "interaction counts vary widely" 表述已删;句内 4× 锚定 100K。
+% 1.83× (20K) / 4.09× (100K) / 114.5× (全量 411K);事件数严格均匀(1.00,
+% count 策略)。
 
-To address these challenges, we present \texttt{DepTGL}, an NAS
-system for temporal GNNs. DepTGL searches a JODIE-family architecture
-space using a REINFORCE controller and evaluates candidates through
-interchangeable execution backends (serial, data-parallel, pipeline,
-asynchronous) that share a common evaluation interface. Three
-techniques address these challenges while improving efficiency. First,
-\textbf{faithful execution} addresses Challenges I and II. Parallel
-training respects the stream's RAW dependencies, and a random-state
-protocol enforces evaluation fidelity by construction. As a result,
-every backend reproduces the serial search's selection. Second, a
-\textbf{pipeline strategy} addresses Challenge III by partitioning the
+\paragraph{Challenge III: Generation--Evaluation Coupling.}
+A batch-synchronous search loop serializes candidate generation,
+evaluation, and controller updates: it samples a batch of
+architectures, waits for the entire batch to finish, updates the
+policy, and only then samples the next batch. While the controller
+generates candidates and updates the policy, the GPUs idle; the more
+uneven the candidate durations, the larger this barrier waste. A
+search engine must move candidate generation off the critical path of
+evaluation and keep GPUs saturated.
+
+To address these challenges, we present \texttt{PipeTGL}, a
+pipeline-based NAS system for temporal GNNs. PipeTGL searches a
+JODIE-family architecture space using a REINFORCE controller and
+evaluates candidates through a pipeline executor; three baselines ---
+serial training, data-parallel training, and architecture-parallel
+evaluation --- run through the same search harness (identical
+controller, search space, and trial counts), so the execution strategy
+is the only variable across comparisons. Three techniques address
+these challenges while improving efficiency. First,
+\textbf{faithful execution} addresses Challenge I. Parallel training
+respects the stream's RAW dependencies, and a random-state protocol
+enforces evaluation fidelity by construction. As a result, every
+backend reproduces the serial search's selection. Second, a
+\textbf{pipeline strategy} addresses Challenge II by partitioning the
 interaction stream into stages and balancing them according to
 estimated partition cost. This keeps workers saturated under skewed
 workloads without violating RAW semantics at stage boundaries. Third,
-an \textbf{asynchronous generation engine} maintains a persistent
-worker pool in which candidate generation overlaps candidate training,
-so GPUs rarely idle and the search completes in a fraction of the
-serial wall-clock time.
+an \textbf{asynchronous generation engine} (Challenge III), unique to
+the pipeline structure, maintains a persistent worker pool in which
+candidate generation overlaps candidate training, so GPUs rarely idle
+and the search completes in a fraction of the serial wall-clock
+time.
 
 In summary, this paper makes the following contributions:
 \begin{itemize}
-\item \textbf{A NAS system for temporal GNNs.} \texttt{DepTGL} is an
-end-to-end framework that searches a JODIE-family architecture space
-using a REINFORCE controller and evaluates candidates through
-interchangeable execution backends (serial, data-parallel, pipeline,
-asynchronous). Faithful execution is a design property: parallel
-training respects RAW dependencies, and a random-state protocol
-ensures that every backend reproduces the serial search's selection
-(Challenges I and II).
-\item \textbf{A pipeline strategy} that partitions the interaction
-stream into cost-balanced stages and preserves RAW semantics at stage
-boundaries, keeping workers saturated under skewed workloads
-(Challenge III).
-\item \textbf{An asynchronous generation engine} that overlaps
-candidate generation with training in a persistent worker pool,
-achieving a 3.0$\times$ speedup over the synchronous pipeline without
-degrading search accuracy.
+\item \textbf{A pipeline-based NAS system for temporal GNNs.}
+\texttt{PipeTGL} searches a JODIE-family architecture space using a
+REINFORCE controller and evaluates candidates through a pipeline
+executor; three baselines --- serial training, data-parallel training,
+and architecture-parallel evaluation --- run through the same search
+harness (identical controller, search space, and trial counts),
+isolating the execution strategy as the only variable. Faithful
+execution is an integral design property of the system (Challenge I):
+parallel training respects the stream's RAW dependencies, and a
+random-state protocol --- per-trial seed discipline, RNG-preserving
+state migration, and off-policy controller updates --- makes every
+backend reproduce the serial search's selection by construction.
+\item \textbf{Technique I: a pipeline strategy (Challenge II).} The
+pipeline strategy partitions the interaction stream into
+cost-balanced stages while preserving RAW semantics at stage
+boundaries, keeping workers saturated under skewed workloads without
+an expensive profiling pass per candidate.
+\item \textbf{Technique II: an asynchronous generation engine
+(Challenge III).} Unique to the pipeline structure, the asynchronous
+generation engine maintains a persistent worker pool in which
+candidate generation overlaps candidate training (off-policy batch
+RL), so GPUs rarely idle and the search completes in a fraction of the
+serial wall-clock time.
+\item \textbf{Experimental study.} We conduct extensive experiments on
+the MOOC dataset across seven configurations (data sizes 20K--200K
+interactions, GPU counts 2--3, search spaces rnn-only and mixed),
+validating the effectiveness of the pipeline strategy and the
+asynchronous generation engine. Compared with the three natural
+parallelization baselines --- serial, data-parallel, and
+architecture-parallel execution --- PipeTGL always beats the
+data-parallel baseline (1.06--2.48$\times$), approaches the
+architecture-parallel baseline with the synchronous pipeline
+(throughput ratio 0.65--0.99) and crosses it with the asynchronous
+pipeline (1.15--1.38$\times$), and achieves up to 2.3$\times$ speedup
+over the serial baseline without affecting search accuracy: the
+selected architecture remains bit-identical with the serial reference
+in all four tested cells.
+% TODO(2026-09-15): 模板「现有最先进系统」槽位暂无数据支撑(未跑 PyGT/CacheG/
+% ESDG 等外部系统),当前填「三种自然并行化 baseline」;如需 SOTA 系统对比需另跑实验。
+% 「XX 个数据集」暂填 MOOC 单数据集,可选补 reddit/wikipedia 快照对照。
+% smart_async 为探索性边界探针(数据留在 SUMMARY),建议 Section 6 一行 ablation。
+% 实验贡献条目含终裁数字,待 H/E 补齐后复核。
 \end{itemize}
 
 The remainder of this paper is organized as follows. Section 2 reviews
 related work. Section 3 introduces preliminaries on temporal graphs,
 JODIE-style training, and NAS. Section 4 presents an overview of
-\texttt{DepTGL}. Section 5 describes faithful parallel execution,
+\texttt{PipeTGL}. Section 5 describes faithful parallel execution,
 including the pipeline strategy and asynchronous generation engine.
 Section 6 reports experimental results, and Section 7 concludes.
 

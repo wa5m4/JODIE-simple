@@ -86,8 +86,9 @@ def check_gpu_visibility(log_path: Path, gpu_list: str):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cell", required=True, choices=["D", "B"])
-    ap.add_argument("--strategy", required=True, choices=["smart", "naive", "dp", "serial"])
+    ap.add_argument("--cell", required=True, choices=["D", "B", "E", "F", "C", "S", "G", "H"])
+    ap.add_argument("--strategy", required=True,
+                    choices=["smart", "smart_sync", "naive", "naive_alloc", "naive_async", "dp", "serial"])
     ap.add_argument("--log", required=True)
     ap.add_argument("--timeout", type=int, default=240)
     ap.add_argument("--gpu-list", default=None,

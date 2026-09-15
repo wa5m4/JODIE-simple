@@ -1,4 +1,4 @@
-# DepTGL 论文:实验结果章骨架(C2 定位 —— 2026-09-09 Phase 1 数据)
+# PipeTGL 论文:实验结果章骨架(C2 定位 —— 2026-09-09 Phase 1 数据)
 
 > **数据来源**:`positioning/RESULTS_20260909.md`(7 run 全完成,2026-09-08/09;协议:BATCH_MODE=serial、SEED=42、partition 2000、rnn_only)
 > **用途**:Section 6 的「执行策略选择」小节素材;最终数字以实验章定稿为准。

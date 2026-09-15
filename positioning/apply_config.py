@@ -30,9 +30,12 @@ _INT_PATTERNS = {
 }
 _STR_PATTERNS = {
     "GPU_LIST": r'(^GPU_LIST\s*=\s*)"[0-9,\s]*"',
+    "SEARCH_SPACE": r'(^SEARCH_SPACE\s*=\s*)"[a-z_]*"',
     "PIPELINE_STAGE_TRAIN_WORKERS": r'(^PIPELINE_STAGE_TRAIN_WORKERS\s*=\s*)"[0-9,\s]*"',
     "PIPELINE_STAGE_EVAL_WORKERS": r'(^PIPELINE_STAGE_EVAL_WORKERS\s*=\s*)"[0-9,\s]*"',
     "SMART_PIPELINE_STAGE_TRAIN_WORKERS": r'(^SMART_PIPELINE_STAGE_TRAIN_WORKERS\s*=\s*)"[0-9,\s]*"',
+    "SMART_PIPELINE_MODE": r'(^SMART_PIPELINE_MODE\s*=\s*)"[a-z]*"',
+    "NAIVE_PIPELINE_MODE": r'(^NAIVE_PIPELINE_MODE\s*=\s*)"[a-z]*"',
 }
 # ENABLE_STRATEGIES 是多行列表,整体替换(从赋值到首个独占行 "]")
 _ENABLE_RE = re.compile(r"^ENABLE_STRATEGIES\s*=\s*\[.*?^\]", re.M | re.S)
@@ -46,8 +49,12 @@ def _fmt(v) -> str:
     return str(v)
 
 
-def apply_to_text(text: str, cfg: dict):
-    """返回 (新文本, 变更记录列表)。任何参数匹配数 != 1 时抛 AssertionError。"""
+def apply_to_text(text: str, cfg: dict, strategy: str):
+    """返回 (新文本, 变更记录列表)。任何参数匹配数 != 1 时抛 AssertionError。
+
+    strategy 是简名(smart_sync/naive_alloc 与 smart/naive 共用内部策略名,
+    不能用内部名反查简名,由调用方直接传入)。
+    """
     new_text = text
     changes = []
 
@@ -68,11 +75,10 @@ def apply_to_text(text: str, cfg: dict):
         changes.append(f'{name} = "{cfg[name]}"')
 
     key = cfg["ENABLE_STRATEGIES"][0]  # 内部名,如 pipeline_smart
-    strat = [k for k, v in STRATEGY_KEY.items() if v == key][0]  # 简名,如 smart
     replacement = f'ENABLE_STRATEGIES = [\n    "{key}",\n]'
     new_text, n = _ENABLE_RE.subn(replacement, new_text)
     assert n == 1, f"ENABLE_STRATEGIES 应恰好匹配 1 处,实际 {n} 处"
-    changes.append(f"ENABLE_STRATEGIES = [{key}]  ({strat})")
+    changes.append(f"ENABLE_STRATEGIES = [{key}]  ({strategy})")
     return new_text, changes
 
 
@@ -81,26 +87,30 @@ def print_precheck_summary(cell: str, strategy: str, cfg: dict):
     print("── 预检摘要(启动后 precheck.py 会照此核对)──")
     print(f"  策略        : {STRATEGY_KEY[strategy]}  (cell {cell}-{strategy})")
     print(f"  MAX_EVENTS  : {cfg['MAX_EVENTS']}")
-    print(f"  SEARCH_SPACE: {FIXED['SEARCH_SPACE']} (固定)")
+    print(f"  SEARCH_SPACE: {cfg['SEARCH_SPACE']}")
     print(f"  GPU_LIST    : {cfg['GPU_LIST']}")
     print(f"  BATCH_MODE  : {FIXED['BATCH_MODE']} (固定, 保真协议)")
     print(f"  SEED        : {FIXED['SEED']} (固定)")
     print(f"  COARSE_TRIALS: {cfg['COARSE_TRIALS']}   RERANK_TOP_K: {cfg['RERANK_TOP_K']}")
-    if strategy in ("naive", "smart"):
-        if strategy == "naive":
-            print(f"  Naive stages: {cfg['NUM_PIPELINE_STAGES']} × "
-                  f"train[{cfg['PIPELINE_STAGE_TRAIN_WORKERS']}] eval[{cfg['PIPELINE_STAGE_EVAL_WORKERS']}]")
-        else:
-            print(f"  Smart stages: {cfg['SMART_NUM_PIPELINE_STAGES']} × "
-                  f"train[{cfg['SMART_PIPELINE_STAGE_TRAIN_WORKERS']}] (自动分配=OFF)")
+    if strategy in ("naive", "naive_alloc", "naive_async"):
+        print(f"  Naive stages: {cfg['NUM_PIPELINE_STAGES']} × "
+              f"train[{cfg['PIPELINE_STAGE_TRAIN_WORKERS']}] eval[{cfg['PIPELINE_STAGE_EVAL_WORKERS']}]")
+        if strategy == "naive_async":
+            print(f"  驱动        : NAIVE_PIPELINE_MODE={cfg['NAIVE_PIPELINE_MODE']} (异步池, 多阶段流水线)")
+    elif strategy in ("smart", "smart_sync"):
+        print(f"  Smart stages: {cfg['SMART_NUM_PIPELINE_STAGES']} × "
+              f"train[{cfg['SMART_PIPELINE_STAGE_TRAIN_WORKERS']}] (自动分配=OFF)")
+        if strategy == "smart_sync":
+            print(f"  驱动        : SMART_PIPELINE_MODE={cfg['SMART_PIPELINE_MODE']} (批同步, 去异步)")
     if strategy == "dp":
         print(f"  DP workers   : {cfg['DATA_PARALLEL_WORKERS']}")
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cell", required=True, choices=["D", "B"])
-    ap.add_argument("--strategy", required=True, choices=["smart", "naive", "dp", "serial"])
+    ap.add_argument("--cell", required=True, choices=["D", "B", "E", "F", "C", "S", "G", "H"])
+    ap.add_argument("--strategy", required=True,
+                    choices=["smart", "smart_sync", "naive", "naive_alloc", "naive_async", "dp", "serial"])
     ap.add_argument("--apply", action="store_true", help="真正写入 run_all.py(默认只 dry-run)")
     ap.add_argument("--gpu-list", default=None,
                     help="覆盖配置中的 GPU_LIST(动态选卡时由 chain_all.sh 传入实际卡号)")
@@ -113,7 +123,7 @@ def main():
         print("✗ GPU_LIST=auto 需要显式指定 --gpu-list(chain_all.sh 会自动传入)")
         sys.exit(1)
     text = RUN_ALL.read_text(encoding="utf-8")
-    new_text, changes = apply_to_text(text, cfg)
+    new_text, changes = apply_to_text(text, cfg, args.strategy)
 
     print(f"=== cell {args.cell} / {args.strategy} (内部名 {STRATEGY_KEY[args.strategy]}) ===")
     if args.apply:

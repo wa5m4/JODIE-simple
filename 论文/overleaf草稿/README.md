@@ -29,7 +29,7 @@
 | **摘要两处同步点**(挂账,等批改) | main.tex 摘要里两处 `% TODO(挂账同步点)` | 批改摘要 v4 时定(第二轮批改第 3/4 点),定完同步 `../draft_v2_摘要.md` |
 | 引用 `sample.bib` | 全文 `\cite{jodie/tgn/graphnas/pygt/cacheg/pipad/esdg/dynahb/mooc}` 共 9 条 | 新建 sample.bib |
 | Challenge III 的 X 倍数字 | 引言 Challenge III 段 | 定位实验的分区统计顺手取 |
-| DepTGL 全称(标题) | `\title{}` | 待确认问题 #1 |
+| PipeTGL 全称(标题) | `\title{}` | 待确认问题 #1 |
 | X datasets / Y model families | 摘要末句 | 完整实验表(阶段 3) |
 | 致谢 `\begin{acks}` | 正文末尾 | 基金信息确定后补 |
 

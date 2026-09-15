@@ -1,51 +1,83 @@
 #!/usr/bin/env bash
-# 定位实验 7 个 run 的顺序执行链条。
-# 顺序(2026-09-07 调整,与 configs.py RUNS 一致):B smart→naive→DP → D smart→naive→DP→serial。
-#  GPU 分配:B 固定 5,6;D 为 auto——启动前动态选任意 3 张空闲卡(不再绑定 0,1,2)。
+# 定位实验 run 的顺序执行链条(Phase 1 默认;`phase2` 跑 E/F;`phase3` 跑五臂合并)。
+# Phase 1 顺序(2026-09-07 调整,与 configs.py RUNS 一致):B smart→naive→DP → D smart→naive→DP→serial。
+# Phase 2(2026-09-09,configs.py RUNS_P2):E smart→naive→DP → F smart→naive→DP→serial。
+# Phase 3(2026-09-09 五臂合并,configs.py RUNS_P3):DP 修复复测 + smart_sync + naive_alloc + F/C 全臂。
+#  GPU 分配:全部 cell 均为 auto——启动前动态选所需张数的空闲卡(不绑定具体卡号)。
 #
 # 每个 run 启动前:
-#   1) GPU 空闲检查:所需 GPU 显存 < 2000MiB 且利用率 < 20%,否则每 5 分钟轮询等待
-#      (指南铁律:计时实验不共享 GPU,否则吞吐数字作废)
+#   1) GPU 空闲检查(2026-09-15 用户裁定放宽):利用率 < 20% 且空闲显存 ≥ 4GB 即视为可用;
+#      他人进程只占显存不计算(0% 利用率)不影响计时,不等待;不满足则每 5 分钟轮询
 #   2) 磁盘检查:/home 剩余 > 5GB,否则等待
 #   3) apply 配置 → nohup 启动 → 90s 自动预检;预检失败即杀进程并中止整条链
-#   4) 等待本 run 进程退出 → ray stop --force → 下一个
+#   4) 等待本 run 进程退出;期间 pmon(2s 采样)盯本 run 卡上的他人进程:
+#      只有 sm 利用率 > 15% 的「真实计算」才警报 + 保留污染 log + 自动重跑一次
+#   5) 已完成的干净 run(日志含"全部完成")自动跳过,续跑无需手算起始序号
 #
 # 用法(在仓库根目录):
 #   nohup bash positioning/chain_all.sh > positioning/chain_all.log 2>&1 &
-#   从中途续跑: bash positioning/chain_all.sh 3   (从第 3 个 run 开始)
+#   Phase 2:  nohup bash positioning/chain_all.sh phase2 > positioning/chain_all_p2.log 2>&1 &
+#   Phase 3:  nohup bash positioning/chain_all.sh phase3 > positioning/chain_all_p3.log 2>&1 &
+#   从中途续跑: bash positioning/chain_all.sh 3          (Phase 1 从第 3 个 run 开始)
+#                bash positioning/chain_all.sh phase2 4  (Phase 2 从第 4 个 run 开始)
 set -u
 cd "$(dirname "$0")/.."
 
-# POS_ALLOW_IDLE=1:接受「0%利用率但持有显存」的卡(与他人空闲作业共存)。
-# 计时风险自负:链条会在运行期间监控是否有新作业进入本 run 的卡。
-IDLE_MODE="${POS_ALLOW_IDLE:-0}"
-MEM_LIMIT=2000
-[ "$IDLE_MODE" = "1" ] && MEM_LIMIT=8000
+# 空闲判定(2026-09-10 用户裁定,放宽):0% 利用率只占显存的作业不影响计时,
+# 不视为忙;只有「真实计算」才算污染(见 active_foreign_on_gpus)。
+UTIL_LIMIT=20          # 利用率 ≥20% 视为忙
+MEM_FREE_NEED=4096     # 空闲显存不足 4GB 视为忙(2026-09-15 用户批准放宽)
+ACTIVE_SM_THRESH=15    # 他人进程 sm 利用率 >15% 判为活跃污染
 
-RUN_SPECS=("B smart" "B naive" "B dp" "D smart" "D naive" "D dp" "D serial")
+PHASE=1
 START_IDX="${1:-1}"
-if ! [[ "$START_IDX" =~ ^[1-7]$ ]]; then
-    echo "用法: chain_all.sh [起始序号 1-7]"
+if [ "${1:-}" = "phase2" ]; then
+    PHASE=2
+    START_IDX="${2:-1}"
+elif [ "${1:-}" = "phase3" ]; then
+    PHASE=3
+    START_IDX="${2:-1}"
+fi
+
+# 运行清单以 configs.py 为准(RUNS / RUNS_P2 / RUNS_P3),避免脚本与配置表漂移
+RUN_SPECS=()
+while IFS= read -r line; do
+    RUN_SPECS+=("$line")
+done < <(POS_PHASE=$PHASE python - <<'PY'
+import os, sys
+sys.path.insert(0, "positioning")
+from configs import RUNS, RUNS_P2, RUNS_P3
+RUN_LISTS = {"1": RUNS, "2": RUNS_P2, "3": RUNS_P3}
+for r in RUN_LISTS[os.environ["POS_PHASE"]]:
+    print(r["cell"], r["strategy"], r["log"])
+PY
+)
+N_RUNS=${#RUN_SPECS[@]}
+if ! [[ "$START_IDX" =~ ^[0-9]+$ ]] || [ "$START_IDX" -lt 1 ] || [ "$START_IDX" -gt "$N_RUNS" ]; then
+    echo "用法: chain_all.sh [phase2] [起始序号 1-$N_RUNS]"
     exit 1
 fi
 
 say() { echo "[$(date '+%m-%d %H:%M:%S')] $*"; }
 
 gpu_busy_info() {
-    # 入参: 逗号分隔 GPU id。全部空闲返回 0;否则打印忙卡信息并返回 1。
-    local gpus="$1" g line mem util
+    # 入参: 逗号分隔 GPU id。全部可用返回 0;否则打印忙卡信息并返回 1。
+    # 判定(2026-09-10 放宽):利用率 < 20% 且空闲显存 ≥ 10GB 即视为可用——
+    # 他人进程只占显存不计算(0% 利用率)不影响计时,不算忙。
+    local gpus="$1" g line mem total util free
     IFS=',' read -ra ids <<< "$gpus"
     local busy=""
     for g in "${ids[@]}"; do
-        line=$(nvidia-smi --query-gpu=index,memory.used,utilization.gpu \
-            --format=csv,noheader,nounits 2>/dev/null | tr -d ' ' | awk -F, -v id="$g" '$1==id{print $2, $3}')
+        line=$(nvidia-smi --query-gpu=index,memory.used,memory.total,utilization.gpu \
+            --format=csv,noheader,nounits 2>/dev/null | tr -d ' ' | awk -F, -v id="$g" '$1==id{print $2, $3, $4}')
         if [ -z "$line" ]; then
             say "⚠ GPU $g 不存在或 nvidia-smi 不可用"
             return 1
         fi
-        read -r mem util <<< "$line"
-        if [ "$mem" -ge "$MEM_LIMIT" ] || [ "$util" -ge 20 ]; then
-            busy="$busy GPU$g(显存${mem}MiB/利用率${util}%)"
+        read -r mem total util <<< "$line"
+        free=$((total - mem))
+        if [ "$util" -ge "$UTIL_LIMIT" ] || [ "$free" -lt "$MEM_FREE_NEED" ]; then
+            busy="$busy GPU$g(利用率${util}%/空闲显存${free}MiB)"
         fi
     done
     if [ -n "$busy" ]; then
@@ -62,18 +94,20 @@ wait_gpus_free() {
 }
 
 pick_free_gpus() {
-    # 入参: 需要的卡数。返回: 逗号分隔的按卡号升序的前 N 张空闲卡
-    # (显存 < 2000MiB 且利用率 < 20%;不足 N 张则返回已有的)。
-    local need="$1" free_list=() line g mem util
+    # 入参: 需要的卡数。返回: 逗号分隔的按卡号升序的前 N 张可用卡
+    # (利用率 < 20% 且空闲显存 ≥ 10GB;不足 N 张则返回已有的)。
+    local need="$1" free_list=() line g mem total util free
     while IFS= read -r line; do
         g=$(echo "$line" | cut -d, -f1)
         mem=$(echo "$line" | cut -d, -f2)
-        util=$(echo "$line" | cut -d, -f3)
-        if [ "$mem" -lt "$MEM_LIMIT" ] && [ "$util" -lt 20 ]; then
+        total=$(echo "$line" | cut -d, -f3)
+        util=$(echo "$line" | cut -d, -f4)
+        free=$((total - mem))
+        if [ "$util" -lt "$UTIL_LIMIT" ] && [ "$free" -ge "$MEM_FREE_NEED" ]; then
             free_list+=("$g")
             [ "${#free_list[@]}" -ge "$need" ] && break
         fi
-    done < <(nvidia-smi --query-gpu=index,memory.used,utilization.gpu \
+    done < <(nvidia-smi --query-gpu=index,memory.used,memory.total,utilization.gpu \
         --format=csv,noheader,nounits | tr -d ' ')
     local IFS=,
     echo "${free_list[*]}"
@@ -97,36 +131,59 @@ print(cfg[sys.argv[3]])
 PY
 }
 
-foreign_pids_on_gpus() {
-    # 入参: 逗号分隔 GPU id。输出这些卡上属主非 wanghaoyu 的 PID(他人作业,含 root 守护)。
-    local gpus="$1" uuid pid idx user
-    nvidia-smi --query-compute-apps=gpu_uuid,pid --format=csv,noheader 2>/dev/null | while IFS=',' read -r uuid pid; do
-        idx=$(nvidia-smi -L | grep "$uuid" | grep -oP 'GPU \K\d')
-        case ",$gpus," in
-            *",$idx,"*)
-                user=$(ps -o user= -p "$pid" 2>/dev/null)
-                [ -n "$user" ] && [ "$user" != "wanghaoyu" ] && echo "$pid"
-                ;;
-        esac
+gpu_count_value() {
+    python - "$CELL" <<'PY'
+import sys
+sys.path.insert(0, "positioning")
+from configs import gpu_count_needed
+print(gpu_count_needed(sys.argv[1]))
+PY
+}
+
+active_foreign_on_gpus() {
+    # 入参: 逗号分隔 GPU id、pmon 输出文件。
+    # 输出: 本 run 卡上「真实计算」(sm 利用率 > 阈值)且属主非 wanghaoyu 的 PID。
+    # 仅占显存不计算的进程(0% 利用率)不算污染(2026-09-10 用户裁定)。
+    local gpus="$1" pmon_file="$2" idx pid sm user
+    awk -v gpus="$gpus" -v thresh="$ACTIVE_SM_THRESH" '
+        $1 ~ /^[0-9]+$/ && $3 == "C" && $4 ~ /^[0-9]+$/ && $4 + 0 > thresh {
+            n = split(gpus, arr, ",")
+            for (k = 1; k <= n; k++) if (arr[k] == $1) { print $1, $2, $4; break }
+        }' "$pmon_file" 2>/dev/null | while read -r idx pid sm; do
+        user=$(ps -o user= -p "$pid" 2>/dev/null)
+        [ -n "$user" ] && [ "$user" != "wanghaoyu" ] && echo "$pid"
     done | sort -u
 }
 
-say "===== 定位实验链条启动 (从第 $START_IDX 个 run 开始) ====="
+say "===== 定位实验链条启动 (Phase $PHASE, 从第 $START_IDX 个 run 开始) ====="
 
+DONE_LOGS=()
+LAST_RERUN_IDX=-1
 for ((i = START_IDX - 1; i < ${#RUN_SPECS[@]}; i++)); do
-    read -r CELL STRAT <<< "${RUN_SPECS[$i]}"
+    read -r CELL STRAT LOGNAME <<< "${RUN_SPECS[$i]}"
+    DONE_LOGS+=("$LOGNAME")
     say ""
-    say "===== [$((i + 1))/7] cell $CELL / $STRAT ====="
+    say "===== [$((i + 1))/$N_RUNS] cell $CELL / $STRAT ====="
+
+    # 已完成的干净 run 自动跳过(2026-09-10):续跑不用手算起始序号;
+    # 受污染的 run 会被改名 *_polluted 移走,不会误跳过。
+    # 2026-09-12:run_all.py 结尾横幅「全部完成」在策略失败时也打印,
+    # 跳过判定必须同时要求无「失败策略:」行(C cell 四个 pipeline 策略崩溃教训)。
+    if grep -q "全部完成" "$LOGNAME" 2>/dev/null && ! grep -q "失败策略:" "$LOGNAME" 2>/dev/null; then
+        say "✓ 跳过已完成的干净 run($LOGNAME 有完成标志且无失败策略)"
+        continue
+    fi
 
     GPU_LIST=$(cfg_value "GPU_LIST")
     GPU_OVERRIDE=""
     if [ "$GPU_LIST" = "auto" ]; then
-        say "动态选卡:等待任意 3 张空闲 GPU..."
-        GPU_LIST=$(pick_free_gpus 3)
-        while [ "$(echo "$GPU_LIST" | tr ',' '\n' | grep -c .)" -lt 3 ]; do
-            say "⚠ 空闲 GPU: [$GPU_LIST] (不足 3 张),继续等待..."
+        NEED=$(gpu_count_value)
+        say "动态选卡:等待任意 $NEED 张空闲 GPU..."
+        GPU_LIST=$(pick_free_gpus "$NEED")
+        while [ "$(echo "$GPU_LIST" | tr ',' '\n' | grep -c .)" -lt "$NEED" ]; do
+            say "⚠ 空闲 GPU: [$GPU_LIST] (不足 $NEED 张),继续等待..."
             sleep 300
-            GPU_LIST=$(pick_free_gpus 3)
+            GPU_LIST=$(pick_free_gpus "$NEED")
         done
         GPU_OVERRIDE="$GPU_LIST"
         say "✓ 动态选中 GPU [$GPU_LIST]"
@@ -143,13 +200,19 @@ for ((i = START_IDX - 1; i < ${#RUN_SPECS[@]}; i++)); do
             --apply || { say "✗ 配置写入失败,中止链条"; exit 1; }
     fi
 
-    LOG="run_pos_cell${CELL}_${STRAT}.log"
+    LOG="$LOGNAME"
     # 关键修复:ray_pipeline.py 不自行设置 CUDA_VISIBLE_DEVICES(只有 data_parallel 会),
     # 必须在此限定可见卡,否则 pipeline worker 直连物理 cuda:0/1(2026-09-07 B-smart 首跑事故)。
     nohup env PYTHONIOENCODING=utf-8 CUDA_VISIBLE_DEVICES="$GPU_LIST" \
         python run_all.py > "$LOG" 2>&1 &
     PID=$!
     say "已启动 PID=$PID, CUDA_VISIBLE_DEVICES=$GPU_LIST, log=$LOG"
+    # 启动负载快照(2026-09-09 起):run 刚启动、GPU 尚未加载时的机器状态
+    {
+        echo ""
+        echo "── 负载快照 (run 启动, $(date '+%m-%d %H:%M:%S')) ──"
+        nvidia-smi --query-gpu=index,memory.used,utilization.gpu --format=csv,noheader
+    } >> "$LOG"
 
     sleep 90
     if [ -n "$GPU_OVERRIDE" ]; then
@@ -165,34 +228,70 @@ for ((i = START_IDX - 1; i < ${#RUN_SPECS[@]}; i++)); do
         exit 1
     fi
 
-    # 等待本 run 结束;IDLE 模式下同时监控是否有新作业进入本 run 的卡
-    BASE_FOREIGN=$(foreign_pids_on_gpus "$GPU_LIST" | tr '\n' ' ')
+    # pmon 全程盯梢(2026-09-10):每 2s 采样本机全部卡的进程 sm 利用率,供污染裁决
+    PMON_LOG=$(mktemp /tmp/pmon_${CELL}_${STRAT}_XXXXXX.log)
+    nvidia-smi pmon -d 2 > "$PMON_LOG" 2>&1 &
+    PMON_PID=$!
+
+    # 等待本 run 结束;全程盯本 run 卡上「真实计算」的他人进程
+    # (2026-09-10 用户裁定:0% 利用率只占显存的不算污染、不警报;sm>阈值 才算)
+    POLLUTED=0
+    ALERTED=""
     while kill -0 "$PID" 2>/dev/null; do
         sleep 60
-        if [ "$IDLE_MODE" = "1" ]; then
-            NOW_FOREIGN=$(foreign_pids_on_gpus "$GPU_LIST" | tr '\n' ' ')
-            NEW=$(comm -13 <(echo "$BASE_FOREIGN" | tr ' ' '\n' | sort -u) \
-                          <(echo "$NOW_FOREIGN" | tr ' ' '\n' | sort -u) | tr -d '\n')
+        ACTIVE=$(active_foreign_on_gpus "$GPU_LIST" "$PMON_LOG")
+        if [ -n "$ACTIVE" ]; then
+            NEW=$(comm -13 <(echo "$ALERTED" | tr ' ' '\n' | sort -u) \
+                          <(echo "$ACTIVE" | tr ' ' '\n' | sort -u) | tr -d '\n')
             if [ -n "$NEW" ]; then
-                say "⚠⚠ 污染警报:检测到新作业进入本 run 的 GPU (PID: $NEW),本 run 计时可能作废"
+                say "⚠⚠ 污染警报:本 run 卡上出现活跃计算的他人进程 PID=$NEW (sm>${ACTIVE_SM_THRESH}%),本 run 计时可能作废"
+                POLLUTED=1
+                ALERTED="$ALERTED $NEW"
             fi
         fi
     done
-    if grep -q "全部完成" "$LOG"; then
+    kill "$PMON_PID" 2>/dev/null || true
+    rm -f "$PMON_LOG"
+    if grep -q "失败策略:" "$LOG"; then
+        say "✗✗ 本 run 存在失败策略(代码级崩溃,不是污染),中止链条 — 看 $LOG"
+        exit 1
+    elif grep -q "全部完成" "$LOG"; then
         say "✓ 本 run 正常结束"
     else
         say "⚠ 进程退出但 log 中未见'全部完成',检查 $LOG"
     fi
 
+    # 结束负载快照(2026-09-09 起):记录本 run 结束时机器负载与在场作业,供异常判读
+    {
+        echo ""
+        echo "── 负载快照 (run 结束, $(date '+%m-%d %H:%M:%S')) ──"
+        nvidia-smi --query-gpu=index,memory.used,utilization.gpu --format=csv,noheader
+        echo "-- compute-apps --"
+        nvidia-smi --query-compute-apps=pid,used_memory --format=csv,noheader 2>/dev/null || true
+    } >> "$LOG"
+
     ray stop --force > /dev/null 2>&1 || true
     sleep 10
+
+    # 污染裁决(2026-09-10):受活跃作业干扰的 run 保留污染 log、自动重跑一次;
+    # 重跑仍受污染则不再自动重跑,留待人工判读。
+    if [ "$POLLUTED" -eq 1 ]; then
+        if [ "$i" -ne "$LAST_RERUN_IDX" ]; then
+            say "✗ 污染裁决:本 run 计时作废,污染 log 改存 *_polluted,自动重跑一次"
+            mv "$LOG" "${LOG%.log}_polluted_$(date '+%H%M').log"
+            LAST_RERUN_IDX=$i
+            i=$((i - 1))
+        else
+            say "✗✗ 重跑仍受污染,不再自动重跑,留待人工判读"
+        fi
+    else
+        say "✓ 本 run 干净(仅占显存不计算的作业不计污染)"
+    fi
 done
 
 say ""
-say "===== 链条全部结束 ====="
-for spec in "${RUN_SPECS[@]}"; do
-    read -r C S <<< "$spec"
-    L="run_pos_cell${C}_${S}.log"
+say "===== 链条全部结束 (Phase $PHASE) ====="
+for L in "${DONE_LOGS[@]}"; do
     DONE=$(grep -c "全部完成" "$L" 2>/dev/null || true)
-    say "$spec → $L (完成标志: ${DONE:-0})"
+    say "$L (完成标志: ${DONE:-0})"
 done

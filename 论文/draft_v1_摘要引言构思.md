@@ -1,4 +1,4 @@
-# DepTGL 论文:摘要与引言构思 (v1)
+# PipeTGL 论文:摘要与引言构思 (v1)
 
 > 依据:导师《科研过程-第三阶段》+ DynaHB 论文结构
 > 状态:构思草稿,数字为占位符,待实验补全
@@ -40,7 +40,7 @@
 
 ---
 
-## 二、DepTGL 的故事映射
+## 二、PipeTGL 的故事映射
 
 ### 动机(为什么做)
 
@@ -60,19 +60,19 @@
 
 ### 贡献(我们怎么解决)——三贡献定稿(2026-08-27,用户拍板)
 
-> **定稿(2026-08-27)**:三个贡献 = ①图神经网络搜索系统(DepTGL)②Pipeline 流水线策略 ③异步架构生成+训练。
+> **定稿(2026-08-27)**:三个贡献 = ①图神经网络搜索系统(PipeTGL)②Pipeline 流水线策略 ③异步架构生成+训练。
 > - **stale_batch / t-Batch 降级**:不作为重点和贡献,仅保留为段 4 案例燃料(双臂实验照跑拿数字,不进贡献列表)。
 > - **评估保真度机制(旧 C2 旗舰)整体并入 ① 作为系统设计属性**——五档消融梯证据不浪费,成为"系统为什么可信"的证明("既快又真")。
 > - **智慧分配(ConfigOptimizer 自动配置)已证伪、MemShare 死代码:永久出局,不再作为备选。**
 
 | 贡献 | 类型 | 内容 |
 |------|------|------|
-| C1 DepTGL 搜索系统(旗舰) | 系统 | 面向时序 GNN 的端到端 NAS 框架:JODIE 风格搜索空间 + REINFORCE 控制器 + 多执行策略后端(串行 / 数据并行 / 流水线 / 异步);**保真执行内置为设计属性**:并行训练尊重 RAW 依赖 + 随机状态协议(per-trial 种子纪律、跨阶段 RNG 保存/恢复、离策略 logprob 重算、负样本预分配)→ 任何后端选出的架构与串行一致 |
+| C1 PipeTGL 搜索系统(旗舰) | 系统 | 面向时序 GNN 的端到端 NAS 框架:JODIE 风格搜索空间 + REINFORCE 控制器 + 多执行策略后端(串行 / 数据并行 / 流水线 / 异步);**保真执行内置为设计属性**:并行训练尊重 RAW 依赖 + 随机状态协议(per-trial 种子纪律、跨阶段 RNG 保存/恢复、离策略 logprob 重算、负样本预分配)→ 任何后端选出的架构与串行一致 |
 | C2 Pipeline 流水线策略 | 技术 | 时序交互流 count 分区 → stage 划分 → cost 负载均衡的流水线执行后端,在 RAW 依赖下保持评分一致 |
 | C3 异步架构生成+训练 | 技术 | 持久化 worker 池 + 架构生成与训练时间重叠(预填充 2×arch_per_step、headroom 补货、端 flush):3.0× 加速(5,486s vs naive 16,290s)、质量位级一致(0.856121275963994)、RL 路径零崩溃 |
 | 实验章(支撑,非贡献) | 实验 | 五档消融梯 + 噪声地板判据(保真度机制必要性);stale_batch/t-Batch 双臂(段 4 数字);定位实验(pipeline 反超点,待跑) |
 
-> ⚠️ **原创性雷区(2026-08-14,仍有效)**:t-Batch 出自 JODIE 论文,TGN 窗口批处理出自 TGN 论文——不能写"we propose t-Batch",只能写"集成/适配到 NAS 评估循环"(且已降级为非贡献)。注意力聚合 + 时间衰减是 TGAT 风格。DepTGL 真正原创的三块:C1 框架 + 保真度机制、C2 流水线策略、C3 异步池。
+> ⚠️ **原创性雷区(2026-08-14,仍有效)**:t-Batch 出自 JODIE 论文,TGN 窗口批处理出自 TGN 论文——不能写"we propose t-Batch",只能写"集成/适配到 NAS 评估循环"(且已降级为非贡献)。注意力聚合 + 时间衰减是 TGAT 风格。PipeTGL 真正原创的三块:C1 框架 + 保真度机制、C2 流水线策略、C3 异步池。
 
 **为什么 C1 是旗舰**:它把"并行 NAS 评分保真度"这个真问题(排障链揭示的完整答案:per-trial 种子缺失、冗余 build_model 污染 RNG、批量 vs 逐 trial 控制器更新)做成框架内置协议,而不是一次性的工程修补。修前 Pipeline Naive 选 402K 错误架构(test 0.69999);修后任何后端都选 133K(test 0.8561),两次全开运行位级一致——"任何执行后端、同一架构、同一分数"。
 
@@ -90,14 +90,14 @@
 > Naively parallelizing TGNN training breaks the read-after-write (RAW)
 > dependencies among consecutive interactions, producing biased
 > architecture scores that lead NAS to select inferior architectures.
-> We introduce \texttt{DepTGL}, an NAS framework for TGNNs that supports
-> serial, data-parallel, and pipeline execution backends. DepTGL features
+> We introduce \texttt{PipeTGL}, an NAS framework for TGNNs that supports
+> serial, data-parallel, and pipeline execution backends. PipeTGL features
 > conflict-free t-Batch batching that enables lossless parallel training,
 > preserves evaluation fidelity across backends by means of per-trial seed
 > discipline, RNG-preserving state migration, and off-policy controller
 > updates, and balances pipeline stages using a cost-model-based
 > configurator. Extensive experiments on X datasets with Y model families
-> show that DepTGL achieves up to 2.3x speedup over serial NAS
+> show that PipeTGL achieves up to 2.3x speedup over serial NAS
 > without degrading search accuracy.
 
 **句号核对**:句1=背景+动机,句2=现有方案问题,句3=挑战机理,句4=方法(三项技术),句5=实验。比 DynaHB 多一句,因为导师要求把"现有方法不好"讲透;正式写时可合并 2、3。
@@ -117,15 +117,15 @@
 > parallelizing TGNN training breaks the read-after-write (RAW) dependencies
 > among consecutive interactions, yielding biased architecture scores
 > that cause NAS to select inferior architectures. We introduce
-> \texttt{DepTGL}, an NAS framework for TGNNs that supports serial,
-> data-parallel, and pipeline execution. DepTGL features conflict-free
+> \texttt{PipeTGL}, an NAS framework for TGNNs that supports serial,
+> data-parallel, and pipeline execution. PipeTGL features conflict-free
 > batching (t-Batch), which eliminates read-after-write (RAW) conflicts on the
 > temporal memory and thereby enables lossless parallel training;
 > preserves evaluation fidelity across backends via per-trial seed
 > discipline, RNG-preserving state migration, and off-policy controller
 > updates; and balances pipeline stages using a cost-model-based
 > configurator. Extensive experiments on X datasets with Y model
-> families show that DepTGL achieves up to 2.3× speedup over serial NAS
+> families show that PipeTGL achieves up to 2.3× speedup over serial NAS
 > without degrading search accuracy.
 
 **v2 相对用户版改了 5 处**:
@@ -156,7 +156,7 @@
 > parallelizing TGNN training breaks the read-after-write (RAW)
 > dependencies among consecutive interactions, yielding unreliable
 > architecture scores that cause NAS to select inferior architectures.
-> We introduce \texttt{DepTGL}, an NAS system for TGNNs built on three
+> We introduce \texttt{PipeTGL}, an NAS system for TGNNs built on three
 > techniques: (i) faithful execution, where parallel training respects
 > the stream's RAW dependencies and a random-state protocol — per-trial
 > seed discipline, RNG-preserving state migration, and off-policy
@@ -166,7 +166,7 @@
 > preserving RAW semantics at stage boundaries; and (iii) asynchronous
 > architecture generation that overlaps candidate generation with
 > training in a persistent worker pool. Extensive experiments on X datasets with Y
-> model families show that DepTGL achieves up to 3.0× speedup over its
+> model families show that PipeTGL achieves up to 3.0× speedup over its
 > synchronous counterpart without degrading search accuracy.
 
 **v3 相对 v2 的改动(逐条交代)**:
@@ -191,7 +191,7 @@
 
 **样板对照**(DynaHB 引言段 3 原文 + 结构拆解):
 - 组式结构:"提名若干系统 → 肯定它们做了什么 → However/but 转折说不够";转折句勾住下一段("face three major challenges" → 下一段就是 Challenge I/II/III)
-- DepTGL 版三组:① TGNN 训练框架(单机+分布式;转折:它们是"训练给定模型",NAS 是"评估成百上千候选架构",问题不同)→ ② 静态 GNN 的 NAS(GraphNAS 等;转折:假设 i.i.d.,忽略 RAW 时序依赖)→ ③ 空白声明句:"没有面向时序 GNN 的 NAS 框架"——落点为段 4 case study 铺路
+- PipeTGL 版三组:① TGNN 训练框架(单机+分布式;转折:它们是"训练给定模型",NAS 是"评估成百上千候选架构",问题不同)→ ② 静态 GNN 的 NAS(GraphNAS 等;转折:假设 i.i.d.,忽略 RAW 时序依赖)→ ③ 空白声明句:"没有面向时序 GNN 的 NAS 框架"——落点为段 4 case study 铺路
 
 ### 引言段 3 初稿(2026-08-14,代写,待用户消化)
 
@@ -219,7 +219,7 @@
 2. 划界句(v4 软化):v3 的 "neither a search strategy nor an evaluation mechanism" 被批太绝对(训练框架当然有评估机制)——改为 "designed to train and evaluate a given architecture, not to compare candidate architectures",承认有训练+评估能力,缺口限定为**比较候选架构**;"either a search strategy or an evaluation mechanism **for this purpose**" 保留双项(v2 评审要的)同时加 scoping(v4 评审要的)
 3. 桥句(v4):"A natural alternative" → "**The natural approach, then**"(评审:alternative 指代模糊);"then" 勾住前句空白声明(没有框架 → 那怎么办 → 自然的路子);"on top of existing training frameworks" 保留——把前半段的训练框架变成"诱饵"(读者以为有现成的路,下一句被打回),前后素材全部用上
 4. 末两句(v4 拆分):"breaks"→"**violates**"(系统文献标准话术,DB 大同行熟悉);长句拆成 "doing so naively violates the RAW dependencies..." + "**The resulting scores are so biased that NAS selects the wrong architecture.**" 短句收尾;"naively" 与 "natural approach" 对比——自然想到的路,朴素做就会坏;RAW 重现(第三次,呼应段 2 thesis);末句**预告段 4** 内容(2026-08-28:正文曾改 "unreliable";双臂单因素验证方向性后恢复 "biased",见段 4 note 12.4)
-5. 评审建议段末加 "we introduce DepTGL" 预告句——**不采纳**:按 DynaHB 模板方法在段 6 出场(段 3 → 段 4 case study → 段 5 挑战 → 段 6 提出方法),提前预告预支段 6、抢段 4-5 的悬念;段 3 的预告任务已由末句完成
+5. 评审建议段末加 "we introduce PipeTGL" 预告句——**不采纳**:按 DynaHB 模板方法在段 6 出场(段 3 → 段 4 case study → 段 5 挑战 → 段 6 提出方法),提前预告预支段 6、抢段 4-5 的悬念;段 3 的预告任务已由末句完成
 6. snapshot vs 事件流(JODIE 是事件流)的区别没提——放 Section 2 展开,但评审会追问,Section 2 要主动交代
 
 **段 4 — Case study(导师硬性要求,带具体数值)v5(2026-08-28,数字已填齐:双臂 + 补测)**:
@@ -271,7 +271,7 @@
 8. 判据升级(2026-08-24,用户提出):"最终选出的架构相同"≠"搜索未被干扰"——终点之外还要看搜索轨迹(采样序列/leaderboard 分布)与评分一致性(同一架构在两次运行中的分数差)。单因素消融 f1/f2/f3(各关一个修复)按三层观察判读;"Each deviation is negligible in isolation" 需要轨迹证据支撑,不能只看终点。运行说明见 ABLATION_FACTOR_GUIDE.md
 9. 定位风险(评审必问,2026-08-26,用户提出):"①② 是你们自己代码的 bug,修了 bug 论文还有什么贡献?"——回答框架:①② 是 bug,但不是**机械性 bug**(笔误/off-by-one),而是**结构性陷阱**:沉默(单 trial 一切正常、不报错,只在搜索级显现;单架构训练 Serial≡Pipeline diff=0 为证)、同源(①②③ 是同一个结构空洞的三实例——搜索没有随机状态协议)、单独致命(协议零冗余,五档消融为证)、普遍(任何朴素并行实现都会踩,不是本代码特有事故)。**论证"多数人会这么设计"(评审判据:naive 设计→贡献成立;自家缺陷→不算)的三条证据**:① 朴素写法=教科书写法——build-then-load 是通用模式、批量 REINFORCE 是 Williams 1992 原始算法(ENAS 等都用)、共享随机流是 Ray 默认行为,三处无一处独创怪写法;② 失败沉默(不崩不报错、单 trial 正常)→ 朴素设计必然带雷上线;③ "仔细点设个种子就行"的反驳不成立——f2 消融中种子纪律仍开启、只关 ② 照样翻车(402K/0.7000),证明协议≠设种子一件事,必须框架显式执行整份协议。注意:此论证在论文中要**显式写出来**,不能只断言。论文写法:段 4 的 bug 是"**病例**"(量化损失 0.156/选错架构,证明坑值得防),C1 的保真度协议是"**疫苗**"(种子纪律/状态迁移保 RNG/离策略更新做成框架内置,让这类错误**写不出来**,而不是"这次写对了");消融证明每个机制必要(单独关闭即翻车 → 不是过度工程)。代码注释里的"★ 修复"仅内部用语,论文一律称 mechanism/fidelity mechanism,不称 fix/bugfix。
 10. **段 4 v3(2026-08-26,按单因素消融证据 + 用户定位决定改写)**:
-    1. **定位决定(用户,2026-08-26)**:①② 在论文里"先当作 bug"描述——不把"build-then-load 是行业习惯"当作贡献论证写进正文;note 9 的病例/疫苗框架与三条证据保留为评审防御材料,不预支。措辞区分:"bug/flaw" 用于描述朴素并行实现的行为;DepTGL 自身的机制仍称 mechanism(与 note 9 一致)。
+    1. **定位决定(用户,2026-08-26)**:①② 在论文里"先当作 bug"描述——不把"build-then-load 是行业习惯"当作贡献论证写进正文;note 9 的病例/疫苗框架与三条证据保留为评审防御材料,不预支。措辞区分:"bug/flaw" 用于描述朴素并行实现的行为;PipeTGL 自身的机制仍称 mechanism(与 note 9 一致)。
     2. **删除 "The cause is not a single large error" + "Each deviation is negligible in isolation, but they compound"**——被单因素消融证伪:f1-off 与 f2-off 各自单独翻车(402K/0.69999),"单独即致命",不是"单看可忽略、合起来才坏"。
     3. **③(批量 controller 更新)从因果句移除**——f3-off 终点正确(133K/0.8561)且评分波动在噪声包络内(max 0.0845 ≤ 0.0887 天花板)→ 它是负对照,进实验表,不进案例段因果句。摘要里"off-policy controller updates" 作为机制保留。
     4. **新因果句**:共享随机流耦合(① 种子纪律 + ② build 扰动流),"Either flaw alone suffices to derail the search";新增第三层观察数字:同一架构分数跨运行差最高 0.166(噪声天花板 0.089)→ 证明分数本身被污染,呼应"不要只看终点"。
@@ -304,7 +304,7 @@
 
 **三病审计(2026-08-27,用户要求)**:判断"病"是否值得写的三条标准 = ①被某个贡献治 ②在我们实验里真实发作(最好带数字)③能说明现有方法不够。逐条审:CI(RAW)= 必须留,时序 NAS 问题的定义本身,双臂实验正在验证; CII(保真度)= 必须留,证据最硬(五档消融/位级一致/噪声地板),C1 旗舰的实心; CIII(负载倾斜)= **存疑有理**:赢家配置 1 stage 零流水线,负载均衡尚未在任何实验展示价值,数字全靠定位实验——定位实验 = CIII 的"发作记录",找不到则 CIII 与 C2 一起降级。三病的来历不是文献模板,是项目排障史三个坑的升华(朴素分批坑→CI,pipeline 排障链→CII,定位危机→CIII)。
 
-**用户质疑(2026-08-27):"保真度排障已定性为 bug 不算贡献"**——澄清,与段 4 note 9/10.1 一致:bug 是**病案**(三个事故,不进 intro/贡献,只进实验章当"坑值得防"的证据);随机状态协议是**疫苗**(系统设计属性,进 C1)。两者不是一回事。措辞纪律:"bug/flaw" 只描述朴素并行实现的行为;DepTGL 自身的机制一律称 mechanism,不称 fix/bugfix。删除协议 = C1 变空壳,五档消融证据无家可归,"修 bug 不算贡献"的攻击反而成立。
+**用户质疑(2026-08-27):"保真度排障已定性为 bug 不算贡献"**——澄清,与段 4 note 9/10.1 一致:bug 是**病案**(三个事故,不进 intro/贡献,只进实验章当"坑值得防"的证据);随机状态协议是**疫苗**(系统设计属性,进 C1)。两者不是一回事。措辞纪律:"bug/flaw" 只描述朴素并行实现的行为;PipeTGL 自身的机制一律称 mechanism,不称 fix/bugfix。删除协议 = C1 变空壳,五档消融证据无家可归,"修 bug 不算贡献"的攻击反而成立。
 
 **候选初稿(英文,2026-08-27,待用户消化)**:
 
@@ -339,14 +339,14 @@
 
 **裁决(2026-08-28,用户拍板 B)**:Challenge I 末句不点名 JODIE 无冲突分批,改用泛化写法("现有批处理方案消冲突提速,但不保评分")——"唯一一次点名出场"完整留给 Section 5,处置原则零违例。段 4 的 "conflict-free batching" 不受影响(对照组描述,无名字无引用)。draft_v2_引言.md 已同步。
 
-**段 6 — 我们的方案**:"To address the above challenges, we present DepTGL..."(逐条对应:**保真执行** = t-Batch 集成(引 JODIE,→ CI)+ 随机状态协议(→ CII),合归 C1;pipeline 流水线 + cost 负载均衡 → Challenge III;异步持久化池 → 加速/C3)
+**段 6 — 我们的方案**:"To address the above challenges, we present PipeTGL..."(逐条对应:**保真执行** = t-Batch 集成(引 JODIE,→ CI)+ 随机状态协议(→ CII),合归 C1;pipeline 流水线 + cost 负载均衡 → Challenge III;异步持久化池 → 加速/C3)
 
 写作要点:每个技术句三段式(技术名 / 干什么 / 解决哪个挑战);不预支机制细节;t-Batch 首次正式登场必须带 [JODIE] + "integrated";与摘要 v3 的 (i)(ii)(iii) 同构。
 
 **候选初稿(英文,2026-08-27,含"保真执行"修正)**:
 
-> To address these challenges, we present \texttt{DepTGL}, an NAS
-> system for temporal GNNs. DepTGL searches a JODIE-family architecture
+> To address these challenges, we present \texttt{PipeTGL}, an NAS
+> system for temporal GNNs. PipeTGL searches a JODIE-family architecture
 > space under a REINFORCE controller and evaluates each candidate
 > through interchangeable execution backends — serial, data-parallel,
 > pipeline, and asynchronous — that share a common evaluation
@@ -370,7 +370,7 @@
 
 **段 7 — 贡献列表**(3 条定稿:C1 系统(含保真度)/ C2 Pipeline 流水线策略 / C3 异步架构生成+训练;stale_batch/t-Batch 不进贡献列表)
 
-**段 8 — 论文结构**:Section 2 相关工作;Section 3 预备知识(时序图、JODIE 式训练、NAS);Section 4 DepTGL 框架概述;Section 5 保真度保持的并行执行(流水线 + 异步架构生成);Section 6 实验;Section 7 结论。
+**段 8 — 论文结构**:Section 2 相关工作;Section 3 预备知识(时序图、JODIE 式训练、NAS);Section 4 PipeTGL 框架概述;Section 5 保真度保持的并行执行(流水线 + 异步架构生成);Section 6 实验;Section 7 结论。
 
 ### 引言段 1-2 初稿(2026-08-14,代写,待用户消化)
 
@@ -421,7 +421,7 @@
 - [ ] 简洁:去掉不影响表达的冗余词("如果一句话去掉几个单词完全不影响表达,说明这些单词冗余")
 - [ ] 数据管理话术:data caching / temporal data dependency / state migration(避免纯 AI 行话)
 - [ ] 评审当大同行:RNN 只说成"维护时序状态的模块",不进内部结构
-- [ ] 所有 DepTGL 加 `\texttt{DepTGL}`(图表里除外)
+- [ ] 所有 PipeTGL 加 `\texttt{PipeTGL}`(图表里除外)
 - [ ] 算法篇幅:双栏最多半页多,核心流程伪代码,显而易见过程用函数代替
 - [ ] 图:字号介于正文与标题之间、内容紧凑、莫兰迪配色
 
@@ -437,7 +437,7 @@
 
 ## 七、待确认问题
 
-1. DepTGL 全称是什么?(猜测:Dependency-aware Temporal Graph Learning,需确认)
+1. PipeTGL 全称是什么?(猜测:Dependency-aware Temporal Graph Learning,需确认)
 2. ~~C2/C3 算法贡献是否就用 t-Batch + 评估保真度?还是换 ConfigOptimizer(代价模型)做 C3?~~ **已解决(2026-08-27)**:三贡献定稿 = ①搜索系统(含保真度,旗舰)/ ②pipeline 流水线 / ③异步架构生成+训练;智慧分配与 MemShare 出局;stale_batch/t-Batch 降级为案例材料。遗留:pipeline 反超点待定位实验。
 3. 论文目标会议?(DynaHB 是 PVLDB,语气参照的是 VLDB 风格)
 

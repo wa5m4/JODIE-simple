@@ -439,6 +439,7 @@ class GraphNASTrainer:
         time_budget_sec: float = 0.0,
         search_start_time: float = None,
         full_eval_interactions=None,
+        graph_template=None,
     ) -> List[Dict]:
         """Pipeline 架构评估。
 
@@ -480,11 +481,16 @@ class GraphNASTrainer:
                 # 全数据评估
                 selection_metric = self.base_config.get("selection_metric", "mrr")
                 k = int(config.get("k", 10))
+                # hybrid 模型(TemporalEventGNN 等)的 forward 必须有 graph_ctx;
+                # 与 serial 路径 _train_and_eval 的规则一致:jodie_rnn 不需要。
+                model_name = config.get("model", "temporal_event_gnn_jodie")
+                graph_ctx = None if model_name == "jodie_rnn" else graph_template
                 metrics = evaluate_ranking_metrics(
                     model,
                     full_eval_interactions,
                     k=k,
                     partitions=None,  # 全局分区 = 全数据
+                    graph_ctx=graph_ctx,
                 )
                 recall_at_k = float(metrics["recall_at_k"])
                 mrr_val = float(metrics["mrr"])
@@ -929,6 +935,7 @@ class GraphNASTrainer:
                     time_budget_sec=time_budget_sec,
                     search_start_time=search_start_time,
                     full_eval_interactions=val_data,  # 方案C：全数据评估
+                    graph_template=graph_template,
                 )
                 batch_end = time.time()
                 results.extend(batch_results)
@@ -999,6 +1006,7 @@ class GraphNASTrainer:
                 time_budget_sec=time_budget_sec,
                 search_start_time=search_start_time,
                 full_eval_interactions=val_data,  # 方案C：全数据评估
+                graph_template=graph_template,
             )
             results.extend(rerank_results)
             selected = sorted(rerank_results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)[0]
@@ -1261,6 +1269,14 @@ class GraphNASTrainer:
                 controller=controller,
                 seen_signatures=seen_signatures,
             )
+
+            # ★ 种子纪律(2026-09-09 修复,DP_FIDELITY_ANALYSIS 缺口 1/2/3):
+            # 复刻 serial 的顺序「采样 → 设种子 → 训练/评估 → RL 更新」。
+            # 无此步时,executor 内三次 build_model 会从未受控的全局 RNG 状态取初始
+            # 权重,并消耗 RNG 污染下一 trial 的控制器采样流。
+            trial_seed = int(self.base_config.get("seed", 42)) + trial_idx
+            self._set_seed(trial_seed)
+            print(f"[DataParallel] trial={trial_idx} seed={trial_seed} (与 serial 同源)", flush=True)
 
             raw_list = executor.run([arch], user_type_prefs=user_type_prefs,
                                     item_type=item_type, num_train_epochs=coarse_epochs)
