@@ -20,6 +20,8 @@
 #   Phase 3:  nohup bash positioning/chain_all.sh phase3 > positioning/chain_all_p3.log 2>&1 &
 #   从中途续跑: bash positioning/chain_all.sh 3          (Phase 1 从第 3 个 run 开始)
 #                bash positioning/chain_all.sh phase2 4  (Phase 2 从第 4 个 run 开始)
+#   Phase 4/5(2026-09-15 保真修复后全量重跑):
+#   phase4 = B 三臂金丝雀(serial/naive/naive_async,位级验证门);phase5 = 全矩阵其余 29 run
 set -u
 cd "$(dirname "$0")/.."
 
@@ -37,17 +39,23 @@ if [ "${1:-}" = "phase2" ]; then
 elif [ "${1:-}" = "phase3" ]; then
     PHASE=3
     START_IDX="${2:-1}"
+elif [ "${1:-}" = "phase4" ]; then
+    PHASE=4
+    START_IDX="${2:-1}"
+elif [ "${1:-}" = "phase5" ]; then
+    PHASE=5
+    START_IDX="${2:-1}"
 fi
 
-# 运行清单以 configs.py 为准(RUNS / RUNS_P2 / RUNS_P3),避免脚本与配置表漂移
+# 运行清单以 configs.py 为准(RUNS / RUNS_P2 / RUNS_P3 / RUNS_P4 / RUNS_P5),避免脚本与配置表漂移
 RUN_SPECS=()
 while IFS= read -r line; do
     RUN_SPECS+=("$line")
 done < <(POS_PHASE=$PHASE python - <<'PY'
 import os, sys
 sys.path.insert(0, "positioning")
-from configs import RUNS, RUNS_P2, RUNS_P3
-RUN_LISTS = {"1": RUNS, "2": RUNS_P2, "3": RUNS_P3}
+from configs import RUNS, RUNS_P2, RUNS_P3, RUNS_P4, RUNS_P5
+RUN_LISTS = {"1": RUNS, "2": RUNS_P2, "3": RUNS_P3, "4": RUNS_P4, "5": RUNS_P5}
 for r in RUN_LISTS[os.environ["POS_PHASE"]]:
     print(r["cell"], r["strategy"], r["log"])
 PY

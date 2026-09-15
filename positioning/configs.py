@@ -99,6 +99,50 @@ RUNS_P3 = [
     {"cell": "H", "strategy": "smart",       "log": "experiments/logs/cellH_smart_async_20260913.log"},
 ]
 
+# Phase 4/5(2026-09-15 晚,保真修复 Fix A-D 落地后全量重跑):
+#   Fix A 换专用 Generator 使采样流与旧全局流不同 → 旧选择数据全部作废;
+#   修复后需按实验设计表 4/6 重跑五臂矩阵并验证位级一致。
+#   phase4 = B 三臂金丝雀(20K 最便宜):serial(真值)/ naive(同步批协议,诚实可比)/
+#     naive_async(应 =serial 位级)——验证完整搜索回路,通过后放行 phase5。
+#   phase5 = 其余五臂矩阵(serial/dp/naive/smart_sync/naive_async,
+#     C 无 naive_async、G/H 无 dp,与实验设计表 4 一致),按单 cell 成本升序。
+RUNS_P4 = [
+    {"cell": "B", "strategy": "serial",      "log": "experiments/logs/cellB_serial_20260916.log"},
+    {"cell": "B", "strategy": "naive",       "log": "experiments/logs/cellB_naive_20260916.log"},
+    {"cell": "B", "strategy": "naive_async", "log": "experiments/logs/cellB_naive_async_20260916.log"},
+]
+RUNS_P5 = [
+    {"cell": "B", "strategy": "dp",          "log": "experiments/logs/cellB_dp_20260916.log"},
+    {"cell": "B", "strategy": "smart_sync",  "log": "experiments/logs/cellB_smart_sync_20260916.log"},
+    {"cell": "C", "strategy": "serial",      "log": "experiments/logs/cellC_serial_20260916.log"},
+    {"cell": "C", "strategy": "naive",       "log": "experiments/logs/cellC_naive_20260916.log"},
+    {"cell": "C", "strategy": "dp",          "log": "experiments/logs/cellC_dp_20260916.log"},
+    {"cell": "C", "strategy": "smart_sync",  "log": "experiments/logs/cellC_smart_sync_20260916.log"},
+    {"cell": "G", "strategy": "serial",      "log": "experiments/logs/cellG_serial_20260916.log"},
+    {"cell": "G", "strategy": "naive",       "log": "experiments/logs/cellG_naive_20260916.log"},
+    {"cell": "G", "strategy": "naive_async", "log": "experiments/logs/cellG_naive_async_20260916.log"},
+    {"cell": "G", "strategy": "smart_sync",  "log": "experiments/logs/cellG_smart_sync_20260916.log"},
+    {"cell": "D", "strategy": "serial",      "log": "experiments/logs/cellD_serial_20260916.log"},
+    {"cell": "D", "strategy": "naive",       "log": "experiments/logs/cellD_naive_20260916.log"},
+    {"cell": "D", "strategy": "naive_async", "log": "experiments/logs/cellD_naive_async_20260916.log"},
+    {"cell": "D", "strategy": "dp",          "log": "experiments/logs/cellD_dp_20260916.log"},
+    {"cell": "D", "strategy": "smart_sync",  "log": "experiments/logs/cellD_smart_sync_20260916.log"},
+    {"cell": "E", "strategy": "serial",      "log": "experiments/logs/cellE_serial_20260916.log"},
+    {"cell": "E", "strategy": "naive",       "log": "experiments/logs/cellE_naive_20260916.log"},
+    {"cell": "E", "strategy": "naive_async", "log": "experiments/logs/cellE_naive_async_20260916.log"},
+    {"cell": "E", "strategy": "dp",          "log": "experiments/logs/cellE_dp_20260916.log"},
+    {"cell": "E", "strategy": "smart_sync",  "log": "experiments/logs/cellE_smart_sync_20260916.log"},
+    {"cell": "F", "strategy": "serial",      "log": "experiments/logs/cellF_serial_20260916.log"},
+    {"cell": "F", "strategy": "naive",       "log": "experiments/logs/cellF_naive_20260916.log"},
+    {"cell": "F", "strategy": "naive_async", "log": "experiments/logs/cellF_naive_async_20260916.log"},
+    {"cell": "F", "strategy": "dp",          "log": "experiments/logs/cellF_dp_20260916.log"},
+    {"cell": "F", "strategy": "smart_sync",  "log": "experiments/logs/cellF_smart_sync_20260916.log"},
+    {"cell": "H", "strategy": "serial",      "log": "experiments/logs/cellH_serial_20260916.log"},
+    {"cell": "H", "strategy": "naive",       "log": "experiments/logs/cellH_naive_20260916.log"},
+    {"cell": "H", "strategy": "naive_async", "log": "experiments/logs/cellH_naive_async_20260916.log"},
+    {"cell": "H", "strategy": "smart_sync",  "log": "experiments/logs/cellH_smart_sync_20260916.log"},
+]
+
 # 策略简名 → run_all.py ENABLE_STRATEGIES 里的内部名
 # 注意 smart_sync / naive_alloc 与 smart / naive 共用内部策略名,
 # 差别只靠配置区分:smart_sync = SMART_PIPELINE_MODE="naive";
