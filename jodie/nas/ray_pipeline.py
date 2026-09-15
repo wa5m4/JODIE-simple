@@ -2,9 +2,11 @@ from collections import deque
 import copy
 from dataclasses import dataclass
 import os
+import random
 from typing import Deque, Dict, List, Optional, Tuple
 import time
 
+import numpy as np
 import torch
 
 from jodie.data.synthetic import (
@@ -196,6 +198,9 @@ class PartitionShardWorker:
             return payload
 
         model, config = self._build_model(payload)
+        # 保真度修复 Fix C(2026-09-15):与 serial 的 train_model 每 epoch 调用
+        # model.train() 对齐(jodie 模型暂无 training 条件分支,防御性保持一致)
+        model.train()
         optimizer = torch.optim.Adam(model.parameters(), lr=config.get("lr", 1e-3))
         if payload.optimizer_state is not None:
             # 支持两种格式：老的 param-indexed state_dict（int keys）以及我们改进的 FQN 格式（param name keys）
@@ -352,7 +357,14 @@ class PartitionShardWorker:
             }
 
         model, _ = self._build_model(payload)
-        graph_state = restore_graph_state(payload.graph_state) if payload.graph_state is not None else None
+        # 保真度修复 Fix D(2026-09-15):eval 从全新空图模板开始,与 serial 的
+        # _train_and_eval / 方案C driver 评估一致(serial 训练每 epoch clone 空图,
+        # eval 用未受训练污染的干净模板;此前这里恢复训练后的图快照,混合模型
+        # 的 eval 邻居集与 serial 不同)。jodie_rnn 不使用动态图,保持 None。
+        if payload.graph_state is not None:
+            graph_state = clone_graph_state_template(payload.graph_state)
+        else:
+            graph_state = None
         progress_every = int(self.base_config.get("pipeline_eval_progress_every", 100))
         stage_label = f"trial={payload.trial_id} partitions={partition_ids}"
         self._trace_progress(f"phase=eval event=batch_start {stage_label} synthetic={synthetic_mode}")
@@ -485,6 +497,8 @@ class RayPipelineExecutor:
         self._pool_scores: Dict[int, Dict] = {}
         self._pool_trial_counter = 0
         self._pool_eval_kwargs: Dict = {}
+        self._pool_epochs: int = 1
+        self._pool_epoch_done: Dict[int, int] = {}  # trial_id → 已完成的全局 epoch 数(Fix D)
 
     def _scan_worker_progress_events(self) -> Tuple[int, Optional[str]]:
         if not self.pipeline_trace_log_path:
@@ -768,7 +782,12 @@ class RayPipelineExecutor:
                         arch_config=p.arch_config,
                         model_state_dict={k: v.clone() for k, v in p.model_state_dict.items()},
                         runtime_state=None,
-                        graph_state=copy.deepcopy(p.graph_state) if p.graph_state is not None else None,
+                        # Fix D:epoch 边界图状态回到全新空模板(serial 每 epoch 空图,不跨 epoch 累积)
+                        graph_state=(init_dynamic_graph_state(
+                            num_users=int(self.base_config.get("num_users", 0)),
+                            num_items=int(self.base_config.get("num_items", 0)),
+                            max_neighbors=int(self.base_config.get("max_neighbors", 20)),
+                        ) if p.graph_state is not None else None),
                         optimizer_state=copy.deepcopy(p.optimizer_state) if p.optimizer_state is not None else None,
                         seed=p.seed,
                     )
@@ -914,7 +933,12 @@ class RayPipelineExecutor:
                         arch_config=p.arch_config,
                         model_state_dict=p.model_state_dict,
                         runtime_state=None,
-                        graph_state=p.graph_state,
+                        # Fix D:epoch 边界图状态回到全新空模板(serial 每 epoch 空图,不跨 epoch 累积)
+                        graph_state=(init_dynamic_graph_state(
+                            num_users=int(self.base_config.get("num_users", 0)),
+                            num_items=int(self.base_config.get("num_items", 0)),
+                            max_neighbors=int(self.base_config.get("max_neighbors", 20)),
+                        ) if p.graph_state is not None else None),
                         optimizer_state=p.optimizer_state,
                         seed=p.seed,
                     )
@@ -928,7 +952,12 @@ class RayPipelineExecutor:
                     arch_config=p.arch_config,
                     model_state_dict=p.model_state_dict,
                     runtime_state=None,
-                    graph_state=p.graph_state,
+                    # Fix D:epoch 边界图状态回到全新空模板(serial 每 epoch 空图,不跨 epoch 累积)
+                    graph_state=(init_dynamic_graph_state(
+                        num_users=int(self.base_config.get("num_users", 0)),
+                        num_items=int(self.base_config.get("num_items", 0)),
+                        max_neighbors=int(self.base_config.get("max_neighbors", 20)),
+                    ) if p.graph_state is not None else None),
                     optimizer_state=p.optimizer_state,
                     seed=p.seed,
                 )
@@ -1092,6 +1121,12 @@ class RayPipelineExecutor:
             _safe_ray_init(address=ray_address if ray_address else None, ignore_reinit_error=True)
 
         self._pool_num_epochs = max(int(num_train_epochs), 1)
+        # 保真度修复 Fix D(2026-09-15):全局 epoch-major 编排。
+        # 每个 trial 已完成的全局 epoch 数;训练按「每次 stage 只跑 1 个 epoch,
+        # 全流水线走完一轮算 1 个全局 epoch」循环,与 serial 的 epoch 语义一致
+        # (此前是每个 stage 内部自跑 num_epochs 轮,更新顺序与 serial 不同)。
+        self._pool_epochs = max(int(num_train_epochs), 1)
+        self._pool_epoch_done = {}
         num_stages = int(self.base_config.get("num_pipeline_stages", 1))
         train_groups = self._group_partitions("train", num_stages)
         eval_split = eval_kwargs.get("eval_split", "val")
@@ -1133,6 +1168,7 @@ class RayPipelineExecutor:
         self._pool_trial_counter += 1
         seed = int(self.base_config.get("seed", 42)) + trial_id
         payload = self._make_payload(arch_config, trial_id, seed)
+        self._pool_epoch_done[trial_id] = 0
         self._pool_scores[trial_id] = {
             "hits": 0, "total": 0, "mrr_sum": 0.0, "config": arch_config,
             "start_time": time.time()
@@ -1174,8 +1210,12 @@ class RayPipelineExecutor:
                 payload = self._pool_train_pending[si].popleft()
                 widx = self._pool_idle[si].popleft()
                 pids = [p.partition_id for p in self._pool_train_groups[si]]
+                # Fix D:每次 stage 调用只训 1 个 epoch,全局 epoch 循环由 poll_completed 编排;
+                # seed 偏移 = 已完成全局 epoch 数(与 run_train_only 的 seed_epoch_offset=epoch 一致;
+                # CE 零 RNG 无影响,BPR 路径保持每全局 epoch 推进)
                 ref = self._pool_workers[si][widx].run_train_stage_batch.remote(
-                    payload, pids, use_bpr=synthetic_mode, num_epochs=self._pool_num_epochs)
+                    payload, pids, use_bpr=synthetic_mode, num_epochs=1,
+                    seed_epoch_offset=self._pool_epoch_done.get(payload.trial_id, 0))
                 self._pool_in_flight[ref] = ("train", payload.trial_id, si, widx)
 
     def poll_completed(self, timeout: float = 0.05) -> List[Dict]:
@@ -1200,10 +1240,37 @@ class RayPipelineExecutor:
                     self._pool_idle[si].append(widx)
                     self._pool_train_pending[si + 1].append(updated)
                 else:
-                    # 最后一个 train stage 完成：释放当前 worker，把 payload 放入 eval 队列
-                    # eval 用 stage 0 的 worker（stage 0 worker 数最多，最不容易成为瓶颈）
+                    # 最后一个 train stage 完成：释放当前 worker
                     self._pool_idle[si].append(widx)
-                    self._pool_eval_pending[0].append(updated)
+                    # Fix D:全局 epoch-major。整条流水线走完 = 1 个全局 epoch;
+                    # 未满 epochs 则回 stage 0 开始下一 epoch(runtime_state=None →
+                    # stage 0 重置嵌入缓冲,与 serial 每 epoch 的 reset_model_state 对齐;
+                    # 图状态换回全新空模板,与 serial 每 epoch clone 空图对齐;
+                    # 权重与 optimizer 状态跨 epoch 保留),满了才进 eval 队列。
+                    epochs_done = self._pool_epoch_done.get(trial_id, 0) + 1
+                    if epochs_done < self._pool_epochs:
+                        if updated.graph_state is not None:
+                            boundary_graph = init_dynamic_graph_state(
+                                num_users=int(self.base_config.get("num_users", 0)),
+                                num_items=int(self.base_config.get("num_items", 0)),
+                                max_neighbors=int(self.base_config.get("max_neighbors", 20)),
+                            )
+                        else:
+                            boundary_graph = None
+                        boundary = PipelineModelPayload(
+                            trial_id=updated.trial_id,
+                            arch_config=updated.arch_config,
+                            model_state_dict=updated.model_state_dict,
+                            runtime_state=None,
+                            graph_state=boundary_graph,
+                            optimizer_state=updated.optimizer_state,
+                            seed=updated.seed,
+                        )
+                        self._pool_epoch_done[trial_id] = epochs_done
+                        self._pool_train_pending[0].append(boundary)
+                    else:
+                        self._pool_epoch_done.pop(trial_id, None)
+                        self._pool_eval_pending[0].append(updated)
             else:
                 try:
                     stage_result = ray.get(ref)
@@ -1249,11 +1316,16 @@ class RayPipelineExecutor:
             self._pool_workers = None
             self._pool_in_flight.clear()
             self._pool_scores.clear()
+            self._pool_epoch_done.clear()
 
     def _make_payload(self, arch_config: Dict, trial_id: int, seed: int) -> PipelineModelPayload:
         config = dict(self.base_config)
         config.update(arch_config)
-        # ★ 修复：设种子后建模型，保证每个 trial 初始权重独立且可复现
+        # ★ 修复：设种子后建模型，保证每个 trial 初始权重独立且可复现。
+        # 保真度修复 Fix C(2026-09-15):与 serial 的 _set_seed 对齐,
+        # 设齐 python/numpy/torch 三种子(之前只设 torch)。
+        random.seed(seed)
+        np.random.seed(seed)
         torch.manual_seed(seed)
         model = build_model(config)
         runtime_state = model.export_runtime_state() if hasattr(model, "export_runtime_state") else None
@@ -1482,12 +1554,17 @@ class RayPipelineExecutor:
             )
         return results
 
-    def run_train_only(self, arch_configs: List[Dict], num_train_epochs: int = 1) -> List[PipelineModelPayload]:
+    def run_train_only(self, arch_configs: List[Dict], num_train_epochs: int = 1,
+                       trial_ids: Optional[List[int]] = None) -> List[PipelineModelPayload]:
         """仅训练（不做分区评估），返回训练后的 payload 列表。
 
         用于方案 C：Pipeline 分区训练 + 全数据评估。
         训练完成后，调用方使用 payload 中的 model_state_dict / runtime_state
         在完整验证集上做评估，消除分区评估带来的架构排名偏差。
+
+        trial_ids: 全局 trial 序号。保真度修复 Fix B(2026-09-15):评估种子
+        必须与 serial 一致 = base_seed + 全局 trial 序号(serial 的 trial_seed),
+        不能用批内位置(每批从 0 重数会导致同架构两边初始化不同)。
         """
         if ray is None:
             raise ImportError("ray is required for execution_mode=ray_pipeline")
@@ -1529,8 +1606,10 @@ class RayPipelineExecutor:
             flush=True,
         )
 
-        payloads = [self._make_payload(arch, trial_id=idx, seed=int(self.base_config.get("seed", 42)) + idx)
-                     for idx, arch in enumerate(arch_configs)]
+        if trial_ids is None:
+            trial_ids = list(range(len(arch_configs)))
+        payloads = [self._make_payload(arch, trial_id=tid, seed=int(self.base_config.get("seed", 42)) + tid)
+                    for tid, arch in zip(trial_ids, arch_configs)]
         synthetic_mode = self.base_config.get("dataset", "synthetic") == "synthetic"
         use_bpr = synthetic_mode
         train_epochs = max(int(num_train_epochs), 1)
@@ -1556,7 +1635,12 @@ class RayPipelineExecutor:
                         arch_config=p.arch_config,
                         model_state_dict=p.model_state_dict,
                         runtime_state=None,
-                        graph_state=p.graph_state,
+                        # Fix D:epoch 边界图状态回到全新空模板(serial 每 epoch 空图,不跨 epoch 累积)
+                        graph_state=(init_dynamic_graph_state(
+                            num_users=int(self.base_config.get("num_users", 0)),
+                            num_items=int(self.base_config.get("num_items", 0)),
+                            max_neighbors=int(self.base_config.get("max_neighbors", 20)),
+                        ) if p.graph_state is not None else None),
                         optimizer_state=p.optimizer_state,
                         seed=p.seed,
                     )

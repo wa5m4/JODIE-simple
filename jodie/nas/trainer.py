@@ -440,6 +440,7 @@ class GraphNASTrainer:
         search_start_time: float = None,
         full_eval_interactions=None,
         graph_template=None,
+        trial_ids: Optional[List[int]] = None,
     ) -> List[Dict]:
         """Pipeline 架构评估。
 
@@ -458,6 +459,7 @@ class GraphNASTrainer:
             trained_payloads = executor.run_train_only(
                 arch_configs,
                 num_train_epochs=epochs,
+                trial_ids=trial_ids,  # 保真度修复 Fix B:评估种子 = base_seed + 全局 trial 序号
             )
             formatted = []
             for payload in trained_payloads:
@@ -936,6 +938,9 @@ class GraphNASTrainer:
                     search_start_time=search_start_time,
                     full_eval_interactions=val_data,  # 方案C：全数据评估
                     graph_template=graph_template,
+                    # 保真度修复 Fix B:评估种子 = base_seed + 全局 trial 序号(与 serial 的 trial_seed 一致),
+                    # 不再用批内位置(否则每批从 0 重数,同架构两边初始化不同)
+                    trial_ids=[total_generated + i for i in range(len(arch_batch))],
                 )
                 batch_end = time.time()
                 results.extend(batch_results)
@@ -1007,6 +1012,9 @@ class GraphNASTrainer:
                 search_start_time=search_start_time,
                 full_eval_interactions=val_data,  # 方案C：全数据评估
                 graph_template=graph_template,
+                # 保真度修复 Fix B:rerank 种子 = base_seed + 10000 + 位置
+                # (与 serial 的 rerank_seed 完全一致,之前少了 10000 偏移)
+                trial_ids=[10000 + i for i in range(len(rerank_configs))],
             )
             results.extend(rerank_results)
             selected = sorted(rerank_results, key=lambda x: (x["score"], -x["params"], -x["time_sec"]), reverse=True)[0]

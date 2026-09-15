@@ -42,6 +42,13 @@ class RLGraphNASController(GraphNASController):
         self.choice_lens = {k: len(v) for k, v in search_space.items()}
 
         torch.manual_seed(seed)
+        # ★ 保真度修复 Fix A(2026-09-15):控制器采样改用专用 Generator,
+        # 与进程内其他任何 torch 全局 RNG 消耗(数据加载、模型构建、executor
+        # 初始化、params 统计等)完全脱钩。第 k 次采样的 RNG 状态只由控制器
+        # 自身的历史采样决定 → 各执行路径(serial / 同步流水线 / 异步流水线)
+        # 在相同策略状态 θ 下的第 k 次采样逐位一致。
+        self._rng = torch.Generator()
+        self._rng.manual_seed(seed)
         self.logits = {
             k: torch.nn.Parameter(torch.zeros(self.choice_lens[k], dtype=torch.float32))
             for k in self.keys
@@ -59,7 +66,9 @@ class RLGraphNASController(GraphNASController):
 
         for k in self.keys:
             dist = torch.distributions.Categorical(logits=self.logits[k])
-            idx = dist.sample()
+            # 与 Categorical.sample() 相同的 multinomial 采样,但走专用 Generator
+            probs = torch.softmax(self.logits[k], dim=-1)
+            idx = torch.multinomial(probs, num_samples=1, generator=self._rng).squeeze(0)
             arch[k] = self.search_space[k][int(idx.item())]
             logprob = logprob + dist.log_prob(idx)
 

@@ -67,3 +67,56 @@ optimizer 状态 FQN 交接(ray_pipeline.py:333)、eval 语义(两路径均 froz
 - 与 CPU 洪水无关:leaderboard 分数与采样由种子确定,洪水只污染计时。本诊断基于已完成 run 的选择数据,有效。
 - 已停掉的 run(H-naive、链 #3=H-smart_async attempt2、E cron)数据状态:选择数据仍可用(如 H naive_async
   provisional 438656),计时作废。
+
+## 五、修复实施(2026-09-15 晚,用户批准,基线 commit 3576127)
+
+**已落代码**:
+
+1. **Fix A** — controller.py:RLGraphNASController 采样改用专用 `torch.Generator`
+   (`_rng.manual_seed(seed)`),`sample_arch_with_logprob` 用 `torch.multinomial(probs, 1,
+   generator=self._rng)`。控制器采样流与进程内任何其他 torch 全局 RNG 消耗脱钩。
+   `torch.manual_seed(seed)` 保留(维持进程其余部分的既有确定性行为)。
+2. **Fix B** — ray_pipeline.run_train_only 增加 `trial_ids` 参数(seed = 42 + 全局 trial 序号);
+   trainer.evaluate_arch_pipeline 透传;同步批循环传 `[total_generated+i]`,rerank 传
+   `[10000+i]`(对齐 serial 的 rerank_seed,之前少 10000 偏移)。异步池 submit_arch 本来就是
+   全局计数,无需改。
+3. **Fix C** — `_make_payload` 改设 python/numpy/torch 三种子(对齐 serial `_set_seed`);
+   `run_train_stage_batch` 补 `model.train()`。
+
+**两处结论修正**(深读代码后):
+
+- **异步池的 eval ≈ 方案C**:`run_eval_stage_batch` 在单个 worker 内按序评估全部 eval 分区、
+  状态跨分区累积(frozen=False 活评估)→ 语义与 driver 侧全数据评估等价,eval 不是分叉源。
+- **同步臂的批采样协议无法逐位复现 serial**:批内 4 个候选全部在批首 θ₀ 下采样,而 serial
+  逐 trial 更新后采样——这是批同步执行(同步臂的论文定位与其加速比来源)的结构性属性,不是 bug。
+  因此保真度结论维持三档:serial 参考;naive(同步流水线)分数经 Fix B/C 变为诚实可比、
+  轨迹可复现(与 serial 是否逐位一致由重跑如实记录);naive_async(异步流水线)= serial 位级
+  一致(4/4,经验性,经 Fix A 后对 RNG 漂移免疫、逐构造可复现)。
+
+4. **Fix D(2026-09-15 晚)** — 异步池全局 epoch-major 编排。旧池 `run_train_stage_batch`
+   内部 `for epoch in range(epochs)` 在每个 stage 局部跑多轮,更新顺序 p0e0,p0e1,p1e0…
+   ≠ serial 全局 epoch-major(p0e0…pNe0, p0e1…pNe1)——旧 D async 8896 同种子分叉
+   (0.500769 vs serial 0.476019)的代码级原因。改动:
+   - `_drain_pool` train 调度 `num_epochs=1`(每次 stage 只跑 1 个 epoch)+
+     `seed_epoch_offset=已完成全局 epoch 数`;
+   - `poll_completed` 最后 train stage 完成分支:全局 epoch 计数 +1,未满 `epochs` 则构造
+     边界 payload(runtime_state=None 触发 stage 0 重置嵌入缓冲、graph_state 换全新空模板、
+     model_state_dict 与 optimizer_state 跨 epoch 保留)回 `_pool_train_pending[0]`,满了进 eval;
+   - `run_eval_stage_batch` eval 从全新空图模板开始(此前恢复训练后图快照,混合模型 eval
+     邻居集与 serial 不同);
+   - `run_train_only` / `_run_train_pipeline` / `_run_train_eval_pipeline` 三处 epoch 边界
+     payload 的 graph_state 同样重置为空模板(此前跨 epoch 携带累积图;五臂 cell 全为
+     rnn_only 无图,属防御性正确)。
+
+**验证(微对比实验,positioning/fidelity_microcheck.py)**:同架构(8896,取自 D serial 真值)、
+同种子(42),serial 路径 vs 执行路径,比较 val score 位级 + 终态 state_dict 指纹。
+- **B cell 同步路径(run_train_only,方案C)已通过**:serial 0.5139392453105059 逐位复现;
+  state_dict 指纹 a756412612f120ae 两路径一致 → 机制 2/3(同步路径)消除。
+- **B cell 异步池路径(--pool,start_persistent_pool/submit_arch/poll_completed)**:
+  验证 Fix D 全局 epoch-major 后池训练+池内评估 ≡ serial 位级(2026-09-15 晚跑,GPU 1,7)。
+**注意:机器 CPU 洪水未退(load ~180,dongyu yolov13),流水线 worker 慢但可完成;
+选择数据由种子确定,不受洪水影响。**
+
+**修复后全矩阵需重跑**:Fix A 换专用 Generator 后控制器采样流与旧全局流不同 → 旧选择
+数据全部作废。保真结论三档不变(serial 参考;naive 同步批协议分数诚实可比、轨迹可复现;
+naive_async = serial 位级),重跑按 B(20K)位级验证 → D(100K)全位级验证的顺序执行。
