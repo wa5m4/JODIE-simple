@@ -120,3 +120,32 @@ optimizer 状态 FQN 交接(ray_pipeline.py:333)、eval 语义(两路径均 froz
 **修复后全矩阵需重跑**:Fix A 换专用 Generator 后控制器采样流与旧全局流不同 → 旧选择
 数据全部作废。保真结论三档不变(serial 参考;naive 同步批协议分数诚实可比、轨迹可复现;
 naive_async = serial 位级),重跑按 B(20K)位级验证 → D(100K)全位级验证的顺序执行。
+
+---
+
+## 2026-09-16 追加:phase5 中断 + DP 负采样第二层修复
+
+**B-dp 保真门槛失败(结果目录 20260916_101424)**:DP 选出 (128,linear,off,on) 133888 /
+val 0.7658930176060056 / test 0.6686594469069215,serial 真值为 (128,linear,on,on) 402176 /
+val 0.7655034809596591 / test 0.6999869339656702。50/50 trial 全分叉;trial 0 同架构
+(rnn)serial 0.6678 vs DP 0.3643(Δ=0.30)。根因两层:
+1. **可修(已修,commit c53f3bc)**:worker `train_chunk` 用 `np.random.default_rng(None)`
+   现场抽负样本(完全无种子、连确定性都没有),serial 用数据加载期预计算负样本
+   `neg_samples_by_epoch`(seed=42+epoch*100000,public_dataset.py)。修复:train_chunk 加
+   `epoch_idx`、负样本「预计算优先 → 同公式种子回退」三态镜像 loops.py:156-168、
+   `_run_trial` 注入 trial seed(42+trial_idx,与 serial payload.seed 同源)。
+   冒烟 positioning/dp_negfix_smoke.py 六项全过(预计算路径零 RNG 调用、数值流入损失、
+   回退确定性、种子公式、epoch 区分、两路径区分)。
+2. **固有(不可修)**:微批梯度平均+一步 Adam(批量梯度步)≠ serial 逐事件在线更新。
+   09-10 旧数据显示批量步本身偏差约 Δ0.03,负采样异流可能占大头——B-dp 复测定夺。
+
+**smart_sync 免于同类问题(代码级结论)**:「1 stage × 2 train workers」是 payload 级并行
+(每个 payload 整体交给一个 worker,顺序训练本 stage 全量 partitions;ray_pipeline.py
+`_run_train_pipeline`→`_single_epoch` 706-717),非 DP 式梯度切分平均;与金丝雀位级验证的
+naive 同同步路径、更简单特例。修复范围仅 data_parallel.py。
+
+**CPU 洪水中断**:09-16 白天 loadavg 228/48 核,B-smart_sync 8/50 trials 耗时 6.7h
+(金丝雀全量 2.76h,慢 12-18×),用户批准 kill 链条。B-dp/B-smart_sync 旧日志改名
+`*_pre_fix`/`*_partial`;夜间负载 <96 自动重启 phase5(cron 17e890af),B-dp 复测为门槛:
+**通过 → 续跑全矩阵;仍翻盘 → DP 降级「近似后端」:Section 6 只报加速比、并列报保真度
+限制(见 DP_FIDELITY_ANALYSIS.md §四预案)。**
