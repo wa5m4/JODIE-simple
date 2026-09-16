@@ -289,8 +289,11 @@ class _DataParallelWorker:
         interaction: Interaction,
         arch_config: Dict[str, Any],
         base_config: Dict[str, Any],
+        epoch_idx: int = 0,
     ) -> Dict[str, Any]:
-        return self.train_chunk(model_state_dict, runtime_state, [interaction], arch_config, base_config)
+        return self.train_chunk(
+            model_state_dict, runtime_state, [interaction], arch_config, base_config, epoch_idx=epoch_idx
+        )
 
     def train_chunk(
         self,
@@ -299,6 +302,7 @@ class _DataParallelWorker:
         interactions: List[Interaction],
         arch_config: Dict[str, Any],
         base_config: Dict[str, Any],
+        epoch_idx: int = 0,
     ) -> Dict[str, Any]:
         import numpy as np
         from jodie.training.loops import train_partition_bpr_tgn, train_partition_bpr_batch
@@ -329,7 +333,12 @@ class _DataParallelWorker:
         criterion = BPRLoss()
         neg_sample_size = config.get("neg_sample_size", 5)
         num_items = _num_items(model)
-        rng = np.random.default_rng(None)
+        # 保真度修复(2026-09-16):负样本优先用数据加载期预计算样本
+        # (public_dataset.py 按 seed+epoch*100000 生成,serial 训练同款消费),
+        # 回退到同公式的确定性 RNG——trial 种子由 _run_trial 注入 base_config。
+        # 注:回退路径按 chunk 重启 RNG,只保证同 chunk 确定性,不保证与 serial
+        # 全局流位级一致;实际训练 epoch 均被预计算覆盖(20 epoch),不会走到。
+        neg_rng = None
         total_loss = 0.0
 
         batch_mode = config.get("batch_mode", "serial")
@@ -365,11 +374,17 @@ class _DataParallelWorker:
                 t   = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
                 f   = interaction.features.unsqueeze(0).to(device)
 
-                neg_items = []
-                while len(neg_items) < neg_sample_size:
-                    neg = int(rng.integers(0, num_items))
-                    if neg != interaction.item_id:
-                        neg_items.append(neg)
+                # 保真度修复(2026-09-16):预计算负样本优先,回退到确定性 RNG(见上方注释)
+                if epoch_idx in interaction.neg_samples_by_epoch:
+                    neg_items = list(interaction.neg_samples_by_epoch[epoch_idx])
+                else:
+                    if neg_rng is None:
+                        neg_rng = np.random.default_rng(config.get("seed", 42) + epoch_idx * 100000)
+                    neg_items = []
+                    while len(neg_items) < neg_sample_size:
+                        neg = int(neg_rng.integers(0, num_items))
+                        if neg != interaction.item_id:
+                            neg_items.append(neg)
                 neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
 
                 pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
@@ -386,11 +401,17 @@ class _DataParallelWorker:
                 t   = torch.tensor([interaction.timestamp], dtype=torch.float32, device=device)
                 f   = interaction.features.unsqueeze(0).to(device)
 
-                neg_items = []
-                while len(neg_items) < neg_sample_size:
-                    neg = int(rng.integers(0, num_items))
-                    if neg != interaction.item_id:
-                        neg_items.append(neg)
+                # 保真度修复(2026-09-16):预计算负样本优先,回退到确定性 RNG(见上方注释)
+                if epoch_idx in interaction.neg_samples_by_epoch:
+                    neg_items = list(interaction.neg_samples_by_epoch[epoch_idx])
+                else:
+                    if neg_rng is None:
+                        neg_rng = np.random.default_rng(config.get("seed", 42) + epoch_idx * 100000)
+                    neg_items = []
+                    while len(neg_items) < neg_sample_size:
+                        neg = int(neg_rng.integers(0, num_items))
+                        if neg != interaction.item_id:
+                            neg_items.append(neg)
                 neg_ids = torch.tensor(neg_items, dtype=torch.long, device=device)
 
                 pred_emb, _, _ = model(uid, iid, t, f, interaction.timestamp, graph_ctx=graph_ctx)
@@ -485,6 +506,10 @@ class DataParallelExecutor:
     ) -> Dict[str, Any]:
         config = dict(self.base_config)
         config.update(arch_config)
+        # 保真度修复(2026-09-16):worker 侧负采样回退需要 trial 种子,
+        # 与 serial 的 payload.seed = 42 + trial_idx 同源。
+        worker_cfg = dict(self.base_config)
+        worker_cfg["seed"] = int(self.base_config.get("seed", 42)) + trial_id
 
         model = build_model(config)
         model_state_dict = {k: v.cpu() for k, v in model.state_dict().items()}
@@ -521,7 +546,7 @@ class DataParallelExecutor:
                         batch_interactions = interactions[start_idx:end_idx]
                         ref = self._workers[worker_idx].train_chunk.remote(
                             model_state_dict, runtime_state, batch_interactions,
-                            arch_config, self.base_config,
+                            arch_config, worker_cfg, epoch_idx=epoch_idx,
                         )
                         refs.append(ref)
 
