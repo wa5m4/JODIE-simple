@@ -16,6 +16,7 @@ from .synthetic import Interaction
 _JODIE_URLS = {
     "wikipedia": "http://snap.stanford.edu/jodie/wikipedia.csv",
     "reddit": "http://snap.stanford.edu/jodie/reddit.csv",
+    "lastfm": "http://snap.stanford.edu/jodie/lastfm.csv",
 }
 
 
@@ -33,7 +34,7 @@ def _resolve_dataset_path(dataset_name: str, dataset_dir: str, local_data_path: 
 
     if dataset_name not in _JODIE_URLS:
         raise ValueError(
-            f"Unsupported dataset '{dataset_name}'. Use one of: wikipedia, reddit, public_csv."
+            f"Unsupported dataset '{dataset_name}'. Use one of: wikipedia, reddit, lastfm, public_csv."
         )
 
     os.makedirs(dataset_dir, exist_ok=True)
