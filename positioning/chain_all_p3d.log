@@ -1,0 +1,573 @@
+[09-12 22:26:15] ===== 定位实验链条启动 (Phase 3, 从第 1 个 run 开始) =====
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [1/33] cell B / dp =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellB_dp_fixed_20260909.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [2/33] cell B / smart_sync =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellB_smart_sync_20260909.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [3/33] cell E / dp =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellE_dp_fixed_20260909.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [4/33] cell E / smart_sync =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellE_smart_sync_20260909.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [5/33] cell E / serial =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellE_serial_20260910.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [6/33] cell D / smart =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellD_smart_sync_rep_contended_20260910.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [7/33] cell D / dp =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellD_dp_fixed_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [8/33] cell D / smart_sync =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellD_smart_sync_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [9/33] cell D / naive_alloc =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellD_naive_alloc_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [10/33] cell F / smart =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellF_smart_sync_rep_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [11/33] cell F / naive =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellF_naive_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [12/33] cell F / naive_alloc =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellF_naive_alloc_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [13/33] cell F / smart_sync =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellF_smart_sync_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [14/33] cell F / dp =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellF_dp_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [15/33] cell F / serial =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellF_serial_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [16/33] cell C / smart =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellC_smart_sync_rep_20260912.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [17/33] cell C / naive =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellC_naive_20260912.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [18/33] cell C / naive_alloc =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellC_naive_alloc_20260912.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [19/33] cell C / smart_sync =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellC_smart_sync_20260912.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [20/33] cell C / dp =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellC_dp_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [21/33] cell C / serial =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellC_serial_20260911.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [22/33] cell B / serial =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellB_serial_20260912.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [23/33] cell D / smart =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellD_smart_async_20260912.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [24/33] cell F / smart =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellF_smart_async_20260912.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [25/33] cell C / smart =====
+[09-12 22:26:15] ✓ 跳过已完成的干净 run(experiments/logs/cellC_smart_async_20260912.log 有完成标志且无失败策略)
+[09-12 22:26:15] 
+[09-12 22:26:15] ===== [26/33] cell G / naive =====
+[09-12 22:26:15] 动态选卡:等待任意 3 张空闲 GPU...
+[09-12 22:26:15] ✓ 动态选中 GPU [0,1,2]
+[09-12 22:26:15] ✓ 磁盘剩余 14G
+=== cell G / naive (内部名 pipeline_naive) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 100000
+  · COARSE_TRIALS = 12
+  · RERANK_TOP_K = 0
+  · DATA_PARALLEL_WORKERS = 3
+  · NUM_PIPELINE_STAGES = 3
+  · GPU_LIST = "0,1,2"
+  · SEARCH_SPACE = "mixed"
+  · PIPELINE_STAGE_TRAIN_WORKERS = "1,1,1"
+  · PIPELINE_STAGE_EVAL_WORKERS = "1,1,1"
+  · ENABLE_STRATEGIES = [pipeline_naive]  (naive)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : pipeline_naive  (cell G-naive)
+  MAX_EVENTS  : 100000
+  SEARCH_SPACE: mixed
+  GPU_LIST    : 0,1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 12   RERANK_TOP_K: 0
+  Naive stages: 3 × train[1,1,1] eval[1,1,1]
+
+[09-12 22:26:15] 已启动 PID=1914511, CUDA_VISIBLE_DEVICES=0,1,2, log=experiments/logs/cellG_naive_20260912.log
+=== 自动预检: cell G / naive (期望 pipeline_naive) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260912_222618/config.json
+  ✓ MAX_EVENTS = 100000
+  ✓ SEARCH_SPACE = 'mixed'
+  ✓ COARSE_TRIALS = 12
+  ✓ RERANK_TOP_K = 0
+  ✓ GPU_LIST = '0,1,2'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ NUM_PIPELINE_STAGES = 3
+  ✓ PIPELINE_STAGE_TRAIN_WORKERS = '1,1,1'
+  ✓ PIPELINE_STAGE_EVAL_WORKERS = '1,1,1'
+  ✓ ENABLE_STRATEGIES = ['pipeline_naive']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-12 22:27:46] ✓ 预检通过
+[09-12 23:28:47] ✓ 本 run 正常结束
+[09-12 23:29:00] ✓ 本 run 干净(仅占显存不计算的作业不计污染)
+[09-12 23:29:00] 
+[09-12 23:29:00] ===== [27/33] cell G / smart_sync =====
+[09-12 23:29:00] 动态选卡:等待任意 3 张空闲 GPU...
+[09-12 23:29:00] ✓ 动态选中 GPU [0,1,2]
+[09-12 23:29:00] ✓ 磁盘剩余 13G
+=== cell G / smart_sync (内部名 pipeline_smart) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 100000
+  · COARSE_TRIALS = 12
+  · RERANK_TOP_K = 0
+  · DATA_PARALLEL_WORKERS = 3
+  · SMART_NUM_PIPELINE_STAGES = 1
+  · GPU_LIST = "0,1,2"
+  · SEARCH_SPACE = "mixed"
+  · SMART_PIPELINE_STAGE_TRAIN_WORKERS = "3"
+  · SMART_PIPELINE_MODE = "naive"
+  · ENABLE_STRATEGIES = [pipeline_smart]  (smart_sync)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : pipeline_smart  (cell G-smart_sync)
+  MAX_EVENTS  : 100000
+  SEARCH_SPACE: mixed
+  GPU_LIST    : 0,1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 12   RERANK_TOP_K: 0
+  Smart stages: 1 × train[3] (自动分配=OFF)
+  驱动        : SMART_PIPELINE_MODE=naive (批同步, 去异步)
+
+[09-12 23:29:00] 已启动 PID=2018823, CUDA_VISIBLE_DEVICES=0,1,2, log=experiments/logs/cellG_smart_sync_20260912.log
+=== 自动预检: cell G / smart_sync (期望 pipeline_smart) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260912_232903/config.json
+  ✓ MAX_EVENTS = 100000
+  ✓ SEARCH_SPACE = 'mixed'
+  ✓ COARSE_TRIALS = 12
+  ✓ RERANK_TOP_K = 0
+  ✓ GPU_LIST = '0,1,2'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ SMART_NUM_PIPELINE_STAGES = 1
+  ✓ SMART_PIPELINE_STAGE_TRAIN_WORKERS = '3'
+  ✓ SMART_PIPELINE_MODE = 'naive'
+  ✓ ENABLE_STRATEGIES = ['pipeline_smart']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-12 23:30:30] ✓ 预检通过
+[09-13 00:30:32] ✓ 本 run 正常结束
+[09-13 00:30:44] ✓ 本 run 干净(仅占显存不计算的作业不计污染)
+[09-13 00:30:44] 
+[09-13 00:30:44] ===== [28/33] cell G / smart =====
+[09-13 00:30:44] 动态选卡:等待任意 3 张空闲 GPU...
+[09-13 00:30:44] ✓ 动态选中 GPU [0,1,2]
+[09-13 00:30:44] ✓ 磁盘剩余 13G
+=== cell G / smart (内部名 pipeline_smart) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 100000
+  · COARSE_TRIALS = 12
+  · RERANK_TOP_K = 0
+  · DATA_PARALLEL_WORKERS = 3
+  · SMART_NUM_PIPELINE_STAGES = 1
+  · GPU_LIST = "0,1,2"
+  · SEARCH_SPACE = "mixed"
+  · SMART_PIPELINE_STAGE_TRAIN_WORKERS = "3"
+  · SMART_PIPELINE_MODE = "smart"
+  · ENABLE_STRATEGIES = [pipeline_smart]  (smart)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : pipeline_smart  (cell G-smart)
+  MAX_EVENTS  : 100000
+  SEARCH_SPACE: mixed
+  GPU_LIST    : 0,1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 12   RERANK_TOP_K: 0
+  Smart stages: 1 × train[3] (自动分配=OFF)
+
+[09-13 00:30:45] 已启动 PID=2111079, CUDA_VISIBLE_DEVICES=0,1,2, log=experiments/logs/cellG_smart_async_20260912.log
+=== 自动预检: cell G / smart (期望 pipeline_smart) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260913_003047/config.json
+  ✓ MAX_EVENTS = 100000
+  ✓ SEARCH_SPACE = 'mixed'
+  ✓ COARSE_TRIALS = 12
+  ✓ RERANK_TOP_K = 0
+  ✓ GPU_LIST = '0,1,2'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ SMART_NUM_PIPELINE_STAGES = 1
+  ✓ SMART_PIPELINE_STAGE_TRAIN_WORKERS = '3'
+  ✓ SMART_PIPELINE_MODE = 'smart'
+  ✓ ENABLE_STRATEGIES = ['pipeline_smart']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-13 00:32:15] ✓ 预检通过
+[09-13 01:14:16] ✓ 本 run 正常结束
+[09-13 01:14:28] ✓ 本 run 干净(仅占显存不计算的作业不计污染)
+[09-13 01:14:28] 
+[09-13 01:14:28] ===== [29/33] cell G / serial =====
+[09-13 01:14:29] 动态选卡:等待任意 3 张空闲 GPU...
+[09-13 01:14:29] ✓ 动态选中 GPU [0,1,2]
+[09-13 01:14:29] ✓ 磁盘剩余 13G
+=== cell G / serial (内部名 serial) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 100000
+  · COARSE_TRIALS = 12
+  · RERANK_TOP_K = 0
+  · DATA_PARALLEL_WORKERS = 3
+  · GPU_LIST = "0,1,2"
+  · SEARCH_SPACE = "mixed"
+  · ENABLE_STRATEGIES = [serial]  (serial)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : serial  (cell G-serial)
+  MAX_EVENTS  : 100000
+  SEARCH_SPACE: mixed
+  GPU_LIST    : 0,1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 12   RERANK_TOP_K: 0
+
+[09-13 01:14:29] 已启动 PID=2177157, CUDA_VISIBLE_DEVICES=0,1,2, log=experiments/logs/cellG_serial_20260912.log
+=== 自动预检: cell G / serial (期望 serial) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260913_011431/config.json
+  ✓ MAX_EVENTS = 100000
+  ✓ SEARCH_SPACE = 'mixed'
+  ✓ COARSE_TRIALS = 12
+  ✓ RERANK_TOP_K = 0
+  ✓ GPU_LIST = '0,1,2'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ ENABLE_STRATEGIES = ['serial']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-13 01:15:59] ✓ 预检通过
+[09-13 02:44:01] ✓ 本 run 正常结束
+[09-13 02:44:14] ✓ 本 run 干净(仅占显存不计算的作业不计污染)
+[09-13 02:44:14] 
+[09-13 02:44:14] ===== [30/33] cell B / naive_async =====
+[09-13 02:44:14] 动态选卡:等待任意 2 张空闲 GPU...
+[09-13 02:44:14] ✓ 动态选中 GPU [0,1]
+[09-13 02:44:14] ✓ 磁盘剩余 13G
+=== cell B / naive_async (内部名 pipeline_naive) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 20000
+  · COARSE_TRIALS = 50
+  · RERANK_TOP_K = 8
+  · DATA_PARALLEL_WORKERS = 2
+  · NUM_PIPELINE_STAGES = 2
+  · GPU_LIST = "0,1"
+  · SEARCH_SPACE = "rnn_only"
+  · PIPELINE_STAGE_TRAIN_WORKERS = "1,1"
+  · PIPELINE_STAGE_EVAL_WORKERS = "1,1"
+  · NAIVE_PIPELINE_MODE = "smart"
+  · ENABLE_STRATEGIES = [pipeline_naive]  (naive_async)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : pipeline_naive  (cell B-naive_async)
+  MAX_EVENTS  : 20000
+  SEARCH_SPACE: rnn_only
+  GPU_LIST    : 0,1
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 50   RERANK_TOP_K: 8
+  Naive stages: 2 × train[1,1] eval[1,1]
+  驱动        : NAIVE_PIPELINE_MODE=smart (异步池, 多阶段流水线)
+
+[09-13 02:44:14] 已启动 PID=2307366, CUDA_VISIBLE_DEVICES=0,1, log=experiments/logs/cellB_naive_async_20260913.log
+=== 自动预检: cell B / naive_async (期望 pipeline_naive) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260913_024416/config.json
+  ✓ MAX_EVENTS = 20000
+  ✓ SEARCH_SPACE = 'rnn_only'
+  ✓ COARSE_TRIALS = 50
+  ✓ RERANK_TOP_K = 8
+  ✓ GPU_LIST = '0,1'
+  ✓ DATA_PARALLEL_WORKERS = 2
+  ✓ NUM_PIPELINE_STAGES = 2
+  ✓ PIPELINE_STAGE_TRAIN_WORKERS = '1,1'
+  ✓ PIPELINE_STAGE_EVAL_WORKERS = '1,1'
+  ✓ NAIVE_PIPELINE_MODE = 'smart'
+  ✓ ENABLE_STRATEGIES = ['pipeline_naive']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 2 = 期望 2(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-13 02:45:44] ✓ 预检通过
+[09-13 03:56:46] ✓ 本 run 正常结束
+[09-13 03:56:59] ✓ 本 run 干净(仅占显存不计算的作业不计污染)
+[09-13 03:56:59] 
+[09-13 03:56:59] ===== [31/33] cell D / naive_async =====
+[09-13 03:56:59] 动态选卡:等待任意 3 张空闲 GPU...
+[09-13 03:56:59] ✓ 动态选中 GPU [0,1,2]
+[09-13 03:56:59] ✓ 磁盘剩余 13G
+=== cell D / naive_async (内部名 pipeline_naive) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 100000
+  · COARSE_TRIALS = 12
+  · RERANK_TOP_K = 0
+  · DATA_PARALLEL_WORKERS = 3
+  · NUM_PIPELINE_STAGES = 3
+  · GPU_LIST = "0,1,2"
+  · SEARCH_SPACE = "rnn_only"
+  · PIPELINE_STAGE_TRAIN_WORKERS = "1,1,1"
+  · PIPELINE_STAGE_EVAL_WORKERS = "1,1,1"
+  · NAIVE_PIPELINE_MODE = "smart"
+  · ENABLE_STRATEGIES = [pipeline_naive]  (naive_async)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : pipeline_naive  (cell D-naive_async)
+  MAX_EVENTS  : 100000
+  SEARCH_SPACE: rnn_only
+  GPU_LIST    : 0,1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 12   RERANK_TOP_K: 0
+  Naive stages: 3 × train[1,1,1] eval[1,1,1]
+  驱动        : NAIVE_PIPELINE_MODE=smart (异步池, 多阶段流水线)
+
+[09-13 03:56:59] 已启动 PID=2416577, CUDA_VISIBLE_DEVICES=0,1,2, log=experiments/logs/cellD_naive_async_20260913.log
+=== 自动预检: cell D / naive_async (期望 pipeline_naive) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260913_035702/config.json
+  ✓ MAX_EVENTS = 100000
+  ✓ SEARCH_SPACE = 'rnn_only'
+  ✓ COARSE_TRIALS = 12
+  ✓ RERANK_TOP_K = 0
+  ✓ GPU_LIST = '0,1,2'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ NUM_PIPELINE_STAGES = 3
+  ✓ PIPELINE_STAGE_TRAIN_WORKERS = '1,1,1'
+  ✓ PIPELINE_STAGE_EVAL_WORKERS = '1,1,1'
+  ✓ NAIVE_PIPELINE_MODE = 'smart'
+  ✓ ENABLE_STRATEGIES = ['pipeline_naive']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-13 03:58:29] ✓ 预检通过
+[09-13 04:47:30] ✓ 本 run 正常结束
+[09-13 04:47:43] ✓ 本 run 干净(仅占显存不计算的作业不计污染)
+[09-13 04:47:43] 
+[09-13 04:47:43] ===== [32/33] cell F / naive_async =====
+[09-13 04:47:43] 动态选卡:等待任意 3 张空闲 GPU...
+[09-13 04:47:43] ✓ 动态选中 GPU [0,1,2]
+[09-13 04:47:43] ✓ 磁盘剩余 13G
+=== cell F / naive_async (内部名 pipeline_naive) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 200000
+  · COARSE_TRIALS = 12
+  · RERANK_TOP_K = 0
+  · DATA_PARALLEL_WORKERS = 3
+  · NUM_PIPELINE_STAGES = 3
+  · GPU_LIST = "0,1,2"
+  · SEARCH_SPACE = "rnn_only"
+  · PIPELINE_STAGE_TRAIN_WORKERS = "1,1,1"
+  · PIPELINE_STAGE_EVAL_WORKERS = "1,1,1"
+  · NAIVE_PIPELINE_MODE = "smart"
+  · ENABLE_STRATEGIES = [pipeline_naive]  (naive_async)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : pipeline_naive  (cell F-naive_async)
+  MAX_EVENTS  : 200000
+  SEARCH_SPACE: rnn_only
+  GPU_LIST    : 0,1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 12   RERANK_TOP_K: 0
+  Naive stages: 3 × train[1,1,1] eval[1,1,1]
+  驱动        : NAIVE_PIPELINE_MODE=smart (异步池, 多阶段流水线)
+
+[09-13 04:47:43] 已启动 PID=2493543, CUDA_VISIBLE_DEVICES=0,1,2, log=experiments/logs/cellF_naive_async_20260913.log
+=== 自动预检: cell F / naive_async (期望 pipeline_naive) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260913_044745/config.json
+  ✓ MAX_EVENTS = 200000
+  ✓ SEARCH_SPACE = 'rnn_only'
+  ✓ COARSE_TRIALS = 12
+  ✓ RERANK_TOP_K = 0
+  ✓ GPU_LIST = '0,1,2'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ NUM_PIPELINE_STAGES = 3
+  ✓ PIPELINE_STAGE_TRAIN_WORKERS = '1,1,1'
+  ✓ PIPELINE_STAGE_EVAL_WORKERS = '1,1,1'
+  ✓ NAIVE_PIPELINE_MODE = 'smart'
+  ✓ ENABLE_STRATEGIES = ['pipeline_naive']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-13 04:49:13] ✓ 预检通过
+[09-13 06:31:16] ✓ 本 run 正常结束
+[09-13 06:31:28] ✓ 本 run 干净(仅占显存不计算的作业不计污染)
+[09-13 06:31:28] 
+[09-13 06:31:28] ===== [33/33] cell G / naive_async =====
+[09-13 06:31:29] 动态选卡:等待任意 3 张空闲 GPU...
+[09-13 06:31:29] ✓ 动态选中 GPU [0,1,2]
+[09-13 06:31:29] ✓ 磁盘剩余 13G
+=== cell G / naive_async (内部名 pipeline_naive) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 100000
+  · COARSE_TRIALS = 12
+  · RERANK_TOP_K = 0
+  · DATA_PARALLEL_WORKERS = 3
+  · NUM_PIPELINE_STAGES = 3
+  · GPU_LIST = "0,1,2"
+  · SEARCH_SPACE = "mixed"
+  · PIPELINE_STAGE_TRAIN_WORKERS = "1,1,1"
+  · PIPELINE_STAGE_EVAL_WORKERS = "1,1,1"
+  · NAIVE_PIPELINE_MODE = "smart"
+  · ENABLE_STRATEGIES = [pipeline_naive]  (naive_async)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : pipeline_naive  (cell G-naive_async)
+  MAX_EVENTS  : 100000
+  SEARCH_SPACE: mixed
+  GPU_LIST    : 0,1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 12   RERANK_TOP_K: 0
+  Naive stages: 3 × train[1,1,1] eval[1,1,1]
+  驱动        : NAIVE_PIPELINE_MODE=smart (异步池, 多阶段流水线)
+
+[09-13 06:31:29] 已启动 PID=2647137, CUDA_VISIBLE_DEVICES=0,1,2, log=experiments/logs/cellG_naive_async_20260913.log
+=== 自动预检: cell G / naive_async (期望 pipeline_naive) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260913_063131/config.json
+  ✓ MAX_EVENTS = 100000
+  ✓ SEARCH_SPACE = 'mixed'
+  ✓ COARSE_TRIALS = 12
+  ✓ RERANK_TOP_K = 0
+  ✓ GPU_LIST = '0,1,2'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ NUM_PIPELINE_STAGES = 3
+  ✓ PIPELINE_STAGE_TRAIN_WORKERS = '1,1,1'
+  ✓ PIPELINE_STAGE_EVAL_WORKERS = '1,1,1'
+  ✓ NAIVE_PIPELINE_MODE = 'smart'
+  ✓ ENABLE_STRATEGIES = ['pipeline_naive']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-13 06:32:59] ✓ 预检通过
+[09-13 07:21:00] ✓ 本 run 正常结束
+[09-13 07:21:12] ✓ 本 run 干净(仅占显存不计算的作业不计污染)
+[09-13 07:21:12] 
+[09-13 07:21:12] ===== 链条全部结束 (Phase 3) =====
+[09-13 07:21:12] experiments/logs/cellB_dp_fixed_20260909.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellB_smart_sync_20260909.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellE_dp_fixed_20260909.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellE_smart_sync_20260909.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellE_serial_20260910.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellD_smart_sync_rep_contended_20260910.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellD_dp_fixed_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellD_smart_sync_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellD_naive_alloc_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellF_smart_sync_rep_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellF_naive_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellF_naive_alloc_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellF_smart_sync_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellF_dp_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellF_serial_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellC_smart_sync_rep_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellC_naive_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellC_naive_alloc_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellC_smart_sync_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellC_dp_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellC_serial_20260911.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellB_serial_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellD_smart_async_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellF_smart_async_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellC_smart_async_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellG_naive_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellG_smart_sync_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellG_smart_async_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellG_serial_20260912.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellB_naive_async_20260913.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellD_naive_async_20260913.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellF_naive_async_20260913.log (完成标志: 1)
+[09-13 07:21:12] experiments/logs/cellG_naive_async_20260913.log (完成标志: 1)

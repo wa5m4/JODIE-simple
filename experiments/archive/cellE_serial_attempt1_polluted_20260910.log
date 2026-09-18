@@ -1,0 +1,130 @@
+
+======================================================================
+  JODIE GraphNAS 全策略对比
+  2026-09-10 12:52:36
+======================================================================
+
+  [预检] 正在验证运行环境...
+  [预检] ✓ 数据文件: data/public/mooc.csv (39.1 MB)
+  [预检] ✓ CUDA 可用: True, 可见GPU数: 2
+  [预检] ✓ Ray 已安装 (version=2.40.0)
+  [预检] ✓ Pipeline Naive: 2 stages × [1, 1] workers (固定)
+  [预检] ✓ Pipeline Smart: 手动配置
+
+  当前配置:
+    搜索空间: rnn_only  搜索模式: rl
+    数据集: public_csv  选择指标: mrr
+    粗搜索: 12 trials × 2 epochs
+    重排序: top 0 × 5 epochs
+    GPU: 0,1  流水线Naive: 2stages×1,1workers
+    流水线Smart: 手动  DP workers: 2
+    时间预算: 无限制(全量运行)  启用策略: ['serial']
+
+  结果目录: results/20260910_125236
+
+  配置快照已保存: results/20260910_125236/config.json
+
+
+======================================================================
+  策略 1/4: Serial (串行搜索)
+  2026-09-10 12:52:36
+======================================================================
+
+[Timing] Timing log: results/20260910_125236/serial/timing_log.csv
+Epoch 1/2 | L2 Loss: 48.1118
+Epoch 2/2 | L2 Loss: 45.6746
+[Coarse 1/12] model=jodie_rnn agg=none memory=rnn time_proj=linear val_score=0.1433
+Epoch 1/2 | L2 Loss: 0.8691
+Epoch 2/2 | L2 Loss: 0.8463
+[Coarse 2/12] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.4054
+Epoch 1/2 | L2 Loss: nan
+Epoch 2/2 | L2 Loss: nan
+[Coarse 3/12] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1460
+Epoch 1/2 | L2 Loss: 0.8443
+Epoch 2/2 | L2 Loss: 0.6805
+[Coarse 4/12] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.2957
+Epoch 1/2 | L2 Loss: 0.9815
+Epoch 2/2 | L2 Loss: 0.9954
+[Coarse 5/12] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.2856
+Epoch 1/2 | L2 Loss: 1.0410
+Epoch 2/2 | L2 Loss: 0.9482
+[Coarse 6/12] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.3800
+Epoch 1/2 | L2 Loss: nan
+Epoch 2/2 | L2 Loss: nan
+[Coarse 7/12] model=jodie_rnn agg=none memory=gru time_proj=linear val_score=0.1460
+Epoch 1/2 | L2 Loss: 0.1228
+Epoch 2/2 | L2 Loss: 0.1145
+[Coarse 8/12] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.2673
+Epoch 1/2 | L2 Loss: 0.8680
+Epoch 2/2 | L2 Loss: 0.8489
+[Coarse 9/12] model=jodie_rnn agg=none memory=lstm time_proj=linear val_score=0.3310
+Epoch 1/2 | L2 Loss: 3.6087
+Epoch 2/2 | L2 Loss: 3.4776
+[Coarse 10/12] model=jodie_rnn agg=none memory=rnn time_proj=off val_score=0.4760
+Epoch 1/2 | L2 Loss: 0.3229
+Epoch 2/2 | L2 Loss: 0.3035
+[Coarse 11/12] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.2954
+Epoch 1/2 | L2 Loss: 0.1162
+Epoch 2/2 | L2 Loss: 0.1067
+[Coarse 12/12] model=jodie_rnn agg=none memory=lstm time_proj=off val_score=0.3551
+Epoch 1/2 | L2 Loss: 4.5967
+Epoch 2/2 | L2 Loss: 4.4644
+  [serial] 结果已保存到: results/20260910_125236/serial/serial
+
+  [serial] ✓ 完成 — 耗时 10480.4s, val_score=0.4760
+
+
+======================================================================
+  生成最终对比报告
+  2026-09-10 15:47:18
+======================================================================
+
+
+  对比报告 (Markdown): results/20260910_125236/comparison.md
+  对比数据 (JSON):    results/20260910_125236/comparison.json
+
+======================================================================
+  最终结果摘要
+  2026-09-10 15:47:18
+======================================================================
+
+  策略                 耗时  val_score test_score   test_mrr              模型
+  ------------ -------- ---------- ---------- ---------- ---------------
+  Serial       10480.4s     0.4760 0.3669629623612499 0.3669629623612499       jodie_rnn
+
+
+  总耗时: 10482.0s (174.7min)
+  成功策略: ['serial']
+  结果目录: results/20260910_125236
+
+======================================================================
+  全部完成 — 2026-09-10 15:47:18
+======================================================================
+
+
+── 负载快照 (run 结束, 09-10 15:47:42) ──
+0, 4405 MiB, 0 %
+1, 4439 MiB, 0 %
+2, 4439 MiB, 0 %
+3, 4439 MiB, 0 %
+4, 4437 MiB, 0 %
+5, 2843 MiB, 0 %
+6, 4439 MiB, 0 %
+7, 3997 MiB, 0 %
+-- compute-apps --
+7894, 386 MiB
+527944, 3990 MiB
+7877, 386 MiB
+278513, 4024 MiB
+7872, 386 MiB
+293928, 4024 MiB
+7889, 386 MiB
+382708, 4024 MiB
+7880, 386 MiB
+491255, 4022 MiB
+7867, 386 MiB
+925752, 2428 MiB
+7906, 386 MiB
+371705, 4024 MiB
+7900, 386 MiB
+434960, 3582 MiB

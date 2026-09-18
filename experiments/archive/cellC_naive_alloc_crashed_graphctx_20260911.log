@@ -1,0 +1,167 @@
+
+======================================================================
+  JODIE GraphNAS 全策略对比
+  2026-09-11 20:33:49
+======================================================================
+
+  [预检] 正在验证运行环境...
+  [预检] ✓ 数据文件: data/public/mooc.csv (39.1 MB)
+  [预检] ✓ CUDA 可用: True, 可见GPU数: 3
+  [预检] ✓ Ray 已安装 (version=2.40.0)
+  [预检] ✓ Pipeline Naive: 2 stages × [2, 1] workers (固定)
+  [预检] ✓ Pipeline Smart: 手动配置
+
+  当前配置:
+    搜索空间: mixed  搜索模式: rl
+    数据集: public_csv  选择指标: mrr
+    粗搜索: 50 trials × 2 epochs
+    重排序: top 8 × 5 epochs
+    GPU: 0,1,2  流水线Naive: 2stages×2,1workers
+    流水线Smart: 手动  DP workers: 3
+    时间预算: 无限制(全量运行)  启用策略: ['pipeline_naive']
+
+  结果目录: results/20260911_203349
+
+  配置快照已保存: results/20260911_203349/config.json
+
+
+======================================================================
+  策略 3/4: Pipeline Naive (流水线批次同步)
+  2026-09-11 20:33:49
+======================================================================
+
+
+======================================================================
+[GraphNAS] Starting search pipeline
+[GraphNAS] Coarse trials: 50, epochs: 2
+[GraphNAS] Rerank top-k: 8, epochs: 5
+======================================================================
+
+[Timing] Timing log: results/20260911_203349/pipeline_naive/timing_log.csv
+[Coarse Phase] Sampling batch 1: 4 architectures
+[Coarse Phase] Evaluating architectures 1-4/50
+2026-09-11 20:34:02,814	INFO worker.py:1812 -- Started a local Ray instance. View the dashboard at [1m[32mhttp://127.0.0.1:8265 [39m[22m
+[RayPipeline] train-only mode: 2 stages, train workers=[2, 1]
+[RayPipeline] created train workers=[2, 1]
+[36m(PartitionShardWorker pid=2393501)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(PartitionShardWorker pid=2393501)[0m   return torch.load(io.BytesIO(b))
+[pipeline-heartbeat] wall=20:34:12 phase=train status=advancing progress_events_total=1 progress_events_delta=1 in_flight=2 active=stage 1=2 pending=stage 1=2, stage 2=0 last_progress=[pipeline-trace] wall=20:34:12 elapsed=1.521s phase=train event=interaction_progress trial=1 partition=0 processed=1 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:34:17 phase=train status=advancing progress_events_total=31 progress_events_delta=30 in_flight=2 active=stage 1=2 pending=stage 1=2, stage 2=0 last_progress=[pipeline-trace] wall=20:34:17 elapsed=6.370s phase=train event=interaction_progress trial=0 partition=0 processed=1400 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:34:22 phase=train status=advancing progress_events_total=67 progress_events_delta=36 in_flight=2 active=stage 1=2 pending=stage 1=2, stage 2=0 last_progress=[pipeline-trace] wall=20:34:22 elapsed=11.414s phase=train event=interaction_progress trial=1 partition=1 processed=1300 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:34:27 phase=train status=advancing progress_events_total=105 progress_events_delta=38 in_flight=2 active=stage 1=2 pending=stage 1=2, stage 2=0 last_progress=[pipeline-trace] wall=20:34:27 elapsed=16.528s phase=train event=interaction_progress trial=1 partition=2 processed=1200 total=2000 metric=ce epoch=1/1
+/usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(io.BytesIO(b))
+[36m(PartitionShardWorker pid=2393505)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 3x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(PartitionShardWorker pid=2393505)[0m   return torch.load(io.BytesIO(b))[32m [repeated 3x across cluster][0m
+[pipeline-heartbeat] wall=20:34:36 phase=train status=advancing progress_events_total=180 progress_events_delta=75 in_flight=3 active=stage 1=2, stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:34:36 elapsed=25.559s phase=train event=interaction_progress trial=3 partition=0 processed=1500 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:34:41 phase=train status=advancing progress_events_total=228 progress_events_delta=48 in_flight=3 active=stage 1=2, stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:34:41 elapsed=27.437s phase=train event=interaction_progress trial=1 partition=4 processed=1200 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:34:46 phase=train status=advancing progress_events_total=279 progress_events_delta=51 in_flight=3 active=stage 1=2, stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:34:46 elapsed=35.655s phase=train event=interaction_progress trial=3 partition=2 processed=500 total=2000 metric=ce epoch=1/1
+[36m(PartitionShardWorker pid=2393509)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster][0m
+[36m(PartitionShardWorker pid=2393509)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[pipeline-heartbeat] wall=20:35:00 phase=train status=advancing progress_events_total=351 progress_events_delta=72 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=2 last_progress=[pipeline-trace] wall=20:35:00 elapsed=46.298s phase=train event=interaction_progress trial=0 partition=3 processed=1400 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:35:05 phase=train status=advancing progress_events_total=368 progress_events_delta=17 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=2 last_progress=[pipeline-trace] wall=20:35:05 elapsed=51.442s phase=train event=interaction_progress trial=0 partition=4 processed=1000 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:35:10 phase=train status=advancing progress_events_total=384 progress_events_delta=16 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=2 last_progress=[pipeline-trace] wall=20:35:10 elapsed=56.189s phase=train event=interaction_progress trial=0 partition=5 processed=500 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:35:15 phase=train status=advancing progress_events_total=400 progress_events_delta=16 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=2 last_progress=[pipeline-trace] wall=20:35:15 elapsed=61.173s phase=train event=interaction_progress trial=0 partition=6 processed=1 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:35:20 phase=train status=advancing progress_events_total=415 progress_events_delta=15 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=2 last_progress=[pipeline-trace] wall=20:35:20 elapsed=66.308s phase=train event=interaction_progress trial=0 partition=6 processed=1500 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:35:27 phase=train status=advancing progress_events_total=434 progress_events_delta=19 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:35:27 elapsed=72.808s phase=train event=interaction_progress trial=2 partition=3 processed=1300 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:35:32 phase=train status=advancing progress_events_total=449 progress_events_delta=15 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:35:32 elapsed=77.836s phase=train event=interaction_progress trial=2 partition=4 processed=700 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:35:37 phase=train status=advancing progress_events_total=464 progress_events_delta=15 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:35:37 elapsed=82.828s phase=train event=interaction_progress trial=2 partition=5 processed=100 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:35:42 phase=train status=advancing progress_events_total=478 progress_events_delta=14 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:35:42 elapsed=87.776s phase=train event=interaction_progress trial=2 partition=5 processed=1500 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:35:47 phase=train status=advancing progress_events_total=493 progress_events_delta=15 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:35:47 elapsed=92.780s phase=train event=interaction_progress trial=2 partition=6 processed=900 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:35:56 phase=train status=advancing progress_events_total=519 progress_events_delta=26 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0 last_progress=[pipeline-trace] wall=20:35:55 elapsed=101.590s phase=train event=interaction_progress trial=3 partition=3 processed=1400 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:36:01 phase=train status=advancing progress_events_total=535 progress_events_delta=16 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0 last_progress=[pipeline-trace] wall=20:36:00 elapsed=106.710s phase=train event=interaction_progress trial=3 partition=4 processed=900 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:36:06 phase=train status=advancing progress_events_total=549 progress_events_delta=14 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0 last_progress=[pipeline-trace] wall=20:36:05 elapsed=111.528s phase=train event=interaction_progress trial=3 partition=5 processed=200 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:36:11 phase=train status=advancing progress_events_total=564 progress_events_delta=15 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0 last_progress=[pipeline-trace] wall=20:36:10 elapsed=116.654s phase=train event=interaction_progress trial=3 partition=5 processed=1700 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:36:16 phase=train status=advancing progress_events_total=580 progress_events_delta=16 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0 last_progress=[pipeline-trace] wall=20:36:15 elapsed=121.670s phase=train event=interaction_progress trial=3 partition=6 processed=1200 total=2000 metric=ce epoch=1/1
+[RayPipeline] train-only epoch 1/2 completed
+[pipeline-heartbeat] wall=20:36:23 phase=train status=advancing progress_events_total=43 progress_events_delta=43 in_flight=2 active=stage 1=2 pending=stage 1=2, stage 2=0 last_progress=[pipeline-trace] wall=20:36:23 elapsed=132.588s phase=train event=interaction_progress trial=1 partition=0 processed=1700 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:36:28 phase=train status=advancing progress_events_total=78 progress_events_delta=35 in_flight=2 active=stage 1=2 pending=stage 1=2, stage 2=0 last_progress=[pipeline-trace] wall=20:36:28 elapsed=137.487s phase=train event=interaction_progress trial=0 partition=1 processed=1200 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:36:33 phase=train status=advancing progress_events_total=114 progress_events_delta=36 in_flight=2 active=stage 1=2 pending=stage 1=2, stage 2=0 last_progress=[pipeline-trace] wall=20:36:33 elapsed=142.601s phase=train event=interaction_progress trial=1 partition=2 processed=1200 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:36:42 phase=train status=advancing progress_events_total=192 progress_events_delta=78 in_flight=3 active=stage 1=2, stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:36:42 elapsed=151.279s phase=train event=interaction_progress trial=2 partition=0 processed=1900 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:36:47 phase=train status=advancing progress_events_total=240 progress_events_delta=48 in_flight=3 active=stage 1=2, stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:36:47 elapsed=156.162s phase=train event=interaction_progress trial=3 partition=1 processed=900 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:36:52 phase=train status=advancing progress_events_total=291 progress_events_delta=51 in_flight=3 active=stage 1=2, stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:36:52 elapsed=158.105s phase=train event=interaction_progress trial=1 partition=5 processed=1600 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:04 phase=train status=advancing progress_events_total=360 progress_events_delta=69 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=2 last_progress=[pipeline-trace] wall=20:37:04 elapsed=169.966s phase=train event=interaction_progress trial=0 partition=3 processed=1500 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:09 phase=train status=advancing progress_events_total=376 progress_events_delta=16 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=2 last_progress=[pipeline-trace] wall=20:37:08 elapsed=174.762s phase=train event=interaction_progress trial=0 partition=4 processed=1000 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:14 phase=train status=advancing progress_events_total=392 progress_events_delta=16 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=2 last_progress=[pipeline-trace] wall=20:37:14 elapsed=179.868s phase=train event=interaction_progress trial=0 partition=5 processed=500 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:19 phase=train status=advancing progress_events_total=408 progress_events_delta=16 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=2 last_progress=[pipeline-trace] wall=20:37:19 elapsed=184.892s phase=train event=interaction_progress trial=0 partition=6 processed=1 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:24 phase=train status=advancing progress_events_total=423 progress_events_delta=15 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=2 last_progress=[pipeline-trace] wall=20:37:24 elapsed=189.927s phase=train event=interaction_progress trial=0 partition=6 processed=1500 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:30 phase=train status=advancing progress_events_total=442 progress_events_delta=19 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:37:30 elapsed=196.554s phase=train event=interaction_progress trial=2 partition=3 processed=1300 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:35 phase=train status=advancing progress_events_total=457 progress_events_delta=15 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:37:35 elapsed=201.736s phase=train event=interaction_progress trial=2 partition=4 processed=700 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:40 phase=train status=advancing progress_events_total=472 progress_events_delta=15 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:37:40 elapsed=206.599s phase=train event=interaction_progress trial=2 partition=5 processed=100 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:45 phase=train status=advancing progress_events_total=486 progress_events_delta=14 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:37:45 elapsed=211.695s phase=train event=interaction_progress trial=2 partition=5 processed=1500 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:50 phase=train status=advancing progress_events_total=502 progress_events_delta=16 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=1 last_progress=[pipeline-trace] wall=20:37:50 elapsed=216.596s phase=train event=interaction_progress trial=2 partition=6 processed=1000 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:37:59 phase=train status=advancing progress_events_total=527 progress_events_delta=25 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0 last_progress=[pipeline-trace] wall=20:37:59 elapsed=224.899s phase=train event=interaction_progress trial=3 partition=3 processed=1400 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:38:04 phase=train status=advancing progress_events_total=542 progress_events_delta=15 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0 last_progress=[pipeline-trace] wall=20:38:03 elapsed=229.716s phase=train event=interaction_progress trial=3 partition=4 processed=800 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:38:09 phase=train status=advancing progress_events_total=558 progress_events_delta=16 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0 last_progress=[pipeline-trace] wall=20:38:09 elapsed=234.861s phase=train event=interaction_progress trial=3 partition=5 processed=300 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:38:14 phase=train status=advancing progress_events_total=572 progress_events_delta=14 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0 last_progress=[pipeline-trace] wall=20:38:14 elapsed=239.774s phase=train event=interaction_progress trial=3 partition=5 processed=1700 total=2000 metric=ce epoch=1/1
+[pipeline-heartbeat] wall=20:38:19 phase=train status=advancing progress_events_total=587 progress_events_delta=15 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0 last_progress=[pipeline-trace] wall=20:38:18 elapsed=244.721s phase=train event=interaction_progress trial=3 partition=6 processed=1100 total=2000 metric=ce epoch=1/1
+[RayPipeline] train-only epoch 2/2 completed
+
+  [pipeline_naive] ✗ 失败: TemporalEventGNNJODIE requires graph_ctx dynamic state
+Traceback (most recent call last):
+  File "/home/wanghaoyu/JODIE-simple/run_all.py", line 880, in main
+    best, results, elapsed = strategy_runners[strategy](strategy_output_dir)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/run_all.py", line 475, in run_pipeline_naive
+    best, results = trainer.search_pipeline(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/jodie/nas/trainer.py", line 920, in search_pipeline
+    batch_results = self.evaluate_arch_pipeline(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/jodie/nas/trainer.py", line 483, in evaluate_arch_pipeline
+    metrics = evaluate_ranking_metrics(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/anaconda3/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/jodie/training/metrics.py", line 154, in evaluate_ranking_metrics
+    metrics = evaluate_partition_ranking(model, partition, k=k, graph_ctx=eval_graph_ctx, frozen=frozen)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/anaconda3/lib/python3.11/site-packages/torch/utils/_contextlib.py", line 116, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/jodie/training/metrics.py", line 90, in evaluate_partition_ranking
+    pred_emb, _, _ = model(
+                     ^^^^^^
+  File "/usr/local/anaconda3/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1553, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/anaconda3/lib/python3.11/site-packages/torch/nn/modules/module.py", line 1562, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/wanghaoyu/JODIE-simple/jodie/models/hybrid_jodie.py", line 484, in forward
+    raise ValueError("TemporalEventGNNJODIE requires graph_ctx dynamic state")
+ValueError: TemporalEventGNNJODIE requires graph_ctx dynamic state
+[Init] Ray shutdown from previous run
+
+  总耗时: 275.9s (4.6min)
+  成功策略: []
+  失败策略: ['pipeline_naive']
+  结果目录: results/20260911_203349
+
+======================================================================
+  全部完成 — 2026-09-11 20:38:29
+======================================================================
+
+
+── 负载快照 (run 结束, 09-11 20:39:17) ──
+0, 410 MiB, 0 %
+1, 409 MiB, 0 %
+2, 409 MiB, 0 %
+3, 21205 MiB, 89 %
+4, 16003 MiB, 94 %
+5, 409 MiB, 0 %
+6, 409 MiB, 0 %
+7, 20797 MiB, 99 %
+-- compute-apps --
+7894, 386 MiB
+7877, 386 MiB
+7872, 386 MiB
+7889, 386 MiB
+1329751, 20786 MiB
+7880, 386 MiB
+1440024, 15586 MiB
+7867, 386 MiB
+7906, 386 MiB
+7900, 386 MiB
+1332948, 20378 MiB

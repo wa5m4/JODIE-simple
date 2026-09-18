@@ -195,9 +195,9 @@ from jodie.nas.trainer import GraphNASTrainer
 # ---- 搜索控制 ----
 SEARCH_SPACE = "mixed"       # "small" | "paper_compare" | "rnn_only" | "mixed"
 SEARCH_MODE = "rl"              # "random" | "rl"
-COARSE_TRIALS = 12              # 粗搜索架构数 (20000事件/3GPU 适合50)
+COARSE_TRIALS = 50              # 粗搜索架构数 (20000事件/3GPU 适合50)
 COARSE_EPOCHS = 2               # 粗搜索每架构训练轮数
-RERANK_TOP_K = 0                # 重排序前K个 (50 trials 取前8)
+RERANK_TOP_K = 8                # 重排序前K个 (50 trials 取前8)
 RERANK_EPOCHS = 5               # 重排序训练轮数 (比粗搜索多)
 CONTROLLER_LR = 1e-2            # RL 控制器学习率
 TIME_BUDGET_SEC = 0.0           # 搜索时间预算 (0=不限制, 全量运行)
@@ -205,7 +205,7 @@ TIME_BUDGET_SEC = 0.0           # 搜索时间预算 (0=不限制, 全量运行)
 # ---- 数据 ----
 DATASET = "public_csv"           # "synthetic" | "wikipedia" | "reddit" | "public_csv"
 LOCAL_DATA_PATH = "data/public/mooc.csv"  # 仅 public_csv 时有效
-MAX_EVENTS = 200000               # 使用前 20000 条交互事件
+MAX_EVENTS = 20000               # 使用前 20000 条交互事件
 TRAIN_RATIO = 0.7                # 训练集占比
 VAL_RATIO = 0.1                  # 验证集占比 (test=0.2)
 
@@ -238,14 +238,14 @@ ARCHITECTURES_PER_STEP = 4                            # 每批次架构数
 PIPELINE_STAGE_TRAIN_WORKERS = "1,1,1"                # Naive: 每 stage 1 worker
 PIPELINE_STAGE_EVAL_WORKERS = "1,1,1"                 # Naive: 每 stage 1 eval worker
 SMART_ENABLE_AUTO_PIPELINE_CONFIG = False             # Smart: 关闭自动，手动指定 1stage×3worker
-SMART_PIPELINE_STAGE_TRAIN_WORKERS = "3"              # Smart: 1 stage × 3 workers
+SMART_PIPELINE_STAGE_TRAIN_WORKERS = "2"              # Smart: 1 stage × 3 workers
 SMART_NUM_PIPELINE_STAGES = 1                         # Smart: 1 stage
-SMART_PIPELINE_MODE = "smart"                         # Smart 驱动: smart=异步池 / naive=批同步(五臂 smart_sync)
+SMART_PIPELINE_MODE = "naive"                         # Smart 驱动: smart=异步池 / naive=批同步(五臂 smart_sync)
 NAIVE_PIPELINE_MODE = "naive"                         # Naive 驱动: naive=批同步 / smart=异步池(naive_async 补臂)
 STAGE_BALANCE_STRATEGY = "cost"                       # DP 最小化阶段间成本方差
 
 # ---- GPU (3卡: 0,1,2) ----
-GPU_LIST = "1,2,5"                                    # 3 GPU 全部使用
+GPU_LIST = "0,1,2"                                    # 3 GPU 全部使用
 PIPELINE_WORKER_GPUS = 1.0                            # 每个流水线 worker 独占 1 GPU
 DATA_PARALLEL_WORKERS = 3                             # 每 GPU 一个 DP worker
 DATA_PARALLEL_WORKER_GPUS = 1.0                       # 每个 DP worker 独占 1 GPU

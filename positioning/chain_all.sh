@@ -11,7 +11,8 @@
 #   2) 磁盘检查:/home 剩余 > 5GB,否则等待
 #   3) apply 配置 → nohup 启动 → 90s 自动预检;预检失败即杀进程并中止整条链
 #   4) 等待本 run 进程退出;期间 pmon(2s 采样)盯本 run 卡上的他人进程:
-#      只有 sm 利用率 > 15% 的「真实计算」才警报 + 保留污染 log + 自动重跑一次
+#      只有 sm 利用率 > 15% 的「真实计算」才警报 + 在日志标注(⚠)
+#      (2026-09-18 用户裁定:取消污染自动重跑;全部 run 只跑一遍+标记,终检统一补跑)
 #   5) 已完成的干净 run(日志含"全部完成")自动跳过,续跑无需手算起始序号
 #
 # 用法(在仓库根目录):
@@ -166,7 +167,6 @@ active_foreign_on_gpus() {
 say "===== 定位实验链条启动 (Phase $PHASE, 从第 $START_IDX 个 run 开始) ====="
 
 DONE_LOGS=()
-LAST_RERUN_IDX=-1
 for ((i = START_IDX - 1; i < ${#RUN_SPECS[@]}; i++)); do
     read -r CELL STRAT LOGNAME <<< "${RUN_SPECS[$i]}"
     DONE_LOGS+=("$LOGNAME")
@@ -281,17 +281,11 @@ for ((i = START_IDX - 1; i < ${#RUN_SPECS[@]}; i++)); do
     ray stop --force > /dev/null 2>&1 || true
     sleep 10
 
-    # 污染裁决(2026-09-10):受活跃作业干扰的 run 保留污染 log、自动重跑一次;
-    # 重跑仍受污染则不再自动重跑,留待人工判读。
+    # 污染裁决(2026-09-18 用户裁定改):不再自动重跑。有污染只在日志标注(⚠),
+    # 数据/计时照记照填,终检时对误差不可容忍的 run 统一补跑。
     if [ "$POLLUTED" -eq 1 ]; then
-        if [ "$i" -ne "$LAST_RERUN_IDX" ]; then
-            say "✗ 污染裁决:本 run 计时作废,污染 log 改存 *_polluted,自动重跑一次"
-            mv "$LOG" "${LOG%.log}_polluted_$(date '+%H%M').log"
-            LAST_RERUN_IDX=$i
-            i=$((i - 1))
-        else
-            say "✗✗ 重跑仍受污染,不再自动重跑,留待人工判读"
-        fi
+        say "⚠ 污染标注:本 run 期间有活跃他人进程(按新政策不重跑,标记 ⚠;终检时定夺是否补跑)"
+        echo "[污染标注 $(date '+%m-%d %H:%M:%S')] 本 run 期间检测到活跃他人进程(sm>15%),按 2026-09-18 政策不重跑;计时可能偏差,终检时校验。" >> "$LOG"
     else
         say "✓ 本 run 干净(仅占显存不计算的作业不计污染)"
     fi

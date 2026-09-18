@@ -1,0 +1,74 @@
+2026-09-15 20:30:14,144	INFO worker.py:1812 -- Started a local Ray instance. View the dashboard at [1m[32mhttp://127.0.0.1:8266 [39m[22m
+[Microcheck] cell=B max_events=20000 train=14000 val=1999 test=4001 epochs=2
+Epoch 1/2 | L2 Loss: 6.4860
+Epoch 2/2 | L2 Loss: 6.0159
+[Microcheck] serial score(mrr) = 0.5139392453105059
+  与已知真值互校: True (expected 0.5139392453105059)
+[RayPipeline] train-only mode: 2 stages, train workers=[1, 1]
+[RayPipeline] created train workers=[1, 1]
+[pipeline-heartbeat] wall=20:30:28 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[36m(PartitionShardWorker pid=618516)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(PartitionShardWorker pid=618516)[0m   return torch.load(io.BytesIO(b))
+[pipeline-heartbeat] wall=20:30:33 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:30:38 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:30:43 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:30:48 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:30:53 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:30:58 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:03 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+/usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(io.BytesIO(b))
+[pipeline-heartbeat] wall=20:31:09 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:14 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:19 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:24 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:29 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:34 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:39 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:44 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:49 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:54 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:31:59 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:32:04 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:32:09 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:32:14 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[RayPipeline] train-only epoch 1/2 completed
+[36m(PartitionShardWorker pid=618536)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(PartitionShardWorker pid=618536)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[pipeline-heartbeat] wall=20:32:23 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:32:28 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:32:33 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:32:38 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:32:43 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:32:48 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:32:53 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:32:58 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:03 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:08 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:13 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:18 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:23 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 1=1 pending=stage 1=0, stage 2=0
+[36m(PartitionShardWorker pid=618516)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(PartitionShardWorker pid=618516)[0m   return torch.load(io.BytesIO(b))
+[pipeline-heartbeat] wall=20:33:28 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:33 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:38 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:43 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:48 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:53 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:33:58 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:34:03 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:34:08 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:34:13 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:34:18 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[pipeline-heartbeat] wall=20:34:23 phase=train status=no_new_progress progress_events_total=0 progress_events_delta=0 in_flight=1 active=stage 2=1 pending=stage 1=0, stage 2=0
+[RayPipeline] train-only epoch 2/2 completed
+
+===== 结果 =====
+serial   score = 0.5139392453105059
+pipeline score = 0.5139392453105059
+payload.seed = 42 (期望 42, Fix B 生效: True)
+
+score 位级等价: True
+state_dict 指纹: serial=a756412612f120ae pipeline=a756412612f120ae 相同: True
+state_dict 全部张量逐位一致 ✓

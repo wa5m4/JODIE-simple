@@ -38,3 +38,5 @@ data/public/*.csv
 
 # Claude Code 本地会话目录(不提交)
 .claude/
+positioning/pmon_archive/*.log
+experiments/logs/*.log

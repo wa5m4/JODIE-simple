@@ -1,0 +1,2 @@
+[guard] ⚠ 进程退出但 log 中未见'全部完成',检查 experiments/logs/cellE_naive_async_20260913.log
+GUARD_VERDICT=CLEAN

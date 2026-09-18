@@ -1,0 +1,51 @@
+
+======================================================================
+  JODIE GraphNAS 全策略对比
+  2026-09-08 21:54:08
+======================================================================
+
+  [预检] 正在验证运行环境...
+  [预检] ✓ 数据文件: data/public/mooc.csv (39.1 MB)
+  [预检] ✓ CUDA 可用: True, 可见GPU数: 2
+  [预检] ✓ Ray 已安装 (version=2.40.0)
+  [预检] ✓ Pipeline Naive: 2 stages × [1, 1] workers (固定)
+  [预检] ✓ Pipeline Smart: 手动配置
+
+  当前配置:
+    搜索空间: rnn_only  搜索模式: rl
+    数据集: public_csv  选择指标: mrr
+    粗搜索: 50 trials × 2 epochs
+    重排序: top 8 × 5 epochs
+    GPU: 5,6  流水线Naive: 2stages×1,1workers
+    流水线Smart: 手动  DP workers: 2
+    时间预算: 无限制(全量运行)  启用策略: ['pipeline_smart']
+
+  结果目录: results/20260908_215408
+
+  配置快照已保存: results/20260908_215408/config.json
+
+
+======================================================================
+  策略 4/4: Pipeline Smart (流水线异步持久化池)
+  2026-09-08 21:54:08
+======================================================================
+
+
+======================================================================
+[GraphNAS] Starting search pipeline
+[GraphNAS] Coarse trials: 50, epochs: 2
+[GraphNAS] Rerank top-k: 8, epochs: 5
+======================================================================
+
+[Timing] Timing log: results/20260908_215408/pipeline_smart/timing_log.csv
+[Smart] Using manual allocation: stages=1, workers=2
+2026-09-08 21:54:43,188	INFO worker.py:1812 -- Started a local Ray instance. View the dashboard at [1m[32mhttp://127.0.0.1:8265 [39m[22m
+[AsyncPool] started: 1 stages, workers=[2]
+*** SIGTERM received at time=1788875698 on cpu 35 ***
+PC: @     0x767e5fc91117  (unknown)  (unknown)
+    @     0x767e5fc42520  (unknown)  (unknown)
+    @ ... and at least 1 more frames
+[2026-09-08 21:54:58,446 E 948067 948067] logging.cc:447: *** SIGTERM received at time=1788875698 on cpu 35 ***
+[2026-09-08 21:54:58,447 E 948067 948067] logging.cc:447: PC: @     0x767e5fc91117  (unknown)  (unknown)
+[2026-09-08 21:54:58,447 E 948067 948067] logging.cc:447:     @     0x767e5fc42520  (unknown)  (unknown)
+[2026-09-08 21:54:58,447 E 948067 948067] logging.cc:447:     @ ... and at least 1 more frames

@@ -1,0 +1,396 @@
+[09-17 10:18:49] ===== 定位实验链条启动 (Phase 5, 从第 1 个 run 开始) =====
+[09-17 10:18:49] 
+[09-17 10:18:49] ===== [1/29] cell B / dp =====
+[09-17 10:18:49] 动态选卡:等待任意 2 张空闲 GPU...
+[09-17 10:18:49] ✓ 动态选中 GPU [1,2]
+[09-17 10:18:49] ✓ 磁盘剩余 5.6G
+=== cell B / dp (内部名 data_parallel) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 20000
+  · COARSE_TRIALS = 50
+  · RERANK_TOP_K = 8
+  · DATA_PARALLEL_WORKERS = 2
+  · GPU_LIST = "1,2"
+  · SEARCH_SPACE = "rnn_only"
+  · ENABLE_STRATEGIES = [data_parallel]  (dp)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : data_parallel  (cell B-dp)
+  MAX_EVENTS  : 20000
+  SEARCH_SPACE: rnn_only
+  GPU_LIST    : 1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 50   RERANK_TOP_K: 8
+  DP workers   : 2
+
+[09-17 10:18:49] 已启动 PID=1440563, CUDA_VISIBLE_DEVICES=1,2, log=experiments/logs/cellB_dp_20260916.log
+=== 自动预检: cell B / dp (期望 data_parallel) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260917_101853/config.json
+  ✓ MAX_EVENTS = 20000
+  ✓ SEARCH_SPACE = 'rnn_only'
+  ✓ COARSE_TRIALS = 50
+  ✓ RERANK_TOP_K = 8
+  ✓ GPU_LIST = '1,2'
+  ✓ DATA_PARALLEL_WORKERS = 2
+  ✓ ENABLE_STRATEGIES = ['data_parallel']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 2 = 期望 2(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-17 10:20:20] ✓ 预检通过
+[09-17 14:12:49] ✓ 本 run 正常结束
+[09-17 14:13:03] ✓ 本 run 干净(仅占显存不计算的作业不计污染)
+[09-17 14:13:03] 
+[09-17 14:13:03] ===== [2/29] cell B / smart_sync =====
+[09-17 14:13:03] 动态选卡:等待任意 2 张空闲 GPU...
+[09-17 14:13:04] ✓ 动态选中 GPU [1,2]
+[09-17 14:13:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 14:18:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 14:23:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 14:28:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 14:33:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 14:38:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 14:43:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 14:48:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 14:53:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 14:58:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:03:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:08:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:13:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:18:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:23:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:28:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:33:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:38:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:43:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:48:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:53:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 15:58:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:03:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:08:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:13:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:18:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:23:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:28:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:33:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:38:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:43:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:48:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:53:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 16:58:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:03:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:08:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:13:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:18:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:23:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:28:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:33:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:38:04] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:43:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:48:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:53:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 17:58:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:03:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:08:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:13:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:18:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:23:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:28:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:33:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:38:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:43:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:48:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:53:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 18:58:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 19:03:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 19:08:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 19:13:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 19:18:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 19:23:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 19:28:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 19:33:05] ⚠ /home 剩余不足 5GB,等待中...
+[09-17 19:38:05] ✓ 磁盘剩余 13G
+=== cell B / smart_sync (内部名 pipeline_smart) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 20000
+  · COARSE_TRIALS = 50
+  · RERANK_TOP_K = 8
+  · DATA_PARALLEL_WORKERS = 2
+  · SMART_NUM_PIPELINE_STAGES = 1
+  · GPU_LIST = "1,2"
+  · SEARCH_SPACE = "rnn_only"
+  · SMART_PIPELINE_STAGE_TRAIN_WORKERS = "2"
+  · SMART_PIPELINE_MODE = "naive"
+  · ENABLE_STRATEGIES = [pipeline_smart]  (smart_sync)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : pipeline_smart  (cell B-smart_sync)
+  MAX_EVENTS  : 20000
+  SEARCH_SPACE: rnn_only
+  GPU_LIST    : 1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 50   RERANK_TOP_K: 8
+  Smart stages: 1 × train[2] (自动分配=OFF)
+  驱动        : SMART_PIPELINE_MODE=naive (批同步, 去异步)
+
+[09-17 19:38:05] 已启动 PID=3812017, CUDA_VISIBLE_DEVICES=1,2, log=experiments/logs/cellB_smart_sync_20260916.log
+=== 自动预检: cell B / smart_sync (期望 pipeline_smart) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260917_193809/config.json
+  ✓ MAX_EVENTS = 20000
+  ✓ SEARCH_SPACE = 'rnn_only'
+  ✓ COARSE_TRIALS = 50
+  ✓ RERANK_TOP_K = 8
+  ✓ GPU_LIST = '1,2'
+  ✓ DATA_PARALLEL_WORKERS = 2
+  ✓ SMART_NUM_PIPELINE_STAGES = 1
+  ✓ SMART_PIPELINE_STAGE_TRAIN_WORKERS = '2'
+  ✓ SMART_PIPELINE_MODE = 'naive'
+  ✓ ENABLE_STRATEGIES = ['pipeline_smart']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 2 = 期望 2(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-17 19:39:35] ✓ 预检通过
+[09-17 23:19:00] ✓ 本 run 正常结束
+[09-17 23:19:15] ✓ 本 run 干净(仅占显存不计算的作业不计污染)
+[09-17 23:19:15] 
+[09-17 23:19:15] ===== [3/29] cell C / serial =====
+[09-17 23:19:15] 动态选卡:等待任意 3 张空闲 GPU...
+[09-17 23:19:16] ✓ 动态选中 GPU [1,3,6]
+[09-17 23:19:16] ✓ 磁盘剩余 13G
+=== cell C / serial (内部名 serial) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 20000
+  · COARSE_TRIALS = 50
+  · RERANK_TOP_K = 8
+  · DATA_PARALLEL_WORKERS = 3
+  · GPU_LIST = "1,3,6"
+  · SEARCH_SPACE = "mixed"
+  · ENABLE_STRATEGIES = [serial]  (serial)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : serial  (cell C-serial)
+  MAX_EVENTS  : 20000
+  SEARCH_SPACE: mixed
+  GPU_LIST    : 1,3,6
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 50   RERANK_TOP_K: 8
+
+[09-17 23:19:16] 已启动 PID=2967, CUDA_VISIBLE_DEVICES=1,3,6, log=experiments/logs/cellC_serial_20260916.log
+=== 自动预检: cell C / serial (期望 serial) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260917_231921/config.json
+  ✓ MAX_EVENTS = 20000
+  ✓ SEARCH_SPACE = 'mixed'
+  ✓ COARSE_TRIALS = 50
+  ✓ RERANK_TOP_K = 8
+  ✓ GPU_LIST = '1,3,6'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ ENABLE_STRATEGIES = ['serial']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-17 23:20:46] ✓ 预检通过
+[09-17 23:21:51] ⚠⚠ 污染警报:本 run 卡上出现活跃计算的他人进程 PID=3505808 (sm>15%),本 run 计时可能作废
+[09-18 02:01:38] ⚠⚠ 污染警报:本 run 卡上出现活跃计算的他人进程 PID=295381 (sm>15%),本 run 计时可能作废
+[09-18 02:29:27] ✓ 本 run 正常结束
+[09-18 02:29:45] ✗ 污染裁决:本 run 计时作废,污染 log 改存 *_polluted,自动重跑一次
+[09-18 02:29:45] 
+[09-18 02:29:45] ===== [3/29] cell C / serial =====
+[09-18 02:29:45] 动态选卡:等待任意 3 张空闲 GPU...
+[09-18 02:29:46] ✓ 动态选中 GPU [0,1,2]
+[09-18 02:29:46] ✓ 磁盘剩余 13G
+=== cell C / serial (内部名 serial) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 20000
+  · COARSE_TRIALS = 50
+  · RERANK_TOP_K = 8
+  · DATA_PARALLEL_WORKERS = 3
+  · GPU_LIST = "0,1,2"
+  · SEARCH_SPACE = "mixed"
+  · ENABLE_STRATEGIES = [serial]  (serial)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : serial  (cell C-serial)
+  MAX_EVENTS  : 20000
+  SEARCH_SPACE: mixed
+  GPU_LIST    : 0,1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 50   RERANK_TOP_K: 8
+
+[09-18 02:29:46] 已启动 PID=360785, CUDA_VISIBLE_DEVICES=0,1,2, log=experiments/logs/cellC_serial_20260916.log
+=== 自动预检: cell C / serial (期望 serial) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260918_022954/config.json
+  ✓ MAX_EVENTS = 20000
+  ✓ SEARCH_SPACE = 'mixed'
+  ✓ COARSE_TRIALS = 50
+  ✓ RERANK_TOP_K = 8
+  ✓ GPU_LIST = '0,1,2'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ ENABLE_STRATEGIES = ['serial']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-18 02:31:17] ✓ 预检通过
+[09-18 02:35:17] ⚠⚠ 污染警报:本 run 卡上出现活跃计算的他人进程 PID=4184321 (sm>15%),本 run 计时可能作废
+[09-18 05:27:43] ✓ 本 run 正常结束
+[09-18 05:27:58] ✗✗ 重跑仍受污染,不再自动重跑,留待人工判读
+[09-18 05:27:58] 
+[09-18 05:27:58] ===== [4/29] cell C / naive =====
+[09-18 05:27:58] 动态选卡:等待任意 3 张空闲 GPU...
+[09-18 05:27:59] ✓ 动态选中 GPU [0,1,2]
+[09-18 05:27:59] ✓ 磁盘剩余 13G
+=== cell C / naive (内部名 pipeline_naive) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 20000
+  · COARSE_TRIALS = 50
+  · RERANK_TOP_K = 8
+  · DATA_PARALLEL_WORKERS = 3
+  · NUM_PIPELINE_STAGES = 3
+  · GPU_LIST = "0,1,2"
+  · SEARCH_SPACE = "mixed"
+  · PIPELINE_STAGE_TRAIN_WORKERS = "1,1,1"
+  · PIPELINE_STAGE_EVAL_WORKERS = "1,1,1"
+  · NAIVE_PIPELINE_MODE = "naive"
+  · ENABLE_STRATEGIES = [pipeline_naive]  (naive)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : pipeline_naive  (cell C-naive)
+  MAX_EVENTS  : 20000
+  SEARCH_SPACE: mixed
+  GPU_LIST    : 0,1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 50   RERANK_TOP_K: 8
+  Naive stages: 3 × train[1,1,1] eval[1,1,1]
+
+[09-18 05:27:59] 已启动 PID=624383, CUDA_VISIBLE_DEVICES=0,1,2, log=experiments/logs/cellC_naive_20260916.log
+=== 自动预检: cell C / naive (期望 pipeline_naive) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260918_052807/config.json
+  ✓ MAX_EVENTS = 20000
+  ✓ SEARCH_SPACE = 'mixed'
+  ✓ COARSE_TRIALS = 50
+  ✓ RERANK_TOP_K = 8
+  ✓ GPU_LIST = '0,1,2'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ NUM_PIPELINE_STAGES = 3
+  ✓ PIPELINE_STAGE_TRAIN_WORKERS = '1,1,1'
+  ✓ PIPELINE_STAGE_EVAL_WORKERS = '1,1,1'
+  ✓ NAIVE_PIPELINE_MODE = 'naive'
+  ✓ ENABLE_STRATEGIES = ['pipeline_naive']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-18 05:29:29] ✓ 预检通过
+[09-18 05:32:31] ⚠⚠ 污染警报:本 run 卡上出现活跃计算的他人进程 PID=559760 (sm>15%),本 run 计时可能作废
+[09-18 09:41:19] ✓ 本 run 正常结束
+[09-18 09:41:34] ✗ 污染裁决:本 run 计时作废,污染 log 改存 *_polluted,自动重跑一次
+[09-18 09:41:34] 
+[09-18 09:41:34] ===== [4/29] cell C / naive =====
+[09-18 09:41:34] 动态选卡:等待任意 3 张空闲 GPU...
+[09-18 09:41:35] ✓ 动态选中 GPU [0,1,2]
+[09-18 09:41:35] ✓ 磁盘剩余 13G
+=== cell C / naive (内部名 pipeline_naive) ===
+已写入 run_all.py,变更如下:
+  · MAX_EVENTS = 20000
+  · COARSE_TRIALS = 50
+  · RERANK_TOP_K = 8
+  · DATA_PARALLEL_WORKERS = 3
+  · NUM_PIPELINE_STAGES = 3
+  · GPU_LIST = "0,1,2"
+  · SEARCH_SPACE = "mixed"
+  · PIPELINE_STAGE_TRAIN_WORKERS = "1,1,1"
+  · PIPELINE_STAGE_EVAL_WORKERS = "1,1,1"
+  · NAIVE_PIPELINE_MODE = "naive"
+  · ENABLE_STRATEGIES = [pipeline_naive]  (naive)
+── 预检摘要(启动后 precheck.py 会照此核对)──
+  策略        : pipeline_naive  (cell C-naive)
+  MAX_EVENTS  : 20000
+  SEARCH_SPACE: mixed
+  GPU_LIST    : 0,1,2
+  BATCH_MODE  : serial (固定, 保真协议)
+  SEED        : 42 (固定)
+  COARSE_TRIALS: 50   RERANK_TOP_K: 8
+  Naive stages: 3 × train[1,1,1] eval[1,1,1]
+
+[09-18 09:41:35] 已启动 PID=1016456, CUDA_VISIBLE_DEVICES=0,1,2, log=experiments/logs/cellC_naive_20260916.log
+=== 自动预检: cell C / naive (期望 pipeline_naive) ===
+  快照: /home/wanghaoyu/JODIE-simple/results/20260918_094139/config.json
+  ✓ MAX_EVENTS = 20000
+  ✓ SEARCH_SPACE = 'mixed'
+  ✓ COARSE_TRIALS = 50
+  ✓ RERANK_TOP_K = 8
+  ✓ GPU_LIST = '0,1,2'
+  ✓ DATA_PARALLEL_WORKERS = 3
+  ✓ NUM_PIPELINE_STAGES = 3
+  ✓ PIPELINE_STAGE_TRAIN_WORKERS = '1,1,1'
+  ✓ PIPELINE_STAGE_EVAL_WORKERS = '1,1,1'
+  ✓ NAIVE_PIPELINE_MODE = 'naive'
+  ✓ ENABLE_STRATEGIES = ['pipeline_naive']
+  ✓ SEARCH_MODE = 'rl'
+  ✓ BATCH_MODE = 'serial'
+  ✓ SEED = 42
+  ✓ PARTITION_SIZE = 2000
+  ✓ FEATURE_DIM = 4
+  ✓ SMART_ENABLE_AUTO_PIPELINE_CONFIG = False
+  ✓ log: 数据文件
+  ✓ log: CUDA
+  ✓ log: Ray 已安装
+  ✓ log: 结果目录
+  ✓ log: 启用策略
+  ✓ 可见GPU数 3 = 期望 3(CUDA_VISIBLE_DEVICES 已生效)
+
+  [预检] ✓ 全部通过 — 配置与指南一致,运行继续。
+[09-18 09:43:05] ✓ 预检通过
+[09-18 10:06:06] ⚠⚠ 污染警报:本 run 卡上出现活跃计算的他人进程 PID=559760 (sm>15%),本 run 计时可能作废

@@ -1,0 +1,967 @@
+
+======================================================================
+  JODIE GraphNAS 全策略对比
+  2026-09-10 22:32:20
+======================================================================
+
+  [预检] 正在验证运行环境...
+  [预检] ✓ 数据文件: data/public/mooc.csv (39.1 MB)
+  [预检] ✓ CUDA 可用: True, 可见GPU数: 3
+  [预检] ✓ Ray 已安装 (version=2.40.0)
+  [预检] ✓ Pipeline Naive: 2 stages × [1, 1] workers (固定)
+  [预检] ✓ Pipeline Smart: 手动配置
+
+  当前配置:
+    搜索空间: rnn_only  搜索模式: rl
+    数据集: public_csv  选择指标: mrr
+    粗搜索: 12 trials × 2 epochs
+    重排序: top 0 × 5 epochs
+    GPU: 0,1,2  流水线Naive: 2stages×1,1workers
+    流水线Smart: 手动  DP workers: 3
+    时间预算: 无限制(全量运行)  启用策略: ['data_parallel']
+
+  结果目录: results/20260910_223221
+
+  配置快照已保存: results/20260910_223221/config.json
+
+
+======================================================================
+  策略 2/4: Data Parallel (数据并行搜索)
+  2026-09-10 22:32:21
+======================================================================
+
+
+======================================================================
+[GraphNAS] Starting data-parallel search
+[GraphNAS] Coarse trials: 12, epochs: 2, workers: 3
+======================================================================
+
+[Timing] Timing log: results/20260910_223221/data_parallel/timing_log.csv
+2026-09-10 22:33:13,760	INFO worker.py:1812 -- Started a local Ray instance. View the dashboard at [1m[32mhttp://127.0.0.1:8265 [39m[22m
+[DataParallel] trial=0 seed=42 (与 serial 同源)
+[36m(_DataParallelWorker pid=1733879)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(_DataParallelWorker pid=1733879)[0m   return torch.load(io.BytesIO(b))
+/usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(io.BytesIO(b))
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[36m(_DataParallelWorker pid=1733897)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(_DataParallelWorker pid=1733897)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 1/12] model=jodie_rnn agg=none memory=rnn val_score=0.0583
+[DataParallel] trial=1 seed=43 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 2/12] model=jodie_rnn agg=none memory=lstm val_score=0.1324
+[DataParallel] trial=2 seed=44 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 3/12] model=jodie_rnn agg=none memory=lstm val_score=0.2889
+[DataParallel] trial=3 seed=45 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 4/12] model=jodie_rnn agg=none memory=lstm val_score=0.2396
+[DataParallel] trial=4 seed=46 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 5/12] model=jodie_rnn agg=none memory=lstm val_score=0.1901
+[DataParallel] trial=5 seed=47 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 6/12] model=jodie_rnn agg=none memory=rnn val_score=0.1939
+[DataParallel] trial=6 seed=48 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 7/12] model=jodie_rnn agg=none memory=rnn val_score=0.0683
+[DataParallel] trial=7 seed=49 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 8/12] model=jodie_rnn agg=none memory=rnn val_score=0.3222
+[DataParallel] trial=8 seed=50 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 9/12] model=jodie_rnn agg=none memory=gru val_score=0.1201
+[DataParallel] trial=9 seed=51 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 10/12] model=jodie_rnn agg=none memory=lstm val_score=0.1720
+[DataParallel] trial=10 seed=52 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 11/12] model=jodie_rnn agg=none memory=gru val_score=0.0519
+[DataParallel] trial=11 seed=53 (与 serial 同源)
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 12/12] model=jodie_rnn agg=none memory=rnn val_score=0.3939
+[DataParallel] Workers shut down.
+Epoch 1/2 | L2 Loss: 0.7394
+Epoch 2/2 | L2 Loss: 0.7109
+  [data_parallel] 结果已保存到: results/20260910_223221/data_parallel/data_parallel
+
+  [data_parallel] ✓ 完成 — 耗时 6389.5s, val_score=0.3939
+
+[36m(_DataParallelWorker pid=1733879)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(_DataParallelWorker pid=1733879)[0m   return torch.load(io.BytesIO(b))
+[Init] Ray shutdown from previous run
+
+======================================================================
+  生成最终对比报告
+  2026-09-11 00:18:55
+======================================================================
+
+
+  对比报告 (Markdown): results/20260910_223221/comparison.md
+  对比数据 (JSON):    results/20260910_223221/comparison.json
+
+======================================================================
+  最终结果摘要
+  2026-09-11 00:18:55
+======================================================================
+
+  策略                 耗时  val_score test_score   test_mrr              模型
+  ------------ -------- ---------- ---------- ---------- ---------------
+  DataPara      6389.5s     0.3939 0.6402185333899774 0.6402185333899774       jodie_rnn
+
+
+  总耗时: 6390.5s (106.5min)
+  成功策略: ['data_parallel']
+  结果目录: results/20260910_223221
+
+======================================================================
+  全部完成 — 2026-09-11 00:18:55
+======================================================================
+
+
+── 负载快照 (run 结束, 09-11 00:19:58) ──
+0, 409 MiB, 0 %
+1, 409 MiB, 0 %
+2, 409 MiB, 0 %
+3, 409 MiB, 0 %
+4, 409 MiB, 0 %
+5, 409 MiB, 0 %
+6, 409 MiB, 0 %
+7, 409 MiB, 0 %
+-- compute-apps --
+7894, 386 MiB
+7877, 386 MiB
+7872, 386 MiB
+7889, 386 MiB
+7880, 386 MiB
+7867, 386 MiB
+7906, 386 MiB
+7900, 386 MiB

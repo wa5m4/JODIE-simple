@@ -1,0 +1,219 @@
+
+======================================================================
+  JODIE GraphNAS 全策略对比
+  2026-09-09 14:26:51
+======================================================================
+
+  [预检] 正在验证运行环境...
+  [预检] ✓ 数据文件: data/public/mooc.csv (39.1 MB)
+  [预检] ✓ CUDA 可用: True, 可见GPU数: 2
+  [预检] ✓ Ray 已安装 (version=2.40.0)
+  [预检] ✓ Pipeline Naive: 2 stages × [1, 1] workers (固定)
+  [预检] ✓ Pipeline Smart: 手动配置
+
+  当前配置:
+    搜索空间: rnn_only  搜索模式: rl
+    数据集: public_csv  选择指标: mrr
+    粗搜索: 12 trials × 2 epochs
+    重排序: top 0 × 5 epochs
+    GPU: 0,1  流水线Naive: 2stages×1,1workers
+    流水线Smart: 手动  DP workers: 2
+    时间预算: 无限制(全量运行)  启用策略: ['data_parallel']
+
+  结果目录: results/20260909_142651
+
+  配置快照已保存: results/20260909_142651/config.json
+
+
+======================================================================
+  策略 2/4: Data Parallel (数据并行搜索)
+  2026-09-09 14:26:51
+======================================================================
+
+
+======================================================================
+[GraphNAS] Starting data-parallel search
+[GraphNAS] Coarse trials: 12, epochs: 2, workers: 2
+======================================================================
+
+[Timing] Timing log: results/20260909_142651/data_parallel/timing_log.csv
+2026-09-09 14:27:49,854	INFO worker.py:1812 -- Started a local Ray instance. View the dashboard at [1m[32mhttp://127.0.0.1:8265 [39m[22m
+[36m(_DataParallelWorker pid=3562960)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(_DataParallelWorker pid=3562960)[0m   return torch.load(io.BytesIO(b))
+/usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  return torch.load(io.BytesIO(b))
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[36m(_DataParallelWorker pid=3562977)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.[32m [repeated 2x across cluster] (Ray deduplicates logs by default. Set RAY_DEDUP_LOGS=0 to disable log deduplication, or see https://docs.ray.io/en/master/ray-observability/user-guides/configure-logging.html#log-deduplication for more options.)[0m
+[36m(_DataParallelWorker pid=3562977)[0m   return torch.load(io.BytesIO(b))[32m [repeated 2x across cluster][0m
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 1/12] model=jodie_rnn agg=none memory=rnn val_score=0.0565
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=34 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=20 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=21 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=22 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=23 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=24 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=25 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=26 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=27 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=28 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=29 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=30 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=31 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=32 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=33 interactions=2000
+[DataParallel] trial=0 epoch=2/2 partition=34 interactions=2000
+[DataParallel 2/12] model=jodie_rnn agg=none memory=lstm val_score=0.2914
+[DataParallel] trial=0 epoch=1/2 partition=0 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=1 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=2 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=3 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=4 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=5 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=6 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=7 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=8 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=9 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=10 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=11 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=12 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=13 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=14 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=15 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=16 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=17 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=18 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=19 interactions=2000
+[DataParallel] trial=0 epoch=1/2 partition=20 interactions=2000
+*** SIGTERM received at time=1788937388 on cpu 45 ***
+PC: @     0x73f925a91117  (unknown)  (unknown)
+    @     0x73f925a42520  (unknown)  (unknown)
+    @ ... and at least 1 more frames
+[2026-09-09 15:03:08,114 E 3560744 3560744] logging.cc:447: *** SIGTERM received at time=1788937388 on cpu 45 ***
+[2026-09-09 15:03:08,114 E 3560744 3560744] logging.cc:447: PC: @     0x73f925a91117  (unknown)  (unknown)
+[2026-09-09 15:03:08,114 E 3560744 3560744] logging.cc:447:     @     0x73f925a42520  (unknown)  (unknown)
+[2026-09-09 15:03:08,114 E 3560744 3560744] logging.cc:447:     @ ... and at least 1 more frames
+[36m(_DataParallelWorker pid=3562960)[0m /usr/local/anaconda3/lib/python3.11/site-packages/torch/storage.py:414: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+[36m(_DataParallelWorker pid=3562960)[0m   return torch.load(io.BytesIO(b))
