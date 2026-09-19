@@ -143,6 +143,18 @@ RUNS_P5 = [
     {"cell": "H", "strategy": "smart_sync",  "log": "experiments/logs/cellH_smart_sync_20260916.log"},
 ]
 
+# RUNS_P6(2026-09-19 用户拍板):终检补跑队列——B/C 行带 ★/⚠ 的非 serial 臂,
+# 干净条件下重跑拿可信计时。注意:保真结论不会因重跑改变(dp 分叉是结构性微批平均,
+# 只修计时);C-serial 的 ★ 偏差 2.3% 已过判据,不重跑。新 log 名不覆盖旧带标注日志。
+# 顺序与 RUNS_P5 一致:B 先 C 后;待 phase5 链结束后以 chain_all.sh phase6 启动。
+RUNS_P6 = [
+    {"cell": "B", "strategy": "dp",          "log": "experiments/logs/cellB_dp_rerun_20260920.log"},
+    {"cell": "B", "strategy": "smart_sync",  "log": "experiments/logs/cellB_smart_sync_rerun_20260920.log"},
+    {"cell": "C", "strategy": "naive",       "log": "experiments/logs/cellC_naive_rerun_20260920.log"},
+    {"cell": "C", "strategy": "dp",          "log": "experiments/logs/cellC_dp_rerun_20260920.log"},
+    {"cell": "C", "strategy": "smart_sync",  "log": "experiments/logs/cellC_smart_sync_rerun_20260920.log"},
+]
+
 # 策略简名 → run_all.py ENABLE_STRATEGIES 里的内部名
 # 注意 smart_sync / naive_alloc 与 smart / naive 共用内部策略名,
 # 差别只靠配置区分:smart_sync = SMART_PIPELINE_MODE="naive";
